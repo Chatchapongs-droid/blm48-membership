@@ -114,7 +114,7 @@
     ${photoSel('glide')} { animation: gs-glide 2.8s ease-in-out infinite; transform-origin: 50% 50%; }
     @keyframes gs-glide { 0%,100% { transform: translate(-4px, 3px) rotate(-5deg); } 50% { transform: translate(4px, -6px) rotate(3deg); } }
     .gift-art { position: relative; display: inline-block; flex-shrink: 0; }
-    .gift-art .ga-body, .gift-art .ga-body > span, .gift-art .ga-body > span > * { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .gift-art .ga-body, .gift-art .ga-body span, .gift-art .ga-body img, .gift-art .ga-body svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .gift-art .ga-eye { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
     .gift-art .ga-a { animation: var(--ga); } /* ภาพจากไฟล์ออกแบบขยับตลอด (ไม่ต้องรอกดเลือก) */
     .gift-art .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
@@ -179,6 +179,7 @@
   // หรือ image_url ยังเป็นรูปเดิมใน match · อัปรูป/วิดีโอใหม่เมื่อไหร่ก็ใช้ไฟล์นั้นแทน
   // ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา เล่นตลอดทุกที่ · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
   // layer: { src } รูป / { eyes: [[cx, cy, rx, ry, fill, stroke, strokeW], ...], viewBox } เปลือกตา
+  //        { layers: [...] } กลุ่มที่ขยับรวมกัน / { svg, viewBox } SVG ดิบ (เช่นตัว Z ลอย — ใส่ style --ga เองต่อชิ้น)
   //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
   const GA = 'assets/images/gifts/';
   const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
@@ -239,6 +240,22 @@
         @keyframes ga-nl-head { 0%,100% { transform: rotate(-4deg) translateY(0); } 25%,75% { transform: rotate(0) translateY(-1%); } 50% { transform: rotate(4deg) translateY(0); } }
         @keyframes ga-nl-pop { 0%,100% { transform: scale(.85); } 50% { transform: scale(1.12); } }
         @keyframes ga-nl-spin { to { transform: rotate(360deg); } }`
+    },
+    { // Sleepy Bow — bacio (Chuu, gift_035): โบว์ลอยหายใจ ปีกโบว์พองแยกซ้าย/ขวา + Zzz ลอย
+      gifts: ['gift_035'], match: [SB + 'gift-gift_035_1793187466852_1g4hrk.png'], ratio: 1, dur: 2, label: 'โบว์ชมพูพาสเทลหลับตาพริ้ม',
+      layers: [
+        { anim: 'ga-bw-drift', k: 1.5, origin: '50% 52%', layers: [
+          { anim: 'ga-bw-breathe', origin: '46.1% 50.3%', layers: [
+            { src: GA + 'sleepy-bow/center.png' },
+            { src: GA + 'sleepy-bow/left.png', anim: 'ga-bw-wing', origin: '38.7% 50.3%' },
+            { src: GA + 'sleepy-bow/right.png', anim: 'ga-bw-wing', origin: '53.6% 50.3%', delay: -0.1 }] }] },
+        { viewBox: '46 80 825 825', svg: [['M640 170 h30 l-30 30 h30', 9, 0], ['M690 120 h40 l-40 40 h40', 11, -1], ['M750 60 h52 l-52 52 h52', 13, -2]].map(([d, w, delay]) =>
+          `<path d="${d}" fill="none" stroke="#C99BE0" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" class="ga-a"`
+          + ` style="--ga:ga-bw-z 3s ease-out ${delay}s infinite;transform-box:fill-box;transform-origin:center;opacity:0"></path>`).join('') }],
+      css: `@keyframes ga-bw-drift { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-2.2%) rotate(2deg); } }
+        @keyframes ga-bw-breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.035,1.025); } }
+        @keyframes ga-bw-wing { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.06,1.05); } }
+        @keyframes ga-bw-z { 0% { transform: translate(0,20px) scale(.6); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(30px,-70px) scale(1.1); opacity: 0; } }`
     }
   ];
   function giftArt(url) {
@@ -265,6 +282,8 @@
     return ` class="ga-a" style="--ga:${m.anim} ${d.toFixed(2)}s ${m.ease || 'ease-in-out'}${delay} infinite;transform-origin:${m.origin || '50% 50%'}"`;
   }
   function artLayerHtml(a, l) {
+    if (l.layers) return `<span${artMotion(a, l)}>${l.layers.map(c => artLayerHtml(a, c)).join('')}</span>`;
+    if (l.svg) return `<svg viewBox="${l.viewBox}" aria-hidden="true">${l.svg}</svg>`;
     if (l.eyes) {
       return `<svg viewBox="${l.viewBox}" preserveAspectRatio="none" aria-hidden="true">` + l.eyes.map(([cx, cy, rx, ry, fill, stroke, sw]) =>
         `<g class="ga-eye"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"></ellipse>`
@@ -281,7 +300,7 @@
     const h = a.ratio >= 1 ? box : Math.round(box * a.ratio);
     const w = a.ratio >= 1 ? Math.round(box / a.ratio) : box;
     return `<span class="gift-art${opts && opts.play ? ' play' : ''}" role="img" aria-label="${a.label}" style="width:${w}px;height:${h}px">`
-      + `<span class="ga-body"><span${artMotion(a, a.body)}>${a.layers.map(l => artLayerHtml(a, l)).join('')}</span></span></span>`;
+      + `<span class="ga-body">${artLayerHtml(a, Object.assign({}, a.body, { layers: a.layers }))}</span></span>`;
   }
 
   // 🎬 ของขวัญที่อัปโหลดเป็นวิดีโอ MP4 -> เล่นวนเงียบ ๆ ตลอด แทน <img> (วิดีโอขยับเองอยู่แล้ว ไม่ต้องใส่ท่าเพิ่ม)
