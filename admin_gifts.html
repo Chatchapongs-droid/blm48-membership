@@ -58,6 +58,9 @@
         .g-name { font-weight: 700; font-size: 15px; color: #333; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .g-sub { font-size: 12.5px; color: #767676; margin-top: 3px; }
         .g-id { font-size: 11px; color: #767676; }
+        /* เจ้าของของขวัญ (หมวด BLM48 / NPT48) */
+        .g-member { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: #555; }
+        .g-member img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: #f3f3f3; border: 1px solid #eee; }
         .pill-off { font-size: 11px; font-weight: 700; background: #f1f1f1; color: #666; padding: 2px 8px; border-radius: 20px; }
         .g-arrow { color: #ccc; }
 
@@ -144,6 +147,28 @@
   function setStatus(k) { status = k; store('adminGiftsStatus', k); render(); }
   function setSort(k) { sortBy = k; store('adminGiftsSort', k); render(); }
 
+  // ของขวัญหมวดเมมเบอร์: เจ้าของมาจากแผนที่สติ๊กเกอร์ (gift_name บางชิ้นเป็นชื่อแฟนด้อม) + รูปโปรไฟล์จาก get_all_members
+  const DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s200';
+  let members = {};
+  function giftMember(g) {
+    return g.tier === 'Normal' ? '' : ((window.blm48GiftMemberName && window.blm48GiftMemberName(g.giftId)) || '');
+  }
+  function memberHtml(g) {
+    const name = giftMember(g);
+    if (!name) return '';
+    const m = members[name.toLowerCase()];
+    return `<div class="g-member"><img src="${escapeHtml((m && m.profile) || DEFAULT_AVATAR)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'">${escapeHtml((m && m.name) || name)}</div>`;
+  }
+  async function loadMembers() {
+    try {
+      const res = await blm48GetAllMembers();
+      const list = res && Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
+      members = {};
+      list.forEach(m => { if (m && m.name) members[String(m.name).toLowerCase()] = m; });
+      if (gifts.length) render();
+    } catch (e) { console.error('Load members error:', e); }
+  }
+
   function rowHtml(g) {
     return `
       <div class="g-row ${g.active ? '' : 'off'}" data-id="${escapeHtml(g.giftId)}">
@@ -151,6 +176,7 @@
           <div class="g-img">${blm48AdminGiftImg(g.giftId, g.imageUrl, 56)}</div>
           <div class="g-info">
             <div class="g-name">${escapeHtml(g.giftName || g.giftId)}</div>
+            ${memberHtml(g)}
             <div class="g-sub"><span class="g-price"><i class="fa-solid fa-cookie-bite"></i> ${fmt(g.costCookies)}</span> · +${fmt(g.points)} คะแนน</div>
             <div class="g-id">${escapeHtml(g.giftId)} · ส่งแล้ว ${fmt(g.sentQty)}${g.walletQty ? ` · อยู่ใน Backpack ${fmt(g.walletQty)}` : ''}</div>
           </div>
@@ -171,7 +197,7 @@
     document.getElementById('fab-create').href = 'admin_gift_create?tier=' + encodeURIComponent(activeTier);
     document.getElementById('sort').value = sortBy;
     const q = document.getElementById('search').value.trim().toLowerCase();
-    const inTier = gifts.filter(g => g.tier === activeTier && (!q || String(g.giftName || '').toLowerCase().includes(q) || g.giftId.toLowerCase().includes(q)));
+    const inTier = gifts.filter(g => g.tier === activeTier && (!q || String(g.giftName || '').toLowerCase().includes(q) || g.giftId.toLowerCase().includes(q) || giftMember(g).toLowerCase().includes(q)));
     document.getElementById('chips').innerHTML = STATUS.map(([k, label, fn]) =>
       `<button type="button" class="chip ${k === status ? 'active' : ''}" onclick="setStatus('${k}')">${label}<span class="n">${inTier.filter(fn).length}</span></button>`).join('');
     const rows = inTier.filter(STATUS.find(([k]) => k === status)[2]).sort(SORTS[sortBy]);
@@ -211,6 +237,7 @@
     }
     document.getElementById('page-content').style.display = 'block';
     loadGifts();
+    loadMembers();
   });
 </script>
 </body>
