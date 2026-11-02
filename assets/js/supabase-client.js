@@ -363,7 +363,7 @@ function blm48EditComment(username, commentId, text) {
 // MIME type (falls back to jpg since both callers compress/crop to JPEG client-side before calling this).
 async function blm48UploadImageToBucket(bucket, username, file, retries = 2) {
   const type = file.type || 'image/jpeg';
-  const ext = type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : (type.includes('gif') ? 'gif' : 'jpg'));
+  const ext = type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : (type.includes('gif') ? 'gif' : (type.includes('mp4') ? 'mp4' : 'jpg')));
 
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
