@@ -24,7 +24,8 @@
 
   // ชิ้นนี้มีสติ๊กเกอร์ในแอปไหม (ไม่มี -> ต้องมีรูปจริง)
   function hasSticker(id) {
-    return !!id && giftImg(id, '', 10).includes('gift-sticker');
+    const html = id ? giftImg(id, '', 10) : '';
+    return html.includes('gift-sticker') || html.includes('gift-art');
   }
 
   // root = กล่องที่จะวาดฟอร์มลงไป / gift = ค่าเริ่มต้น (giftId ว่าง = ของขวัญใหม่)

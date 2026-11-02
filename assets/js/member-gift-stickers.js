@@ -76,7 +76,7 @@
     gift_063: 'Enjean', gift_064: 'Fuyu', gift_065: 'Hippie', gift_066: 'Mafuyu',
     gift_067: 'Ming', gift_068: 'Neno', gift_069: 'Phakdee', gift_070: 'Pj',
     gift_071: 'Shiro', gift_072: 'Taiiyo', gift_073: 'Title',
-    gift_081: 'Emmy' // Clover Bear — ภาพแอนิเมชันจาก ART ด้านล่าง (ชื่อนี้ใช้เรียงแท็บ BLM48 ให้อยู่ข้างของขวัญอื่นของ Emmy)
+    gift_081: 'Emmy' // Clover Bear — สติ๊กเกอร์ในแอปมาจาก ART ด้านล่าง (ชื่อนี้ใช้เรียงแท็บ BLM48 ให้อยู่ข้างของขวัญอื่นของ Emmy)
   };
 
   // ท่าเคลื่อนไหวตามไฟล์ออกแบบ เปิดเมื่อสติ๊กเกอร์ "เล่น" (อยู่ในการ์ดที่ถูกเลือก หรือมีคลาส .play)
@@ -166,7 +166,7 @@
   // รูปของขวัญ: ใช้ image_url จริงก่อน ถ้ายังไม่มีและเป็นของขวัญที่มีสติ๊กเกอร์ (เมมเบอร์ / Special) ใช้สติ๊กเกอร์แทน
   // imgHtml = <img> เดิมของหน้านั้น ใช้เมื่อไม่มีสติ๊กเกอร์
   window.blm48GiftImageHtml = function (giftId, imageUrl, size, imgHtml, opts) {
-    const art = giftArt(imageUrl);
+    const art = giftArt(imageUrl) || (!hasRealImage(imageUrl) && !isGiftVideo(imageUrl) ? giftArtById(giftId) : null);
     if (art) return giftArtHtml(art, size, opts);
     const member = giftStickerMember(giftId);
     if (!hasRealImage(imageUrl) && member) return giftStickerHtml(member, size, opts);
@@ -183,8 +183,8 @@
   const GA = 'assets/images/gifts/';
   const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
   const ART = [
-    { // Clover Bear (Emmy, gift_081)
-      match: [GA + 'clover-bear/clover-bear.png'], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
+    { // Clover Bear (Emmy, gift_081) — สติ๊กเกอร์ในแอปอันที่ 2 ของ Emmy: ใช้เมื่อยังไม่ได้อัปรูป/วิดีโออื่นแทน (image_url = 'url')
+      gifts: ['gift_081'], match: [GA + 'clover-bear/clover-bear.png'], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
       body: { anim: 'ga-cb-hop', origin: '55% 96%' },
       layers: [{ src: GA + 'clover-bear/bear.png' }, { src: GA + 'clover-bear/clover.png', anim: 'ga-cb-swing', origin: '43.6% 74.4%', delay: -0.08 }],
       css: `@keyframes ga-cb-hop { 0%,100% { transform: translateY(0) rotate(-3deg) scale(1.02,.97); } 12%,88% { transform: translateY(-0.9%) rotate(-2deg) scale(.99,1.02); }
@@ -244,6 +244,11 @@
   function giftArt(url) {
     const s = String(url || '').trim().split(/[?#]/)[0];
     return s ? ART.find(a => a.match.some(m => s.endsWith(m))) || null : null;
+  }
+  // ชุดที่เป็นสติ๊กเกอร์ในแอปของ gift_id นี้ (ไม่มีรูปจริง)
+  function giftArtById(giftId) {
+    const id = String(giftId || '');
+    return id ? ART.find(a => a.gifts && a.gifts.includes(id)) || null : null;
   }
   function injectArtCss() {
     if (document.getElementById('gift-art-css')) return;
