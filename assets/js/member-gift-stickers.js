@@ -115,18 +115,12 @@
     ${photoSel('glide')} { animation: gs-glide 2.8s ease-in-out infinite; transform-origin: 50% 50%; }
     @keyframes gs-glide { 0%,100% { transform: translate(-4px, 3px) rotate(-5deg); } 50% { transform: translate(4px, -6px) rotate(3deg); } }
     .gift-art { position: relative; display: inline-block; flex-shrink: 0; }
-    .gift-art .ga-body, .gift-art img { position: absolute; inset: 0; width: 100%; height: 100%; }
-    .gift-art .ga-body { transform-origin: 55% 96%; }
-    .gift-art .ga-swing { transform-origin: 43.6% 74.4%; }
-    .selected .gift-art .ga-body, .gift-art.play .ga-body { animation: ga-hop 1.6s ease-in-out infinite; }
-    .selected .gift-art .ga-swing, .gift-art.play .ga-swing { animation: ga-swing 1.6s ease-in-out infinite; animation-delay: -0.13s; }
-    @keyframes ga-hop {
-      0%,100% { transform: translateY(0) rotate(-3deg) scale(1.02,.97); } 12%,88% { transform: translateY(-0.9%) rotate(-2deg) scale(.99,1.02); }
-      25%,75% { transform: translateY(-4.5%) rotate(0) scale(1,1); } 38%,62% { transform: translateY(-0.9%) rotate(2deg) scale(.99,1.02); }
-      50% { transform: translateY(0) rotate(3deg) scale(1.02,.97); }
-    }
-    @keyframes ga-swing { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(-8deg); } }
-    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art .ga-body, .gift-art .ga-swing { animation: none !important; } }
+    .gift-art .ga-body, .gift-art .ga-body > span, .gift-art .ga-body > span > * { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+    .gift-art .ga-eye { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
+    .selected .gift-art .ga-a, .gift-art.play .ga-a { animation: var(--ga); }
+    .selected .gift-art .ga-eye, .gift-art.play .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
+    @keyframes ga-blink { 0%,90%,100% { transform: scaleY(0); } 93% { transform: scaleY(1); } 96% { transform: scaleY(0); } }
+    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art .ga-a, .gift-art .ga-eye { animation: none !important; } }
   `;
   function photoSel(motion) {
     return `.selected .gift-photo.gp-a-${motion} img, .gift-photo.play.gp-a-${motion} img`;
@@ -181,26 +175,108 @@
     return imgHtml;
   };
 
-  // 🧸 ของขวัญแอนิเมชันแบบซ้อนภาพ (ตัวละคร + ของในมือขยับแยกกัน ตามไฟล์ออกแบบ) — เล่นตอนกดเลือก / ในกล่องยืนยัน
-  // ใช้เมื่อ image_url ใน gift_catalog เป็นภาพนิ่ง (still) ของชุดนั้น · แอดมินอัปโหลดรูปอื่นแทนเมื่อไหร่ก็กลับไปใช้รูปปกติ
+  // 🧸 ของขวัญแอนิเมชันแบบซ้อนภาพ (ไฟล์ออกแบบ "… — animation-html") — ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา
+  // เล่นตอนกดเลือก / ในกล่องยืนยัน เหมือนสติ๊กเกอร์ · ใช้เมื่อ image_url ตรงกับ match ของชุดนั้น
+  // (แอดมินอัปโหลดรูปอื่นแทนเมื่อไหร่ก็กลับไปใช้รูปปกติ) · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
+  // layer: { src } รูป / { eyes: [[cx, cy, rx, ry, fill, stroke, strokeW], ...], viewBox } เปลือกตา
+  //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
+  const GA = 'assets/images/gifts/';
+  const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
   const ART = [
-    { // Clover Bear (ของ Emmy) — หมีใส่ชุดฟ้ากระโดด ถือใบโคลเวอร์โยก
-      still: 'assets/images/gifts/clover-bear/clover-bear.png',
-      body: 'assets/images/gifts/clover-bear/bear.png',
-      swing: 'assets/images/gifts/clover-bear/clover.png',
-      label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก', ratio: 400 / 384
+    { // Clover Bear (Emmy, gift_081)
+      match: [GA + 'clover-bear/clover-bear.png'], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
+      body: { anim: 'ga-cb-hop', origin: '55% 96%' },
+      layers: [{ src: GA + 'clover-bear/bear.png' }, { src: GA + 'clover-bear/clover.png', anim: 'ga-cb-swing', origin: '43.6% 74.4%', delay: -0.08 }],
+      css: `@keyframes ga-cb-hop { 0%,100% { transform: translateY(0) rotate(-3deg) scale(1.02,.97); } 12%,88% { transform: translateY(-0.9%) rotate(-2deg) scale(.99,1.02); }
+        25%,75% { transform: translateY(-4.5%) rotate(0) scale(1,1); } 38%,62% { transform: translateY(-0.9%) rotate(2deg) scale(.99,1.02); } 50% { transform: translateY(0) rotate(3deg) scale(1.02,.97); } }
+        @keyframes ga-cb-swing { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(-8deg); } }`
+    },
+    { // Black Cat — เติมนม (Chathai, gift_033)
+      match: [SB + 'gift-gift_033_1793589227724_s83cvm.png'], ratio: 1, dur: 1.6, label: 'แมวดำตาเหลืองกับถ้วยชา',
+      body: { anim: 'ga-ct-bob', origin: '48.8% 78.1%' },
+      layers: [{ src: GA + 'black-cat/body.png' },
+        { src: GA + 'black-cat/splash.png', anim: 'ga-ct-splash', k: 0.5, origin: '53.8% 67.3%' },
+        { src: GA + 'black-cat/drop.png', anim: 'ga-ct-drop', ease: 'ease-in' },
+        { viewBox: '0 0 2048 2048', eyes: [[665, 912, 314, 246, '#000000', '#5E5E5E', 26], [1400, 896, 314, 246, '#000000', '#5E5E5E', 26]] }],
+      css: `@keyframes ga-ct-bob { 0%,100% { transform: rotate(-2.5deg) translateY(0); } 50% { transform: rotate(2.5deg) translateY(-1.6%); } }
+        @keyframes ga-ct-splash { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1) rotate(-2deg); } }
+        @keyframes ga-ct-drop { 0% { transform: translateY(-5.3%); opacity: 0; } 20% { transform: translateY(0); opacity: 1; } 80%,100% { transform: translateY(9.2%); opacity: 0; } }`
+    },
+    { // Clover Frog — Lucky1 (Porpieow, gift_053)
+      match: [SB + 'gift-gift_053_1793589316016_pf12i9.png'], ratio: 1, dur: 1.3, label: 'กบเขียวถือใบโคลเวอร์สี่แฉก',
+      body: { anim: 'ga-fg-bounce', origin: '48.8% 85.9%' },
+      layers: [{ src: GA + 'clover-frog/body.png' },
+        { viewBox: '0 0 2048 2048', eyes: [[482, 575, 226, 196, '#5CB552', '#2E8B22', 16], [1115, 562, 216, 182, '#5CB552', '#2E8B22', 16]] }],
+      css: `@keyframes ga-fg-bounce { 0%,100% { transform: translateY(0) rotate(0) scale(1.04,.96); } 30% { transform: translateY(-3.7%) rotate(-3deg) scale(.97,1.03); }
+        50% { transform: translateY(-4.2%) rotate(0) scale(1,1); } 70% { transform: translateY(-1.6%) rotate(3deg) scale(.98,1.02); } }`
+    },
+    { // Chess King — เชสอาร์มี่ (Gavin, gift_038)
+      match: [SB + 'gift-gift_038_1793589256026_08kj7s.png'], ratio: 703 / 600, dur: 1.6, label: 'หมากรุกสีดำตาเหลืองใส่ผ้าคลุม',
+      body: { anim: 'ga-ch-rock', origin: '50.9% 92%' },
+      layers: [{ src: GA + 'chess-king/body.png' },
+        { viewBox: '0 0 1159 1358', eyes: [[445, 511, 47, 60, '#222126', '#E2B53C', 7], [691, 537, 48, 60, '#222126', '#E2B53C', 7]] },
+        { src: GA + 'chess-king/crown.png', anim: 'ga-ch-crown', origin: '56.1% 23.6%', delay: -0.1 }],
+      css: `@keyframes ga-ch-rock { 0%,100% { transform: rotate(-5deg) translateY(0); } 25%,75% { transform: rotate(0) translateY(-2.6%); } 50% { transform: rotate(5deg) translateY(0); } }
+        @keyframes ga-ch-crown { 0%,100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }`
+    },
+    { // Monjihjih — ม่อนจิ๊จิ๊ (Jih, gift_043)
+      match: [SB + 'gift-gift_043_1793589277780_5qfb45.png'], ratio: 1, dur: 1.5, label: 'เม่นน้อยใส่หมวกเหลืองชุดฟ้าสะพายกระเป๋า',
+      body: { anim: 'ga-mj-waddle', origin: '45.5% 85%' },
+      layers: [{ src: GA + 'monjihjih/body.png' },
+        { viewBox: '0 0 2048 2048', eyes: [[871, 895, 78, 75, '#F8ECEA', '#7A4A2E', 9], [1177, 895, 78, 75, '#F8ECEA', '#7A4A2E', 9]] },
+        { src: GA + 'monjihjih/charm.png', anim: 'ga-mj-swing', origin: '78.3% 62%', delay: -0.12 }],
+      css: `@keyframes ga-mj-waddle { 0%,100% { transform: rotate(-3deg) translateY(0); } 25%,75% { transform: rotate(0) translateY(-1.7%); } 50% { transform: rotate(3deg) translateY(0); } }
+        @keyframes ga-mj-swing { 0%,100% { transform: rotate(9deg); } 50% { transform: rotate(-9deg); } }`
+    },
+    { // Noel Squirrel — ถั่ว (Noel, gift_052)
+      match: [SB + 'gift-gift_052_1793589300325_mvzijp.png'], ratio: 1, dur: 1.6, label: 'กระรอกโนเอลกับป้ายชื่อและถั่ว',
+      body: { anim: 'ga-nl-all', k: 1.5, origin: '50% 70%' },
+      layers: [{ src: GA + 'noel-squirrel/body.png' },
+        { src: GA + 'noel-squirrel/swirl.png', anim: 'ga-nl-spin', k: 2, ease: 'linear', origin: '34% 46.7%' },
+        { src: GA + 'noel-squirrel/paw.png', anim: 'ga-nl-pop', k: 0.5, origin: '28.2% 50.9%' },
+        { src: GA + 'noel-squirrel/head.png', anim: 'ga-nl-head', origin: '30.3% 73.2%' }],
+      css: `@keyframes ga-nl-all { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-1.6%) rotate(1deg); } }
+        @keyframes ga-nl-head { 0%,100% { transform: rotate(-4deg) translateY(0); } 25%,75% { transform: rotate(0) translateY(-1%); } 50% { transform: rotate(4deg) translateY(0); } }
+        @keyframes ga-nl-pop { 0%,100% { transform: scale(.85); } 50% { transform: scale(1.12); } }
+        @keyframes ga-nl-spin { to { transform: rotate(360deg); } }`
     }
   ];
   function giftArt(url) {
     const s = String(url || '').trim().split(/[?#]/)[0];
-    return s ? ART.find(a => s.endsWith(a.still)) || null : null;
+    return s ? ART.find(a => a.match.some(m => s.endsWith(m))) || null : null;
+  }
+  function injectArtCss() {
+    if (document.getElementById('gift-art-css')) return;
+    const style = document.createElement('style');
+    style.id = 'gift-art-css';
+    style.textContent = ART.map(a => a.css).join('\n');
+    document.head.appendChild(style);
+  }
+  // style ของชิ้นที่ขยับ: --ga เก็บค่า animation ไว้ (CSS เปิดใช้เฉพาะตอนเล่น) + จุดหมุน
+  function artMotion(a, m) {
+    if (!m || !m.anim) return '';
+    const d = a.dur * (m.k || 1);
+    const delay = m.delay ? ` ${(a.dur * m.delay).toFixed(2)}s` : '';
+    return ` class="ga-a" style="--ga:${m.anim} ${d.toFixed(2)}s ${m.ease || 'ease-in-out'}${delay} infinite;transform-origin:${m.origin || '50% 50%'}"`;
+  }
+  function artLayerHtml(a, l) {
+    if (l.eyes) {
+      return `<svg viewBox="${l.viewBox}" preserveAspectRatio="none" aria-hidden="true">` + l.eyes.map(([cx, cy, rx, ry, fill, stroke, sw]) =>
+        `<g class="ga-eye"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"></ellipse>`
+        + `<path d="M${cx - rx} ${cy} A${rx} ${ry} 0 0 0 ${cx + rx} ${cy}" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round"></path></g>`).join('') + '</svg>';
+    }
+    const m = artMotion(a, l);
+    return m ? `<span${m}><img src="${l.src}" alt="" draggable="false" style="width:100%;height:100%;display:block"></span>`
+      : `<img src="${l.src}" alt="" draggable="false">`;
   }
   function giftArtHtml(a, size, opts) {
     injectCss();
-    const h = Number(size) || 70;
-    const w = Math.round(h / a.ratio);
+    injectArtCss();
+    const box = Number(size) || 70;
+    const h = a.ratio >= 1 ? box : Math.round(box * a.ratio);
+    const w = a.ratio >= 1 ? Math.round(box / a.ratio) : box;
     return `<span class="gift-art${opts && opts.play ? ' play' : ''}" role="img" aria-label="${a.label}" style="width:${w}px;height:${h}px">`
-      + `<span class="ga-body"><img src="${a.body}" alt="" draggable="false"><img class="ga-swing" src="${a.swing}" alt="" draggable="false"></span></span>`;
+      + `<span class="ga-body"><span${artMotion(a, a.body)}>${a.layers.map(l => artLayerHtml(a, l)).join('')}</span></span></span>`;
   }
 
   // 🎬 ของขวัญที่อัปโหลดเป็นวิดีโอ MP4 -> เล่นวนเงียบ ๆ ตลอด แทน <img> (วิดีโอขยับเองอยู่แล้ว ไม่ต้องใส่ท่าเพิ่ม)
