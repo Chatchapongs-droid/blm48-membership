@@ -161,9 +161,23 @@
   window.blm48GiftImageHtml = function (giftId, imageUrl, size, imgHtml, opts) {
     const member = giftStickerMember(giftId);
     if (!hasRealImage(imageUrl) && member) return giftStickerHtml(member, size, opts);
+    if (isGiftVideo(imageUrl)) return giftVideoHtml(imageUrl, size, imgHtml);
     if (hasRealImage(imageUrl)) return giftPhotoHtml(giftId, imgHtml, opts);
     return imgHtml;
   };
+
+  // 🎬 ของขวัญที่อัปโหลดเป็นวิดีโอ MP4 -> เล่นวนเงียบ ๆ ตลอด แทน <img> (วิดีโอขยับเองอยู่แล้ว ไม่ต้องใส่ท่าเพิ่ม)
+  function isGiftVideo(url) {
+    return /\.(mp4|m4v|webm|mov)(\?|#|$)/i.test(String(url || '').trim());
+  }
+  function giftVideoHtml(url, size, imgHtml) {
+    const cls = (String(imgHtml || '').match(/\bclass="([^"]*)"/) || [])[1] || '';
+    const src = String(url).trim().replace(/"/g, '&quot;');
+    const px = Number(size) || 70;
+    return `<span class="gift-photo"><video src="${src}"${cls ? ` class="${cls}"` : ''} autoplay muted loop playsinline preload="auto" disablepictureinpicture`
+      + ` style="width:${px}px;height:${px}px;object-fit:contain;display:block;pointer-events:none;"></video></span>`;
+  }
+  window.blm48IsGiftVideo = isGiftVideo;
 
   // 🎞️ รูปของขวัญที่อัปโหลดจริง (PNG จากหน้า Admin Gifts) ก็ขยับได้เหมือนสติ๊กเกอร์ — เล่นตอนกดเลือก / ในกล่องยืนยัน
   // ท่าประจำชิ้นตามของ (ชิ้นที่ไม่ได้ระบุ สุ่มท่าแบบคงที่จาก gift_id)

@@ -8,6 +8,7 @@
     { key: 'NPT48Design', label: 'NPT48' }
   ];
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+  const MAX_VIDEO_BYTES = 20 * 1024 * 1024; // วิดีโอ MP4 (เล่นวนแทนรูป)
 
   function hasRealImage(url) {
     const s = String(url || '').trim();
@@ -42,7 +43,7 @@
             <div class="img-btns" id="gf-img-btns"></div>
             <div class="note" id="gf-img-note" style="margin:6px 0 0;"></div>
           </div>
-          <input type="file" id="gf-file" accept="image/*" style="display:none;">
+          <input type="file" id="gf-file" accept="image/*,video/mp4" style="display:none;">
         </div>
       </div>
       <div class="form-field"><label>ชื่อของขวัญ</label><input id="gf-name" type="text" maxlength="60" value="${escapeAttr(g.giftName || '')}"></div>
@@ -70,7 +71,7 @@
       $('gf-img-btns').innerHTML =
         `<button type="button" class="btn-mini" data-act="pick"><i class="fa-solid fa-upload"></i> ${imageUrl ? 'Change' : 'Upload'}</button>` +
         (imageUrl ? `<button type="button" class="btn-mini" data-act="clear">${sticker ? 'ใช้สติ๊กเกอร์เดิม' : 'Remove'}</button>` : '');
-      $('gf-img-note').textContent = sticker && !imageUrl ? 'ตอนนี้ใช้สติ๊กเกอร์ในแอป · อัปโหลดรูปเพื่อใช้รูปแทน' : 'PNG พื้นใส ไม่เกิน 5MB';
+      $('gf-img-note').textContent = sticker && !imageUrl ? 'ตอนนี้ใช้สติ๊กเกอร์ในแอป · อัปโหลดรูปหรือวิดีโอเพื่อใช้แทน' : 'PNG พื้นใส ไม่เกิน 5MB หรือวิดีโอ MP4 ไม่เกิน 20MB';
     }
 
     $('gf-img-btns').addEventListener('click', e => {
@@ -84,7 +85,11 @@
       const file = e.target.files && e.target.files[0];
       e.target.value = '';
       if (!file) return;
-      if (!file.type.startsWith('image/') || file.size > MAX_IMAGE_BYTES) { setMsg('กรุณาเลือกไฟล์รูปภาพขนาดไม่เกิน 5MB'); return; }
+      const isVideo = file.type === 'video/mp4' || /\.mp4$/i.test(file.name);
+      if (isVideo ? file.size > MAX_VIDEO_BYTES : (!file.type.startsWith('image/') || file.size > MAX_IMAGE_BYTES)) {
+        setMsg(isVideo ? 'วิดีโอ MP4 ต้องมีขนาดไม่เกิน 20MB' : 'กรุณาเลือกไฟล์รูปภาพไม่เกิน 5MB หรือวิดีโอ MP4 ไม่เกิน 20MB');
+        return;
+      }
       setMsg('Uploading...', 'ok');
       try {
         imageUrl = await blm48UploadImageToBucket('app-assets', 'gift-' + (g.giftId || 'new'), file);
