@@ -75,8 +75,7 @@
     gift_059: 'April', gift_060: 'Atsui', gift_061: 'Berlin', gift_062: 'Domino',
     gift_063: 'Enjean', gift_064: 'Fuyu', gift_065: 'Hippie', gift_066: 'Mafuyu',
     gift_067: 'Ming', gift_068: 'Neno', gift_069: 'Phakdee', gift_070: 'Pj',
-    gift_071: 'Shiro', gift_072: 'Taiiyo', gift_073: 'Title',
-    gift_081: 'Emmy' // Clover Bear — สติ๊กเกอร์ในแอปมาจาก ART ด้านล่าง (ชื่อนี้ใช้เรียงแท็บ BLM48 ให้อยู่ข้างของขวัญอื่นของ Emmy)
+    gift_071: 'Shiro', gift_072: 'Taiiyo', gift_073: 'Title'
   };
 
   // ท่าเคลื่อนไหวตามไฟล์ออกแบบ เปิดเมื่อสติ๊กเกอร์ "เล่น" (อยู่ในการ์ดที่ถูกเลือก หรือมีคลาส .play)
@@ -175,16 +174,17 @@
     return imgHtml;
   };
 
-  // 🧸 ของขวัญแอนิเมชันแบบซ้อนภาพ (ไฟล์ออกแบบ "… — animation-html") — ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา
-  // เล่นตอนกดเลือก / ในกล่องยืนยัน เหมือนสติ๊กเกอร์ · ใช้เมื่อ image_url ตรงกับ match ของชุดนั้น
-  // (แอดมินอัปโหลดรูปอื่นแทนเมื่อไหร่ก็กลับไปใช้รูปปกติ) · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
+  // 🧸 ภาพของขวัญเมมเบอร์แบบแอนิเมชันซ้อนภาพ (ไฟล์ออกแบบ "… — animation-html" ที่ส่งมาแทนการอัปรูป/วิดีโอ เพราะไฟล์ใหญ่)
+  // เมมเบอร์มีของขวัญคนละชิ้นเดียว: gifts = gift_id ที่ใช้ชุดนี้ · ใช้เมื่อยังไม่ได้อัปรูป/วิดีโอ (image_url 'url')
+  // หรือ image_url ยังเป็นรูปเดิมใน match · อัปรูป/วิดีโอใหม่เมื่อไหร่ก็ใช้ไฟล์นั้นแทน
+  // ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา เล่นตอนกดเลือก / ในกล่องยืนยัน · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
   // layer: { src } รูป / { eyes: [[cx, cy, rx, ry, fill, stroke, strokeW], ...], viewBox } เปลือกตา
   //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
   const GA = 'assets/images/gifts/';
   const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
   const ART = [
-    { // Clover Bear (Emmy, gift_081) — สติ๊กเกอร์ในแอปอันที่ 2 ของ Emmy: ใช้เมื่อยังไม่ได้อัปรูป/วิดีโออื่นแทน (image_url = 'url')
-      gifts: ['gift_081'], match: [GA + 'clover-bear/clover-bear.png'], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
+    { // Clover Bear — คุณหมี (Emmy, gift_037)
+      gifts: ['gift_037'], match: [], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
       body: { anim: 'ga-cb-hop', origin: '55% 96%' },
       layers: [{ src: GA + 'clover-bear/bear.png' }, { src: GA + 'clover-bear/clover.png', anim: 'ga-cb-swing', origin: '43.6% 74.4%', delay: -0.08 }],
       css: `@keyframes ga-cb-hop { 0%,100% { transform: translateY(0) rotate(-3deg) scale(1.02,.97); } 12%,88% { transform: translateY(-0.9%) rotate(-2deg) scale(.99,1.02); }
@@ -192,7 +192,7 @@
         @keyframes ga-cb-swing { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(-8deg); } }`
     },
     { // Black Cat — เติมนม (Chathai, gift_033)
-      match: [SB + 'gift-gift_033_1793589227724_s83cvm.png'], ratio: 1, dur: 1.6, label: 'แมวดำตาเหลืองกับถ้วยชา',
+      gifts: ['gift_033'], match: [SB + 'gift-gift_033_1793589227724_s83cvm.png'], ratio: 1, dur: 1.6, label: 'แมวดำตาเหลืองกับถ้วยชา',
       body: { anim: 'ga-ct-bob', origin: '48.8% 78.1%' },
       layers: [{ src: GA + 'black-cat/body.png' },
         { src: GA + 'black-cat/splash.png', anim: 'ga-ct-splash', k: 0.5, origin: '53.8% 67.3%' },
@@ -203,7 +203,7 @@
         @keyframes ga-ct-drop { 0% { transform: translateY(-5.3%); opacity: 0; } 20% { transform: translateY(0); opacity: 1; } 80%,100% { transform: translateY(9.2%); opacity: 0; } }`
     },
     { // Clover Frog — Lucky1 (Porpieow, gift_053)
-      match: [SB + 'gift-gift_053_1793589316016_pf12i9.png'], ratio: 1, dur: 1.3, label: 'กบเขียวถือใบโคลเวอร์สี่แฉก',
+      gifts: ['gift_053'], match: [SB + 'gift-gift_053_1793589316016_pf12i9.png'], ratio: 1, dur: 1.3, label: 'กบเขียวถือใบโคลเวอร์สี่แฉก',
       body: { anim: 'ga-fg-bounce', origin: '48.8% 85.9%' },
       layers: [{ src: GA + 'clover-frog/body.png' },
         { viewBox: '0 0 2048 2048', eyes: [[482, 575, 226, 196, '#5CB552', '#2E8B22', 16], [1115, 562, 216, 182, '#5CB552', '#2E8B22', 16]] }],
@@ -211,7 +211,7 @@
         50% { transform: translateY(-4.2%) rotate(0) scale(1,1); } 70% { transform: translateY(-1.6%) rotate(3deg) scale(.98,1.02); } }`
     },
     { // Chess King — เชสอาร์มี่ (Gavin, gift_038)
-      match: [SB + 'gift-gift_038_1793589256026_08kj7s.png'], ratio: 703 / 600, dur: 1.6, label: 'หมากรุกสีดำตาเหลืองใส่ผ้าคลุม',
+      gifts: ['gift_038'], match: [SB + 'gift-gift_038_1793589256026_08kj7s.png'], ratio: 703 / 600, dur: 1.6, label: 'หมากรุกสีดำตาเหลืองใส่ผ้าคลุม',
       body: { anim: 'ga-ch-rock', origin: '50.9% 92%' },
       layers: [{ src: GA + 'chess-king/body.png' },
         { viewBox: '0 0 1159 1358', eyes: [[445, 511, 47, 60, '#222126', '#E2B53C', 7], [691, 537, 48, 60, '#222126', '#E2B53C', 7]] },
@@ -220,7 +220,7 @@
         @keyframes ga-ch-crown { 0%,100% { transform: rotate(8deg); } 50% { transform: rotate(-8deg); } }`
     },
     { // Monjihjih — ม่อนจิ๊จิ๊ (Jih, gift_043)
-      match: [SB + 'gift-gift_043_1793589277780_5qfb45.png'], ratio: 1, dur: 1.5, label: 'เม่นน้อยใส่หมวกเหลืองชุดฟ้าสะพายกระเป๋า',
+      gifts: ['gift_043'], match: [SB + 'gift-gift_043_1793589277780_5qfb45.png'], ratio: 1, dur: 1.5, label: 'เม่นน้อยใส่หมวกเหลืองชุดฟ้าสะพายกระเป๋า',
       body: { anim: 'ga-mj-waddle', origin: '45.5% 85%' },
       layers: [{ src: GA + 'monjihjih/body.png' },
         { viewBox: '0 0 2048 2048', eyes: [[871, 895, 78, 75, '#F8ECEA', '#7A4A2E', 9], [1177, 895, 78, 75, '#F8ECEA', '#7A4A2E', 9]] },
@@ -229,7 +229,7 @@
         @keyframes ga-mj-swing { 0%,100% { transform: rotate(9deg); } 50% { transform: rotate(-9deg); } }`
     },
     { // Noel Squirrel — ถั่ว (Noel, gift_052)
-      match: [SB + 'gift-gift_052_1793589300325_mvzijp.png'], ratio: 1, dur: 1.6, label: 'กระรอกโนเอลกับป้ายชื่อและถั่ว',
+      gifts: ['gift_052'], match: [SB + 'gift-gift_052_1793589300325_mvzijp.png'], ratio: 1, dur: 1.6, label: 'กระรอกโนเอลกับป้ายชื่อและถั่ว',
       body: { anim: 'ga-nl-all', k: 1.5, origin: '50% 70%' },
       layers: [{ src: GA + 'noel-squirrel/body.png' },
         { src: GA + 'noel-squirrel/swirl.png', anim: 'ga-nl-spin', k: 2, ease: 'linear', origin: '34% 46.7%' },
