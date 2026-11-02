@@ -2,9 +2,9 @@
 // เล่น MP4 ถ้าเล่นไม่ได้ (เช่น iPhone โหมดประหยัดพลังงาน) จะสลับเป็น GIF แทน
 const ANIMATED_COVERS = {
   emmy: {
-    mp4: 'assets/img/member-cover/emmy-tartan.mp4',
-    gif: 'assets/img/member-cover/emmy-tartan.gif',
-    poster: 'assets/img/member-cover/emmy-tartan.jpg'
+    mp4: 'assets/img/member-cover/emmy-clover-rain.mp4',
+    gif: 'assets/img/member-cover/emmy-clover-rain.gif',
+    poster: 'assets/img/member-cover/emmy-clover-rain.jpg'
   }
 };
 
