@@ -75,7 +75,8 @@
     gift_059: 'April', gift_060: 'Atsui', gift_061: 'Berlin', gift_062: 'Domino',
     gift_063: 'Enjean', gift_064: 'Fuyu', gift_065: 'Hippie', gift_066: 'Mafuyu',
     gift_067: 'Ming', gift_068: 'Neno', gift_069: 'Phakdee', gift_070: 'Pj',
-    gift_071: 'Shiro', gift_072: 'Taiiyo', gift_073: 'Title'
+    gift_071: 'Shiro', gift_072: 'Taiiyo', gift_073: 'Title',
+    gift_081: 'Emmy' // Clover Bear — ภาพแอนิเมชันจาก ART ด้านล่าง (ชื่อนี้ใช้เรียงแท็บ BLM48 ให้อยู่ข้างของขวัญอื่นของ Emmy)
   };
 
   // ท่าเคลื่อนไหวตามไฟล์ออกแบบ เปิดเมื่อสติ๊กเกอร์ "เล่น" (อยู่ในการ์ดที่ถูกเลือก หรือมีคลาส .play)
@@ -113,7 +114,19 @@
     ${photoSel('breathe')} { animation: gs-breathe 3.6s ease-in-out infinite; }
     ${photoSel('glide')} { animation: gs-glide 2.8s ease-in-out infinite; transform-origin: 50% 50%; }
     @keyframes gs-glide { 0%,100% { transform: translate(-4px, 3px) rotate(-5deg); } 50% { transform: translate(4px, -6px) rotate(3deg); } }
-    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img { animation: none !important; } }
+    .gift-art { position: relative; display: inline-block; flex-shrink: 0; }
+    .gift-art .ga-body, .gift-art img { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .gift-art .ga-body { transform-origin: 55% 96%; }
+    .gift-art .ga-swing { transform-origin: 43.6% 74.4%; }
+    .selected .gift-art .ga-body, .gift-art.play .ga-body { animation: ga-hop 1.6s ease-in-out infinite; }
+    .selected .gift-art .ga-swing, .gift-art.play .ga-swing { animation: ga-swing 1.6s ease-in-out infinite; animation-delay: -0.13s; }
+    @keyframes ga-hop {
+      0%,100% { transform: translateY(0) rotate(-3deg) scale(1.02,.97); } 12%,88% { transform: translateY(-0.9%) rotate(-2deg) scale(.99,1.02); }
+      25%,75% { transform: translateY(-4.5%) rotate(0) scale(1,1); } 38%,62% { transform: translateY(-0.9%) rotate(2deg) scale(.99,1.02); }
+      50% { transform: translateY(0) rotate(3deg) scale(1.02,.97); }
+    }
+    @keyframes ga-swing { 0%,100% { transform: rotate(7deg); } 50% { transform: rotate(-8deg); } }
+    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art .ga-body, .gift-art .ga-swing { animation: none !important; } }
   `;
   function photoSel(motion) {
     return `.selected .gift-photo.gp-a-${motion} img, .gift-photo.play.gp-a-${motion} img`;
@@ -159,12 +172,36 @@
   // รูปของขวัญ: ใช้ image_url จริงก่อน ถ้ายังไม่มีและเป็นของขวัญที่มีสติ๊กเกอร์ (เมมเบอร์ / Special) ใช้สติ๊กเกอร์แทน
   // imgHtml = <img> เดิมของหน้านั้น ใช้เมื่อไม่มีสติ๊กเกอร์
   window.blm48GiftImageHtml = function (giftId, imageUrl, size, imgHtml, opts) {
+    const art = giftArt(imageUrl);
+    if (art) return giftArtHtml(art, size, opts);
     const member = giftStickerMember(giftId);
     if (!hasRealImage(imageUrl) && member) return giftStickerHtml(member, size, opts);
     if (isGiftVideo(imageUrl)) return giftVideoHtml(imageUrl, size, imgHtml);
     if (hasRealImage(imageUrl)) return giftPhotoHtml(giftId, imgHtml, opts);
     return imgHtml;
   };
+
+  // 🧸 ของขวัญแอนิเมชันแบบซ้อนภาพ (ตัวละคร + ของในมือขยับแยกกัน ตามไฟล์ออกแบบ) — เล่นตอนกดเลือก / ในกล่องยืนยัน
+  // ใช้เมื่อ image_url ใน gift_catalog เป็นภาพนิ่ง (still) ของชุดนั้น · แอดมินอัปโหลดรูปอื่นแทนเมื่อไหร่ก็กลับไปใช้รูปปกติ
+  const ART = [
+    { // Clover Bear (ของ Emmy) — หมีใส่ชุดฟ้ากระโดด ถือใบโคลเวอร์โยก
+      still: 'assets/images/gifts/clover-bear/clover-bear.png',
+      body: 'assets/images/gifts/clover-bear/bear.png',
+      swing: 'assets/images/gifts/clover-bear/clover.png',
+      label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก', ratio: 400 / 384
+    }
+  ];
+  function giftArt(url) {
+    const s = String(url || '').trim().split(/[?#]/)[0];
+    return s ? ART.find(a => s.endsWith(a.still)) || null : null;
+  }
+  function giftArtHtml(a, size, opts) {
+    injectCss();
+    const h = Number(size) || 70;
+    const w = Math.round(h / a.ratio);
+    return `<span class="gift-art${opts && opts.play ? ' play' : ''}" role="img" aria-label="${a.label}" style="width:${w}px;height:${h}px">`
+      + `<span class="ga-body"><img src="${a.body}" alt="" draggable="false"><img class="ga-swing" src="${a.swing}" alt="" draggable="false"></span></span>`;
+  }
 
   // 🎬 ของขวัญที่อัปโหลดเป็นวิดีโอ MP4 -> เล่นวนเงียบ ๆ ตลอด แทน <img> (วิดีโอขยับเองอยู่แล้ว ไม่ต้องใส่ท่าเพิ่ม)
   function isGiftVideo(url) {
