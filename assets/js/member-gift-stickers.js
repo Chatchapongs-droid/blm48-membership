@@ -116,8 +116,8 @@
     .gift-art { position: relative; display: inline-block; flex-shrink: 0; }
     .gift-art .ga-body, .gift-art .ga-body > span, .gift-art .ga-body > span > * { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .gift-art .ga-eye { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
-    .selected .gift-art .ga-a, .gift-art.play .ga-a { animation: var(--ga); }
-    .selected .gift-art .ga-eye, .gift-art.play .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
+    .gift-art .ga-a { animation: var(--ga); } /* ภาพจากไฟล์ออกแบบขยับตลอด (ไม่ต้องรอกดเลือก) */
+    .gift-art .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
     @keyframes ga-blink { 0%,90%,100% { transform: scaleY(0); } 93% { transform: scaleY(1); } 96% { transform: scaleY(0); } }
     @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art .ga-a, .gift-art .ga-eye { animation: none !important; } }
   `;
@@ -177,7 +177,7 @@
   // 🧸 ภาพของขวัญเมมเบอร์แบบแอนิเมชันซ้อนภาพ (ไฟล์ออกแบบ "… — animation-html" ที่ส่งมาแทนการอัปรูป/วิดีโอ เพราะไฟล์ใหญ่)
   // เมมเบอร์มีของขวัญคนละชิ้นเดียว: gifts = gift_id ที่ใช้ชุดนี้ · ใช้เมื่อยังไม่ได้อัปรูป/วิดีโอ (image_url 'url')
   // หรือ image_url ยังเป็นรูปเดิมใน match · อัปรูป/วิดีโอใหม่เมื่อไหร่ก็ใช้ไฟล์นั้นแทน
-  // ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา เล่นตอนกดเลือก / ในกล่องยืนยัน · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
+  // ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา เล่นตลอดทุกที่ · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
   // layer: { src } รูป / { eyes: [[cx, cy, rx, ry, fill, stroke, strokeW], ...], viewBox } เปลือกตา
   //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
   const GA = 'assets/images/gifts/';
