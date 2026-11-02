@@ -362,8 +362,10 @@ function blm48EditComment(username, commentId, text) {
 // out on an already-existing file). `file` can be a File or Blob; extension is guessed from its
 // MIME type (falls back to jpg since both callers compress/crop to JPEG client-side before calling this).
 async function blm48UploadImageToBucket(bucket, username, file, retries = 2) {
-  const type = file.type || 'image/jpeg';
-  const ext = type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : (type.includes('gif') ? 'gif' : (type.includes('mp4') ? 'mp4' : 'jpg')));
+  // .mov (QuickTime) เก็บเป็นนามสกุล .mov แต่ส่ง content-type เป็น video/mp4 ให้ Chrome/Android ยอมเล่น (ไส้ในเป็นแบบเดียวกัน)
+  const isMov = file.type === 'video/quicktime' || /\.mov$/i.test(file.name || '');
+  const type = isMov ? 'video/mp4' : (file.type || (/\.mp4$/i.test(file.name || '') ? 'video/mp4' : 'image/jpeg'));
+  const ext = isMov ? 'mov' : (type.includes('png') ? 'png' : (type.includes('webp') ? 'webp' : (type.includes('gif') ? 'gif' : (type.includes('mp4') ? 'mp4' : 'jpg'))));
 
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt++) {
