@@ -59,8 +59,8 @@
         .g-sub { font-size: 12.5px; color: #767676; margin-top: 3px; }
         .g-id { font-size: 11px; color: #767676; }
         /* เจ้าของของขวัญ (หมวด BLM48 / NPT48) */
-        .g-member { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12.5px; font-weight: 600; color: #555; }
-        .g-member img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: #f3f3f3; border: 1px solid #eee; }
+        .g-member { display: inline-flex; align-items: center; gap: 4px; vertical-align: middle; font-weight: 600; color: #555; }
+        .g-member img { width: 16px; height: 16px; border-radius: 50%; object-fit: cover; background: #f3f3f3; border: 1px solid #eee; }
         .pill-off { font-size: 11px; font-weight: 700; background: #f1f1f1; color: #666; padding: 2px 8px; border-radius: 20px; }
         .g-arrow { color: #ccc; }
 
@@ -157,7 +157,7 @@
     const name = giftMember(g);
     if (!name) return '';
     const m = members[name.toLowerCase()];
-    return `<div class="g-member"><img src="${escapeHtml((m && m.profile) || DEFAULT_AVATAR)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'">${escapeHtml((m && m.name) || name)}</div>`;
+    return `<span class="g-member"><img src="${escapeHtml((m && m.profile) || DEFAULT_AVATAR)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'">${escapeHtml((m && m.name) || name)}</span> · `;
   }
   async function loadMembers() {
     try {
@@ -176,9 +176,8 @@
           <div class="g-img">${blm48AdminGiftImg(g.giftId, g.imageUrl, 56)}</div>
           <div class="g-info">
             <div class="g-name">${escapeHtml(g.giftName || g.giftId)}</div>
-            ${memberHtml(g)}
             <div class="g-sub"><span class="g-price"><i class="fa-solid fa-cookie-bite"></i> ${fmt(g.costCookies)}</span> · +${fmt(g.points)} คะแนน</div>
-            <div class="g-id">${escapeHtml(g.giftId)} · ส่งแล้ว ${fmt(g.sentQty)}${g.walletQty ? ` · อยู่ใน Backpack ${fmt(g.walletQty)}` : ''}</div>
+            <div class="g-id">${memberHtml(g)}${escapeHtml(g.giftId)} · ส่งแล้ว ${fmt(g.sentQty)}${g.walletQty ? ` · อยู่ใน Backpack ${fmt(g.walletQty)}` : ''}</div>
           </div>
         </a>
         <div class="sw-wrap">
