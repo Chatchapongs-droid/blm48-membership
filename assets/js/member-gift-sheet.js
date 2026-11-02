@@ -186,8 +186,8 @@
   function sessionUser() { return typeof getUserSession === 'function' ? getUserSession() : null; }
   function cookieBalance() { const u = sessionUser(); return Number((u && u.cookie) || 0); }
   function isBackpack() { return tab === BACKPACK; }
-  // หมวด BLM48 เมมเบอร์กำลังออกแบบเอง: ตอนนี้เปิดแค่ Normal (send_member_gift เช็คซ้ำ) — เปิดหมวด BLM48 เมื่อพร้อมให้คืนค่า TIER_ORDER
-  function visibleTiers() { return ['Normal']; }
+  // เปิดหมวด BLM48 แล้ว (2026-11-02) — แสดงเฉพาะหมวดที่มีของขวัญเปิดขายอยู่
+  function visibleTiers() { return TIER_ORDER.filter(t => t === 'Normal' || !catalog || catalog.some(g => g.tier === t)); }
   function gridImgSize() { return window.matchMedia('(max-width: 360px)').matches ? 46 : 52; }
   function imageHtml(item, size, imgHtml, opts) {
     return window.blm48GiftImageHtml ? window.blm48GiftImageHtml(item.rawId, item.img, size, imgHtml, opts) : imgHtml;
