@@ -51,6 +51,8 @@ function theaterSaleState(e) {
   const open = rounds.find(r => r.state === 'open');
   const soldOut = (e.seatsLeft !== undefined ? Number(e.seatsLeft) : (e.zones || []).reduce((s, z) => s + Number(z.left), 0)) <= 0;
   if (e.status === 'cancelled') return { kind: 'cancelled', text: 'Cancelled', cls: 'is-closed' };
+  // drafts only reach admins (get_theater_events / get_theater_event), and can't be booked
+  if (e.status === 'draft') return { kind: 'draft', text: 'ฉบับร่าง · เห็นเฉพาะ Admin', cls: 'is-draft' };
   if (open && soldOut) return { kind: 'soldout', text: 'Sold Out', cls: 'is-soldout', round: open };
   if (open) return { kind: 'open', text: theaterRoundName(open.kind), cls: 'is-open', round: open };
   const next = rounds.find(r => r.state === 'upcoming');

@@ -71,7 +71,7 @@
     const p = theaterPlatform(e.platform);
     const open = (e.rounds || []).filter(r => r.state === 'open');
     const booked = !!e.myBookingId;
-    const roundsHtml = (e.status === 'cancelled' || e.isPast) ? '' : open.map(r => {
+    const roundsHtml = (e.status === 'cancelled' || e.status === 'draft' || e.isPast) ? '' : open.map(r => {
       const soldOut = (e.zones || []).every(z => Number(z.left) <= 0);
       const disabled = booked || soldOut;
       return `
@@ -86,7 +86,8 @@
     }).join('');
 
     let notice = '';
-    if (e.status === 'cancelled') notice = `<div class="th-notice">การแสดงนี้ถูกยกเลิกแล้ว${e.cancelReason ? ' (' + escapeHtml(e.cancelReason) + ')' : ''} ผู้ที่จองได้รับ Token คืนเต็มจำนวน</div>`;
+    if (e.status === 'draft') notice = `<div class="th-notice is-draft"><i class="fa-solid fa-eye-slash"></i> ฉบับร่าง · หน้านี้เห็นเฉพาะ Admin ผู้ใช้ทั่วไปยังไม่เห็นและยังจองไม่ได้ เปิดแสดงได้ที่ <a href="admin_theater_event?id=${e.id}">หน้าแก้ไขการแสดง</a></div>`;
+    else if (e.status === 'cancelled') notice = `<div class="th-notice">การแสดงนี้ถูกยกเลิกแล้ว${e.cancelReason ? ' (' + escapeHtml(e.cancelReason) + ')' : ''} ผู้ที่จองได้รับ Token คืนเต็มจำนวน</div>`;
     else if (booked) notice = `<div class="th-notice">You have already made a booking for this event.<br><a href="theater_booking?id=${e.myBookingId}">View booking</a></div>`;
     else if (!open.length) {
       const s = theaterSaleState(e);

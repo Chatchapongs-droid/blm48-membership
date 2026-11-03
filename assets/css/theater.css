@@ -39,6 +39,9 @@ a.btn-yellow { text-decoration: none; }
 .is-open { color: var(--order-ready); }
 .is-soldout { color: #d64545; }
 .is-closed { color: #555; }
+.is-draft { color: #8a6400; font-weight: 600; }
+.th-notice.is-draft { background: #fff6d6; color: #6b4e00; }
+.th-notice.is-draft a { color: #6b4e00; }
 .is-upcoming { color: #222; font-weight: 600; font-size: 13.5px; }
 
 .th-hero { position: relative; background: #f3eef8; overflow: hidden; }

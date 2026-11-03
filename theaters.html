@@ -52,7 +52,8 @@
     }
     const btn = s.kind === 'open'
       ? `<a class="btn-yellow" href="theater_event?id=${e.id}" onclick="event.stopPropagation()">Book</a>` : '';
-    return `<div class="th-sale-row"><span class="th-sale-text ${s.cls}">${s.kind === 'upcoming' ? '' : icon}${escapeHtml(s.text)}</span>${btn}</div>`;
+    const lead = s.kind === 'upcoming' ? '' : s.kind === 'draft' ? '<i class="fa-solid fa-eye-slash"></i>' : icon;
+    return `<div class="th-sale-row"><span class="th-sale-text ${s.cls}">${lead}${escapeHtml(s.text)}</span>${btn}</div>`;
   }
 
   function render(data) {
