@@ -93,6 +93,43 @@
       <div class="inline-error" id="souvenir-error" style="margin:12px 0 0"></div></div>`;
   }
 
+  // Lucky Draw: random winners among ticket holders, drawn by admin after sales close
+  function luckyBlock(b) {
+    const l = b.lucky;
+    if (b.status === 'cancelled' || !l) return '';
+    const won = (l.wonSeats || []).length;
+    let action;
+    if (!l.drawnAt) action = `<div class="th-zone-note" style="margin-top:10px">ผู้ถือบัตรทุกที่นั่งมีสิทธิ์ลุ้น ${l.winnerCount > 1 ? l.winnerCount + ' รางวัล' : '1 รางวัลเท่านั้น'} · รอประกาศผล</div>`;
+    else if (!won) action = `<div class="th-zone-note" style="margin-top:10px">ประกาศผลแล้วเมื่อ ${theaterDateTime(l.drawnAt)} · ครั้งนี้ยังไม่ใช่ผู้โชคดี ขอบคุณที่ร่วมลุ้นนะคะ</div>`;
+    else if (l.claimedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Received · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
+    else action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-trophy"></i> ยินดีด้วย! คุณคือผู้โชคดี (ที่นั่ง ${l.wonSeats.map(escapeHtml).join(', ')})</div>
+      <button type="button" class="btn-yellow is-block" id="btn-lucky" style="margin-top:12px" onclick="claimLucky()">Claim Prize</button>`;
+    const prize = won ? (l.prize || []).flatMap(r => r.kind === 'item' ? Array(won).fill(r) : [{ ...r, amount: Number(r.amount) * won }]) : l.prize;
+    return `<div class="section"><div class="section-heading">Lucky Draw</div>
+      <div class="th-rewards">${theaterRewardsHtml(prize)}</div>${action}
+      <div class="inline-error" id="lucky-error" style="margin:12px 0 0"></div></div>`;
+  }
+
+  async function claimLucky() {
+    if (redeeming) return;
+    redeeming = true;
+    const btn = document.getElementById('btn-lucky');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing';
+    const res = await blm48ClaimTheaterLucky(user.username, Number(bookingId));
+    redeeming = false;
+    if (res && res.status === 'success') {
+      if (res.wallet) { Object.assign(user, { token: res.wallet.token, cookie: res.wallet.cookie, ge_token: res.wallet.geToken }); saveUserSession(user); }
+      await load();
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Claim Prize';
+    const err = document.getElementById('lucky-error');
+    err.textContent = (res && res.message) || 'ทำรายการไม่สำเร็จค่ะ';
+    err.style.display = 'block';
+  }
+
   async function claimSouvenirs() {
     if (redeeming) return;
     redeeming = true;
@@ -141,6 +178,7 @@
       </div>
       ${watchBlock(b)}
       ${rewardsBlock(b)}
+      ${luckyBlock(b)}
       ${souvenirBlock(b)}
       <div class="section">
         <div class="th-kv"><span class="k">Booking No.</span><span class="v">${escapeHtml(b.bookingNo)}<button type="button" class="th-copy" id="copy-btn" onclick="copyNo()">Copy</button></span></div>

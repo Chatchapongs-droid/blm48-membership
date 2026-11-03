@@ -159,6 +159,18 @@
             <div class="hint" id="souvenir-hint">ผู้ถือบัตรทุกคนกดรับเข้า Inventory ได้หลังเวลาจบการแสดง (ถ้าไม่ใส่เวลาจบ = หลังเที่ยงคืนของวันแสดง) เพิ่มหรือแก้ได้ตลอด แม้การแสดงจบไปแล้ว · คนที่กดรับไปแล้วจะไม่ได้ของที่เพิ่มทีหลัง</div>
         </div>
 
+        <div class="panel">
+            <h2><i class="fa-solid fa-clover"></i> รางวัลลุ้นโชค (Lucky Draw)</h2>
+            <div class="rewards-box">
+                <div class="title"><i class="fas fa-gift"></i> รางวัลต่อผู้โชคดี 1 คน เช่น การ์ด SSR ใบเดียว</div>
+                <div class="rw-list" id="lucky-prize"></div>
+                <button type="button" class="btn-add" id="lucky-add" style="padding:6px" onclick="document.getElementById('lucky-prize').insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่มรางวัล</button>
+            </div>
+            <div class="field" style="margin-top:12px"><label>จำนวนผู้โชคดี</label><input type="number" id="f-lucky-count" min="1" max="100" value="1"></div>
+            <div class="hint">สุ่มจากผู้ถือบัตรที่จ่ายแล้วทุกคน 1 ที่นั่ง = 1 สิทธิ์ · กดสุ่มได้เมื่อปิดการขายทุกรอบ (กดสด ๆ ระหว่างงานได้) · สุ่มได้ครั้งเดียว ผลบันทึกถาวร ผู้โชคดีได้แจ้งเตือนและกดรับเข้า Inventory ที่หน้า Booking Detail</div>
+            <div id="lucky-draw"></div>
+        </div>
+
         <div id="manage" style="display:none"></div>
     </div>
 </div>
@@ -348,6 +360,8 @@
       status: document.getElementById('f-status').value,
       memberIds: [...selected],
       souvenirs: readRewards(document.querySelectorAll('#souvenirs .reward-row')),
+      luckyPrize: readRewards(document.querySelectorAll('#lucky-prize .reward-row')),
+      luckyWinnerCount: document.getElementById('f-lucky-count').value,
       rounds, zones
     };
   }
@@ -429,6 +443,45 @@
       </div>`;
   }
 
+  // Lucky Draw: prize locks once drawn; draw button only when the prize is saved and every round has closed
+  let drawArmed = false;
+  function renderLucky(e) {
+    const box = document.getElementById('lucky-draw');
+    const drawn = !!e.luckyDrawnAt;
+    document.querySelectorAll('#lucky-prize input, #lucky-prize select, #lucky-prize button, #f-lucky-count')
+      .forEach(el => { el.disabled = drawn; });
+    document.getElementById('lucky-add').style.display = drawn ? 'none' : '';
+    if (drawn) {
+      box.innerHTML = `<div class="rewards-box" style="margin-top:12px;background:#f2fbf5">
+          <div class="title" style="color:#1f7a45"><i class="fa-solid fa-trophy"></i> ผู้โชคดี · สุ่มเมื่อ ${theaterDateTime(e.luckyDrawnAt)}</div>
+          ${(e.luckyWinners || []).map(w => `<div class="bk-row"><div class="bk-top"><b>${escapeHtml(w.name || w.username || '-')}</b><span>ที่นั่ง ${escapeHtml(w.seat || '-')}</span></div>
+            <div class="bk-sub">${escapeHtml(w.username || '')} · ${escapeHtml(w.zoneName)} · ${escapeHtml(w.bookingNo)} · ${w.claimed ? '<span style="color:#1f9d55">รับรางวัลแล้ว</span>' : 'ยังไม่กดรับ'}</div></div>`).join('')}
+        </div>`;
+      return;
+    }
+    let msg = '';
+    if (!(e.luckyPrize || []).length) msg = 'ใส่รางวัลแล้วกดบันทึกก่อน จึงจะสุ่มได้';
+    else if (!e.luckyCanDraw) msg = 'สุ่มได้เมื่อปิดการขายทุกรอบแล้ว';
+    else if (!(e.bookings || []).some(b => b.status === 'paid')) msg = 'ยังไม่มีผู้ถือบัตร';
+    box.innerHTML = msg
+      ? `<div class="hint" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> ${msg}</div>`
+      : `<button type="button" class="btn-primary" id="btn-draw" style="margin-top:12px;width:100%" onclick="drawLucky()"><i class="fa-solid fa-clover"></i> สุ่มผู้โชคดี</button>
+         <div class="hint">ถ้าแก้รางวัล ให้กดบันทึกก่อนสุ่ม</div><div class="hint" id="draw-msg" style="color:#d64545"></div>`;
+  }
+
+  async function drawLucky() {
+    const btn = document.getElementById('btn-draw');
+    if (!drawArmed) { drawArmed = true; btn.innerHTML = 'กดอีกครั้งเพื่อยืนยันการสุ่ม (สุ่มได้ครั้งเดียว)'; return; }
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสุ่ม';
+    const res = await blm48AdminDrawTheaterLucky(user.username, Number(eventId));
+    drawArmed = false;
+    if (res && res.status === 'success') { loadEvent(); return; }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-clover"></i> สุ่มผู้โชคดี';
+    document.getElementById('draw-msg').textContent = (res && res.message) || 'สุ่มไม่สำเร็จ';
+  }
+
   async function cancelEvent() {
     const btn = document.getElementById('btn-cancel');
     if (!cancelArmed) { cancelArmed = true; btn.classList.add('armed'); btn.textContent = 'กดอีกครั้งเพื่อยืนยันการยกเลิก'; return; }
@@ -475,6 +528,9 @@
     document.getElementById('zones').innerHTML = '';
     (e.zones || []).forEach(addZone);
     document.getElementById('souvenirs').innerHTML = (e.souvenirs || []).map(rewardRowHtml).join('');
+    document.getElementById('lucky-prize').innerHTML = (e.luckyPrize || []).map(rewardRowHtml).join('');
+    document.getElementById('f-lucky-count').value = e.luckyWinnerCount || 1;
+    renderLucky(e);
     const locked = e.status === 'cancelled';
     document.getElementById('save-bar').style.display = locked ? 'none' : '';
     renderManage(e);
