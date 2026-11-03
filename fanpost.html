@@ -290,39 +290,31 @@
     const postTimestamp = escapeHtml(rawDate !== 'เมื่อสักครู่' ? formatThaiDate(rawDate) : 'Just now');
 
     const postContent = formatPostContent(post.content || '');
-    const postLikes = post.likes || 0;
     const postId = post.id || '';
     const displayImage = post.imageUrl || post.imageURL || '';
-    const heartClass = post.isLiked ? 'fa-solid' : 'fa-regular';
-
-    const postComments = Array.isArray(post.comments) ? post.comments : [];
-    const commentsHtml = buildCommentsHtml(postComments, postId);
     const imagesHtml = buildImagesHtml(displayImage);
 
-    const actionMenu = canManage ? `
+    // เมนู ⋯ : แชร์ได้ทุกคน / แก้ไข-ลบเฉพาะเจ้าของโพสต์หรือแอดมิน (เหมือนโพสต์เมมเบอร์)
+    const actionMenu = `
       <div class="post-menu-container">
         <button class="post-menu-btn" onclick="togglePostMenu(event, '${postId}')">
           <i class="fa-solid fa-ellipsis-vertical"></i>
         </button>
         <div class="post-dropdown-menu" id="dropdown-${postId}">
+          <button class="post-dropdown-item" onclick="actionSharePost('${postId}', 'fanpost')">
+            <i class="fa-solid fa-share-nodes"></i> แชร์โพสต์
+          </button>
+          ${canManage ? `
           <button class="post-dropdown-item" onclick="editPostUi('${postId}', '${encodeURIComponent(post.content || '')}')">
             <i class="fa-solid fa-pen"></i> แก้ไขโพสต์
           </button>
           <button class="post-dropdown-item delete-item" onclick="deletePostUi('${postId}')">
             <i class="fa-solid fa-trash"></i> ลบโพสต์
           </button>
+          ` : ''}
         </div>
       </div>
-    ` : '';
-
-    const commentInputHtml = isMemberRole ? `
-        <div class="comment-block-note"><i class="fa-solid fa-lock"></i> สมาชิกไม่สามารถคอมเมนต์โพสต์แฟนคลับได้ค่ะ</div>
-      ` : `
-        <div style="display: flex; gap: 8px;">
-          <input type="text" id="comment-input-${postId}" placeholder="Write a comment..." style="flex: 1; border: 1px solid #ffccd7; border-radius: 20px; padding: 6px 14px; font-size: 0.85rem; outline: none;">
-          <button class="cmt-send-btn" onclick="submitComment('${postId}', this)" aria-label="ส่งคอมเมนต์"><i class="fa-regular fa-paper-plane"></i></button>
-        </div>
-      `;
+    `;
 
     return `
       <div class="post-card" id="post-${postId}" data-images="${escapeAttr(displayImage)}" style="position: relative; border-radius: 15px; padding: 15px; margin-bottom: 20px; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
@@ -343,24 +335,9 @@
           <div id="post-images-${postId}">${imagesHtml}</div>
         </div>
 
-        <div class="post-actions" style="border-top: 1px solid #eee; padding-top: 10px; display: flex; align-items: center; gap: 15px;">
-          <button onclick="likePost('${postId}')" style="background: none; border: none; color: var(--primary-pink); cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <i class="${heartClass} fa-heart" id="heart-${postId}"></i> <span id="like-count-${postId}">${postLikes}</span>
-          </button>
-          <button onclick="toggleCommentSection('${postId}')" style="background: none; border: none; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-regular fa-comment"></i> <span id="comment-count-${postId}">${postComments.length}</span>
-          </button>
-          <button onclick="actionSharePost('${postId}', 'fanpost')" style="background: none; border: none; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px;" title="แชร์โพสต์เป็นลิงก์">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-        </div>
-
-        <div id="comment-section-${postId}" style="display: none; margin-top: 15px; border-top: 1px dashed #ffd1dc; padding-top: 12px;">
-          <div id="comment-list-${postId}" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; padding-right: 5px;">
-            ${commentsHtml}
-          </div>
-          ${commentInputHtml}
-        </div>
+        <!-- 🧾 ส่วนล่างแบบโพสต์เมมเบอร์ (common.js): รูปเมมเบอร์ที่กดใจ / N Comments, ♥ Likes | 💬 Comment, คอมเมนต์ยอดนิยม + ช่องพิมพ์ -->
+        ${blm48PostStatsActionsHtml(post, { canGift: false })}
+        ${blm48PostCommentPreviewHtml(post, { canGift: false, canComment: !isMemberRole })}
       </div>
     `;
   }
@@ -650,7 +627,7 @@
       return;
     }
     const likeSpan = document.getElementById(`like-count-${postId}`);
-    const heartIcon = document.querySelector(`#post-${postId} .fa-heart`);
+    const heartIcon = document.getElementById(`heart-${postId}`);
     if (!heartIcon || !likeSpan) return;
     if (heartIcon.dataset.loading === "true") return;
     heartIcon.dataset.loading = "true";

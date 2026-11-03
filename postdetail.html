@@ -487,22 +487,7 @@
           ${mediaHtml}
         </div>
 
-        ${post.postType !== 'fan'
-          ? blm48PostStatsActionsHtml(post, { memberName: post.authorName || '', onCommentsClick: "document.getElementById('comment-section-" + postId + "').scrollIntoView({ behavior: 'smooth' })" })
-          : `        <div class="post-actions" style="border-top: 1px solid #eee; padding-top: 10px; display: flex; align-items: center; gap: 15px;">
-          <button onclick="likePost('${postId}')" style="background: none; border: none; color: var(--primary-pink); cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <i class="${heartClass} fa-heart" id="heart-${postId}"></i> <span id="like-count-${postId}">${postLikes}</span>
-          </button>
-          <button onclick="toggleCommentSection('${postId}')" style="background: none; border: none; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px;">
-            <i class="fa-regular fa-comment"></i> <span id="comment-count-${postId}">${postComments.length}</span>
-          </button>
-          <button onclick="actionSharePost('${postId}', '${post.postType === 'fan' ? 'fanpost' : 'index'}')" style="background: none; border: none; color: #555; cursor: pointer; display: flex; align-items: center; gap: 6px;" title="แชร์โพสต์เป็นลิงก์">
-            <i class="fa-solid fa-paper-plane"></i>
-          </button>
-          <div id="post-cookies-${postId}" style="margin-left: auto; display: flex; align-items: center; gap: 4px; font-size: 0.78rem; color: #d2691e; font-weight: 600;" title="โพสต์นี้ทำคุกกี้สะสมได้">
-            <i class="fa-solid fa-cookie-bite"></i> <span id="post-cookies-count-${postId}">${postCookies}</span>
-          </div>
-        </div>`}
+        ${blm48PostStatsActionsHtml(post, { memberName: post.authorName || '', canGift: post.postType !== 'fan', onCommentsClick: "document.getElementById('comment-section-" + postId + "').scrollIntoView({ behavior: 'smooth' })" })}
 
         <div id="comment-section-${postId}" style="display: block; margin: 0 -15px; padding: 14px 15px 0; border-top: 8px solid #f3f3f3;">
           <div class="pd-sort">

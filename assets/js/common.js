@@ -307,7 +307,7 @@ function reconcileComments(postId, comments) {
     if (same || busy) {
       top.forEach(patchItem);
     } else {
-      listEl.innerHTML = top.map(c => blm48CommentHtml(c, postId, false, [], { canReply: true })).join('');
+      listEl.innerHTML = top.map(c => blm48CommentHtml(c, postId, false, [], { canReply: listEl.dataset.noReply !== '1' })).join('');
     }
     return;
   }
@@ -727,7 +727,7 @@ function blm48ShortCount(n) {
 }
 
 // opts.memberName = ชื่อเมมเบอร์เจ้าของโพสต์ (โชว์ในกล่องยืนยันของขวัญ)
-// opts.canGift = false -> ไม่มีแถว Gifts/ปุ่ม Send Gift (เช่นโพสต์แฟนคลับ)
+// opts.canGift = false (โพสต์แฟนคลับ) -> แทนแถว Gifts ด้วยรูปเมมเบอร์ที่กดใจโพสต์ และปุ่ม Send Gift เป็นปุ่ม Comment
 // opts.onCommentsClick = JS ตอนกด "N Comments" (ค่าเริ่มต้น: เปิดหน้าโพสต์เต็ม)
 function blm48PostStatsActionsHtml(post, opts) {
   opts = opts || {};
@@ -740,7 +740,7 @@ function blm48PostStatsActionsHtml(post, opts) {
     <div class="pf-stats">
       ${canGift ? `<div class="pf-gifts" id="post-gifts-${id}" data-post-id="${id}" data-member="${escapeAttr(opts.memberName || '')}">
         <span class="pf-gifters" id="post-gifters-${id}"></span><span class="pf-gift-total"><span id="post-cookies-count-${id}">${blm48ShortCount(post.cookies || 0)}</span> Cookies</span>
-      </div>` : '<div></div>'}
+      </div>` : `<div class="pf-likers" id="post-likers-${id}" data-post-id="${id}"><span class="pf-liker-avatars" id="post-liker-avatars-${id}"></span></div>`}
       <button type="button" class="pf-comment-count" onclick="${commentsClick}"><span id="comment-count-${id}">${comments.length}</span> Comments</button>
     </div>
     <div class="pf-actions">
@@ -748,7 +748,8 @@ function blm48PostStatsActionsHtml(post, opts) {
         <i class="${liked ? 'fa-solid' : 'fa-regular'} fa-heart" id="heart-${id}"></i><span id="like-count-${id}">${post.likes || 0}</span><span>Likes</span>
       </button>
       ${canGift ? `<span class="pf-act-divider"></span>
-      <button type="button" class="pf-act pf-gift" onclick="blm48OpenPostGift('${id}')"><i class="fa-solid fa-gift pf-act-icon"></i><span>Send Gift</span></button>` : ''}
+      <button type="button" class="pf-act pf-gift" onclick="blm48OpenPostGift('${id}')"><i class="fa-solid fa-gift pf-act-icon"></i><span>Send Gift</span></button>` : `<span class="pf-act-divider"></span>
+      <button type="button" class="pf-act pf-comment" onclick="blm48FocusPostComment('${id}')"><i class="fa-regular fa-comment pf-act-icon"></i><span>Comment</span></button>`}
     </div>`;
 }
 
@@ -782,15 +783,15 @@ function blm48PostCommentPreviewHtml(post, opts) {
   const myImg = (me && me.profile_img) || BLM48_CMT_DEFAULT_AVATAR;
   return `
     <div id="comment-section-${id}" class="pf-cmt-section">
-      <div id="comment-list-${id}" class="pf-cmt-list" data-preview="1">${top.map(c => blm48CommentHtml(c, post.id || '', false, [], { canReply: true })).join('')}</div>
-      <div class="comment-input-box pf-input-row">
+      <div id="comment-list-${id}" class="pf-cmt-list" data-preview="1"${opts.canComment === false ? ' data-no-reply="1"' : ''}>${top.map(c => blm48CommentHtml(c, post.id || '', false, [], { canReply: opts.canComment !== false })).join('')}</div>
+      ${opts.canComment === false ? '<div class="comment-block-note" style="text-align:center;color:#bbb;font-size:0.75rem;padding:8px 0 2px;"><i class="fa-solid fa-lock"></i> สมาชิกไม่สามารถคอมเมนต์โพสต์แฟนคลับได้ค่ะ</div>' : `<div class="comment-input-box pf-input-row">
         <img class="pf-my-avatar" src="${escapeAttr(myImg)}" alt="">
         <div class="pf-input-wrap">
           <input type="text" id="comment-input-${id}" placeholder="Write a comment...">
           ${canGift ? `<button type="button" class="pf-input-gift" onclick="blm48OpenPostGift('${id}')" aria-label="Send Gift"><i class="fa-solid fa-gift"></i></button>` : ''}
         </div>
         <button type="button" class="cmt-send-btn pf-send" onclick="submitComment('${id}', this)" aria-label="ส่งคอมเมนต์"><i class="fa-regular fa-paper-plane"></i></button>
-      </div>
+      </div>`}
     </div>`;
 }
 
@@ -875,6 +876,63 @@ async function blm48FlushPostGifts() {
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();
 
+// 💬 ปุ่ม Comment ในโพสต์แฟนคลับ: โฟกัสช่องพิมพ์คอมเมนต์ (ไม่มีช่องพิมพ์ เช่นบัญชีเมมเบอร์ในหน้า Fan Post -> เปิดหน้าโพสต์เต็ม)
+function blm48FocusPostComment(postId) {
+  const input = document.getElementById(`comment-input-${postId}`);
+  if (!input) { window.location.href = `postdetail?id=${encodeURIComponent(postId)}`; return; }
+  const section = document.getElementById(`comment-section-${postId}`);
+  if (section && section.style.display === 'none') section.style.display = 'block';
+  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  input.focus({ preventScroll: true });
+}
+
+// 💖 รูปเมมเบอร์ที่กดใจโพสต์แฟนคลับ (แทนยอดคุกกี้ในโพสต์เมมเบอร์): เก็บ id โพสต์ที่ขึ้นจอแล้วดึงทีเดียว
+// เรียก blm48QueuePostLikers([postId]) ซ้ำหลังกดใจเพื่ออัปเดตรูป
+const blm48PendingLikerPosts = new Set();
+let blm48LikerTimer = null;
+function blm48QueuePostLikers(ids) {
+  (ids || []).forEach(id => id && blm48PendingLikerPosts.add(String(id)));
+  clearTimeout(blm48LikerTimer);
+  blm48LikerTimer = setTimeout(blm48FlushPostLikers, 150);
+}
+async function blm48FlushPostLikers() {
+  const ids = Array.from(blm48PendingLikerPosts);
+  blm48PendingLikerPosts.clear();
+  if (!ids.length || typeof blm48GetPostMemberLikers !== 'function') return;
+  try {
+    const res = await blm48GetPostMemberLikers(ids);
+    const map = {};
+    (Array.isArray(res) ? res : []).forEach(s => { map[s.postId] = s; });
+    ids.forEach(id => {
+      const s = map[id] || { count: 0, likers: [] };
+      const el = document.getElementById(`post-liker-avatars-${id}`);
+      if (!el) return;
+      const likers = s.likers || [];
+      const more = (Number(s.count) || 0) - likers.length;
+      el.innerHTML = likers.map(m =>
+        `<img class="pf-liker" src="${escapeAttr(m.img || BLM48_CMT_DEFAULT_AVATAR)}" alt="${escapeAttr(m.name || '')}" title="${escapeAttr(m.name || '')}" onclick="window.location.href='member?name=${encodeURIComponent(m.name || '').replace(/'/g, '%27')}'">`
+      ).join('') + (more > 0 ? `<span class="pf-liker-more">+${more}</span>` : '');
+    });
+  } catch (e) { console.error('Post member likers error:', e); }
+}
+(function watchPostLikers() {
+  const scan = (root) => {
+    const ids = [];
+    (root.querySelectorAll ? root.querySelectorAll('.pf-likers[data-post-id]:not([data-likers-loaded])') : []).forEach(el => {
+      el.dataset.likersLoaded = '1';
+      ids.push(el.dataset.postId);
+    });
+    if (ids.length) blm48QueuePostLikers(ids);
+  };
+  const start = () => {
+    scan(document);
+    new MutationObserver(muts => {
+      for (const m of muts) m.addedNodes.forEach(n => { if (n.nodeType === 1) scan(n.matches && n.matches('.pf-likers') ? n.parentNode : n); });
+    }).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+})();
+
 // 🎨 สไตล์ส่วนล่างโพสต์ + ป๊อปอัปแจ้งเตือน (SweetAlert) ทุกหน้า แบบเดียวกัน:
 // การ์ดขาว หัวข้อตัวหนา ไม่มีไอคอนใหญ่ ปุ่ม Cancel ขอบดำ + ปุ่มหลักสีเหลืองทรงแคปซูล
 (function injectPostFooterAndAlertCss() {
@@ -887,6 +945,11 @@ async function blm48FlushPostGifts() {
     .pf-gifters { display: inline-flex; align-items: center; }
     .pf-gifter { display: inline-flex; margin-right: -4px; cursor: pointer; }
     .pf-gifters:not(:empty) { margin-right: 6px; }
+    .pf-likers { display: flex; align-items: center; min-width: 0; }
+    .pf-liker-avatars { display: inline-flex; align-items: center; }
+    .pf-liker { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; margin-right: -8px; background: #f2f2f2; cursor: pointer; box-shadow: 0 0 0 1px #eee; }
+    .pf-liker-more { margin-left: 14px; font-size: 0.85rem; color: #555; }
+    .pf-comment .pf-act-icon { color: #222; }
     .pf-comment-count { background: none; border: none; padding: 0; font-family: inherit; font-size: 0.92rem; color: #555; cursor: pointer; white-space: nowrap; }
     .pf-actions { display: flex; align-items: center; border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin: 0 -15px; }
     .pf-act { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; background: none; border: none; padding: 11px 6px; font-family: inherit; font-size: 1rem; font-weight: 500; color: #222; cursor: pointer; }
