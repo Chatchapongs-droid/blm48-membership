@@ -50,6 +50,11 @@
         .reward-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; }
         .reward-row .reward-extra { grid-column: 2 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .reward-row input, .reward-row select { border: 1px solid #e3e3e3; border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; width: 100%; }
+        .rw-img-row { display: flex; gap: 8px; align-items: center; }
+        .rw-img-row .rw-img { flex: 1; min-width: 0; }
+        .rw-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; background: #eee; flex: none; }
+        .rw-upload { flex: none; width: 38px; height: 38px; border: 1.5px dashed #ffc107; background: #fffbef; color: #8a6400; border-radius: 10px; cursor: pointer; font: inherit; }
+        .rw-upload:disabled { opacity: .6; cursor: wait; }
         .rewards-box { background: #fffaf0; padding: 10px; margin-top: 4px; }
         .rewards-box .title { font-size: 12.5px; font-weight: 700; color: #6b5a3a; margin-bottom: 8px; }
         .member-search { margin-bottom: 8px; }
@@ -275,15 +280,41 @@
         <div class="rw-fields">
           <div class="rw-item" style="display:${rw.kind === 'item' ? 'grid' : 'none'};gap:8px">
             <input class="rw-label" placeholder="ชื่อไอเทม เช่น Photo Card Jew" value="${escapeHtml(rw.label || '')}">
-            <div class="reward-extra" style="grid-column:auto">
-              <input class="rw-type" placeholder="ประเภท เช่น PhotoCard / Poster" value="${escapeHtml(rw.itemType || '')}">
-              <input class="rw-img" placeholder="ลิงก์รูปภาพ" value="${escapeHtml(rw.imageUrl || '')}">
+            <input class="rw-type" placeholder="ประเภท เช่น PhotoCard / Poster" value="${escapeHtml(rw.itemType || '')}">
+            <div class="rw-img-row">
+              <img class="rw-thumb" alt="" src="${escapeHtml(rw.imageUrl || '')}" style="display:${rw.imageUrl ? 'block' : 'none'}">
+              <input class="rw-img" placeholder="ลิงก์รูป หรือกดอัปโหลด" value="${escapeHtml(rw.imageUrl || '')}" oninput="syncRewardThumb(this)">
+              <button type="button" class="rw-upload" aria-label="อัปโหลดรูป" onclick="this.nextElementSibling.click()"><i class="fa-solid fa-upload"></i></button>
+              <input type="file" accept="image/*" hidden onchange="uploadRewardImage(this)">
             </div>
           </div>
           <input class="rw-amount" type="number" min="1" placeholder="จำนวน" value="${rw.amount || ''}" style="display:${rw.kind === 'item' ? 'none' : 'block'}">
         </div>
         <button type="button" class="btn-del" onclick="this.closest('.reward-row').remove()"><i class="fa-solid fa-xmark"></i></button>
       </div>`;
+  }
+  function syncRewardThumb(input) {
+    const url = input.value.trim();
+    const img = input.parentElement.querySelector('.rw-thumb');
+    img.style.display = /^https?:\/\//i.test(url) ? 'block' : 'none';
+    if (img.style.display === 'block') img.src = url;
+  }
+  async function uploadRewardImage(fileInput) {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+    const row = fileInput.parentElement;
+    const btn = row.querySelector('.rw-upload');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+      const input = row.querySelector('.rw-img');
+      input.value = await blm48UploadPostImage(user.username, file);
+      syncRewardThumb(input);
+      showMsg('');
+    } catch (e) { showMsg('อัปโหลดรูปไม่สำเร็จ ลองใหม่อีกครั้ง'); }
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-upload"></i>';
+    fileInput.value = '';
   }
   function syncRewardRow(sel) {
     const row = sel.closest('.reward-row');
