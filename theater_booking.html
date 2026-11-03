@@ -75,7 +75,7 @@
     if (b.rewardsRedeemedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Redeemed · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
     else if (b.ticketIssued) action = `<button type="button" class="btn-yellow is-block" id="btn-redeem" style="margin-top:12px" onclick="redeem()">Redeem to Inventory</button>`;
     else action = `<div class="th-zone-note" style="margin-top:10px">Redeem ได้หลังระบบสุ่มที่นั่งเสร็จ</div>`;
-    return `<div class="section"><div class="section-heading">Ticket Rewards</div>
+    return `<div class="section"><div class="section-heading">Official Souvenir</div>
       <div class="th-rewards">${items}${stub}</div>${action}
       <div class="inline-error" id="redeem-error" style="margin:12px 0 0"></div></div>`;
   }

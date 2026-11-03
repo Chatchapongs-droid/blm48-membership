@@ -143,10 +143,10 @@
         </div>
 
         <div class="panel">
-            <h2><i class="fa-solid fa-couch"></i> โซนที่นั่ง &amp; ของรางวัล</h2>
+            <h2><i class="fa-solid fa-couch"></i> โซนที่นั่ง &amp; Official Souvenir</h2>
             <div id="zones"></div>
             <button type="button" class="btn-add" onclick="addZone()"><i class="fa-solid fa-plus"></i> เพิ่มโซน</button>
-            <div class="hint">ของรางวัลคิดต่อ 1 ที่นั่ง (ซื้อ 2 ที่นั่งได้ 2 เท่า) ผู้ซื้อกด Redeem เข้า Inventory ได้เมื่อได้เลขที่นั่งแล้ว และได้ Ticket Stub อัตโนมัติ</div>
+            <div class="hint">Official Souvenir คิดต่อ 1 ที่นั่ง (ซื้อ 2 ที่นั่งได้ 2 เท่า) ผู้ซื้อกด Redeem เข้า Inventory ได้เมื่อได้เลขที่นั่งแล้ว และได้ Ticket Stub อัตโนมัติ</div>
         </div>
 
         <div class="panel">
@@ -309,9 +309,9 @@
       </div>
       <div class="field"><label>อักษรนำหน้าเลขที่นั่ง</label><input class="z-prefix" maxlength="3" value="${escapeHtml(z.seatPrefix || 'A')}"><div class="hint">เช่น A → A1, A2, …</div></div>
       <div class="rewards-box">
-        <div class="title"><i class="fas fa-gift"></i> ของรางวัลต่อ 1 ที่นั่ง</div>
+        <div class="title"><i class="fas fa-gift"></i> Official Souvenir ต่อ 1 ที่นั่ง</div>
         <div class="rw-list">${(z.rewards || []).map(rewardRowHtml).join('')}</div>
-        <button type="button" class="btn-add" style="padding:6px" onclick="this.previousElementSibling.insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่มของรางวัล</button>
+        <button type="button" class="btn-add" style="padding:6px" onclick="this.previousElementSibling.insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่ม Official Souvenir</button>
       </div>`;
     document.getElementById('zones').appendChild(el);
   }
@@ -437,7 +437,7 @@
           : (e.bookings || []).length
             ? `<div class="field"><label>เหตุผลที่ยกเลิก (ผู้จองจะเห็น)</label><input id="cancel-reason" placeholder="เช่น เลื่อนการแสดง"></div>
                <button type="button" class="btn-danger" id="btn-cancel" onclick="cancelEvent()">ยกเลิกการแสดง + คืน Token ทุกคน</button>
-               <div class="hint">ของรางวัลที่ผู้จองกด Redeem ไปแล้วจะไม่ถูกดึงคืน</div>`
+               <div class="hint">Official Souvenir ที่ผู้จองกด Redeem ไปแล้วจะไม่ถูกดึงคืน</div>`
             : `<button type="button" class="btn-danger" id="btn-delete" onclick="deleteEvent()">ลบการแสดงนี้</button>`}
         <div class="hint" id="manage-msg" style="color:#d64545"></div>
       </div>`;

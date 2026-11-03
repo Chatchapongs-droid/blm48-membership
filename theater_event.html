@@ -44,7 +44,7 @@
         <div class="th-perks">
           <div class="th-perk"><i class="${p.icon}"></i><div><b>${escapeHtml(p.watch)}</b><br>ลิงก์รับชม${e.platform === 'roblox' ? 'เซิร์ฟเวอร์ Roblox' : e.platform === 'youtube' ? 'ไลฟ์ YouTube' : ''}เฉพาะผู้ถือบัตร เปิดให้ในหน้า Booking Detail เมื่อได้ที่นั่งแล้ว</div></div>
           <div class="th-perk"><i class="fa-solid fa-qrcode"></i><div><b>Digital Ticket + Seat No.</b><br>บัตรพร้อม QR Code และเลขที่นั่งตามจำนวนที่จอง</div></div>
-          ${hasRewards ? `<div class="th-perk"><i class="fas fa-gift"></i><div><b>Ticket Rewards</b><br>ของรางวัลประจำโซน (ดูด้านล่าง) กด Redeem เข้า Inventory ได้เมื่อได้ที่นั่งแล้ว</div></div>` : ''}
+          ${hasRewards ? `<div class="th-perk"><i class="fas fa-gift"></i><div><b>Official Souvenir</b><br>Official Souvenir ประจำโซน (ดูด้านล่าง) กด Redeem เข้า Inventory ได้เมื่อได้ที่นั่งแล้ว</div></div>` : ''}
           <div class="th-perk"><i class="fa-solid fa-ticket-simple"></i><div><b>Ticket Stub</b><br>ต้นขั้วบัตรที่ระลึกพร้อมเลขที่นั่ง เก็บไว้ใน Inventory</div></div>
           ${(e.souvenirs || []).length ? `<div class="th-perk"><i class="fas fa-gift"></i><div><b>After-show Souvenir</b><br>ของที่ระลึกสำหรับผู้ถือบัตรทุกคน กดรับได้หลังจบการแสดง<div class="th-rewards">${theaterRewardsHtml(e.souvenirs)}</div></div></div>` : ''}
           ${(e.luckyPrize || []).length ? `<div class="th-perk"><i class="fa-solid fa-clover"></i><div><b>Lucky Draw</b><br>${e.luckyDrawnAt ? 'ประกาศผลผู้โชคดีแล้ว' : `ทุกที่นั่งมีสิทธิ์ลุ้น · มีเพียง ${Number(e.luckyWinnerCount) || 1} รางวัล`}<div class="th-rewards">${theaterRewardsHtml(e.luckyPrize)}</div></div></div>` : ''}
