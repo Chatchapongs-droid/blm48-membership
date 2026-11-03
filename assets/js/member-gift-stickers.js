@@ -119,6 +119,9 @@
     .gift-art .ga-a { animation: var(--ga); } /* ภาพจากไฟล์ออกแบบขยับตลอด (ไม่ต้องรอกดเลือก) */
     .gift-art .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
     @keyframes ga-blink { 0%,90%,100% { transform: scaleY(0); } 93% { transform: scaleY(1); } 96% { transform: scaleY(0); } }
+    /* กะพริบตาแบบรอบ 4.8s (ไฟล์ออกแบบชุดหลัง ๆ) — ใส่คลาสนี้ที่ <g> เปลือกตาใน svg ดิบ */
+    .gift-art .ga-blink48 { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: ga-blink48 4.8s ease-in-out infinite; }
+    @keyframes ga-blink48 { 0%,88%,100% { transform: scaleY(0); } 91% { transform: scaleY(1); } 94% { transform: scaleY(0); } }
     @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art * { animation: none !important; } }
   `;
   function photoSel(motion) {
@@ -182,6 +185,7 @@
   //        { layers: [...] } กลุ่มที่ขยับรวมกัน / { svg, viewBox } SVG ดิบ (เช่นตัว Z ลอย — ใส่ style --ga หรือคลาสใน css เองต่อชิ้น)
   //        ใน svg ใช้ {{u}} ต่อท้าย id ของ gradient — แทนด้วยเลขไม่ซ้ำทุกครั้งที่วาด (ของขวัญชิ้นเดียวกันขึ้นหลายที่ในหน้าเดียวได้)
   //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
+  //        pos = [left, top, width, height] เป็น % ของกรอบ (ชิ้นส่วนที่ไม่เต็มกรอบ) · style = CSS ตั้งต้นเพิ่ม (เช่น opacity:0)
   const GA = 'assets/images/gifts/';
   const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
   const ART = [
@@ -344,6 +348,65 @@
         .gift-art .ga-sm-earL { transform-box: view-box; transform-origin: 395px 405px; animation: ga-sm-earl 1.6s ease-in-out infinite; }
         .gift-art .ga-sm-earR { transform-box: view-box; transform-origin: 505px 405px; animation: ga-sm-earr 1.6s ease-in-out infinite; }
         .gift-art .ga-sm-blink { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: ga-sm-blinkk 4.8s ease-in-out infinite; }`
+    },
+    { // กระรอกประกอบชิ้นส่วน — Chimunk (gift_034): กระรอกผ้ากันเปื้อนถือส้อม/ช้อน น้ำลายหยด สลับหน้า ลืมตา/ขยิบ/ยิ้ม
+      gifts: ['gift_034'], match: [], ratio: 1, dur: 1.6, label: 'กระรอกน้อยใส่ผ้ากันเปื้อนลายจุด ถือส้อมกับช้อน น้ำลายหยด',
+      body: { anim: 'ga-ch2-hop', origin: '50% 92.8%' },
+      layers: [
+        { src: GA + 'chipmunk/tail.png', pos: [52.22, 25.56, 45.11, 65.33], anim: 'ga-ch2-tail', origin: '22.17% 95.24%' },
+        { src: GA + 'chipmunk/body.png', pos: [23, 47.78, 53.89, 45] },
+        { src: GA + 'chipmunk/apron.png', pos: [33.33, 52, 33.33, 33.33] },
+        { anim: 'ga-ch2-tilt', k: 1.5, origin: '50% 53.33%', layers: [
+          { src: GA + 'chipmunk/head-open.png', pos: [22.78, 6.44, 54.33, 48.89], anim: 'ga-ch2-eh', k: 3, ease: 'linear' },
+          { src: GA + 'chipmunk/head-wink.png', pos: [22.78, 6.44, 54.33, 49.56], anim: 'ga-ch2-ew', k: 3, ease: 'linear', style: 'opacity:0;' },
+          { src: GA + 'chipmunk/head-smile.png', pos: [22.78, 6.44, 54.33, 49.11], anim: 'ga-ch2-es', k: 3, ease: 'linear', style: 'opacity:0;' },
+          { src: GA + 'chipmunk/drip.png', pos: [50.67, 44.22, 3.33, 4.78], anim: 'ga-ch2-drip', ease: 'ease-in', origin: '50% 0', style: 'opacity:0;' }] },
+        { src: GA + 'chipmunk/fork.png', pos: [22.78, 52.22, 14.22, 23.33], anim: 'ga-ch2-fork', k: 0.5, origin: '50% 98%' },
+        { src: GA + 'chipmunk/spoon.png', pos: [63.33, 52.22, 13.78, 23.56], anim: 'ga-ch2-spoon', k: 0.5, origin: '50% 98%' }],
+      css: `@keyframes ga-ch2-hop { 0%,50%,100% { transform: translateY(0) scale(1.02,.98); } 25%,75% { transform: translateY(-2%) scale(.99,1.02); } }
+        @keyframes ga-ch2-tail { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(7deg); } }
+        @keyframes ga-ch2-tilt { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+        @keyframes ga-ch2-fork { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(8deg); } }
+        @keyframes ga-ch2-spoon { 0%,100% { transform: rotate(8deg); } 50% { transform: rotate(-14deg); } }
+        @keyframes ga-ch2-drip { 0%,30% { transform: translateY(0) scale(.4); opacity: 0; } 45% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(209%) scale(.9); opacity: 0; } }
+        @keyframes ga-ch2-eh { 0%,32% { opacity: 1; } 33%,49% { opacity: 0; } 50%,74% { opacity: 1; } 75%,91% { opacity: 0; } 92%,100% { opacity: 1; } }
+        @keyframes ga-ch2-ew { 0%,32% { opacity: 0; } 33%,49% { opacity: 1; } 50%,100% { opacity: 0; } }
+        @keyframes ga-ch2-es { 0%,74% { opacity: 0; } 75%,91% { opacity: 1; } 92%,100% { opacity: 0; } }`
+    },
+    { // แมวขาวถือดอกไม้ — Mashi (gift_048): แมวขาวขนฟูถือช่อดอกไม้กับใบไม้ หางแกว่ง หูกระดิก
+      gifts: ['gift_048'], match: [], ratio: 1, dur: 1.6, label: 'แมวขาวขนฟูถือช่อดอกไม้กับใบไม้',
+      layers: [
+        { anim: 'ga-wc-bob', k: 1.5, origin: '50% 95%', layers: [
+          { anim: 'ga-wc-br', origin: '50% 94%', layers: [
+            { src: GA + 'white-cat/tail.png', anim: 'ga-wc-tail', origin: '68% 88%' },
+            { src: GA + 'white-cat/body.png' },
+            { src: GA + 'white-cat/ear.png', anim: 'ga-wc-ear', k: 3, origin: '58% 33%' },
+            { src: GA + 'white-cat/leaf.png', anim: 'ga-wc-sw2', origin: '25% 68%', delay: -0.3 },
+            { src: GA + 'white-cat/flower.png', anim: 'ga-wc-sw', origin: '33% 69%' },
+            { viewBox: '0 0 1000 1000', svg: '<g class="ga-blink48"><ellipse cx="279" cy="443" rx="25" ry="31" fill="#FFFFFF"></ellipse><ellipse cx="436" cy="443" rx="25" ry="31" fill="#FFFFFF"></ellipse><path d="M256 450 Q279 470 302 450 M413 450 Q436 470 459 450" fill="none" stroke="#2A1B1E" stroke-width="5" stroke-linecap="round"></path></g>' }] }] }],
+      css: `@keyframes ga-wc-bob { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-1.22%) rotate(1.5deg); } }
+        @keyframes ga-wc-br { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.012,1.022); } }
+        @keyframes ga-wc-tail { 0%,100% { transform: rotate(-2.5deg); } 50% { transform: rotate(4deg); } }
+        @keyframes ga-wc-sw { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.06) rotate(-3deg); } }
+        @keyframes ga-wc-sw2 { 0%,100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.05) rotate(3deg); } }
+        @keyframes ga-wc-ear { 0%,68%,100% { transform: scale(1,1); } 72% { transform: scale(1.05,1.1); } 76% { transform: scale(1,1); } 80% { transform: scale(1.04,1.08); } 84% { transform: scale(1,1); } }`
+    },
+    { // กิเลน (ชีตตัวละคร) — Kirin (gift_045): เด็กผู้ชายหมวกหูกระต่าย มือเท้าคาง แก้มป่อง ปอมปอมเด้ง หูหมวกพอง
+      gifts: ['gift_045'], match: [], ratio: 1, dur: 1.6, label: 'กิเลน เด็กผู้ชายใส่หมวกหูกระต่าย มือเท้าคาง แก้มป่อง',
+      layers: [
+        { anim: 'ga-ks-bob', k: 1.5, origin: '49.07% 98.49%', layers: [
+          { anim: 'ga-ks-br', origin: '49.07% 96.44%', layers: [
+            { src: GA + 'kilen/body.png' },
+            { src: GA + 'kilen/ear-left.png', anim: 'ga-ks-ear', origin: '21.51% 36.99%' },
+            { src: GA + 'kilen/ear-right.png', anim: 'ga-ks-ear', origin: '74.63% 36.99%', delay: -0.5 },
+            { src: GA + 'kilen/pom.png', anim: 'ga-ks-pom', k: 0.5, origin: '26.2% 63.79%' },
+            { src: GA + 'kilen/cheek.png', anim: 'ga-ks-puff', origin: '53.03% 48.83%' },
+            { viewBox: '0 0 4096 4096', svg: '<g class="ga-blink48"><ellipse cx="1829" cy="1721" rx="222" ry="236" fill="#FCEFEB"></ellipse><ellipse cx="2508" cy="1676" rx="184" ry="210" fill="#FCEFEB"></ellipse><path d="M1630 1760 Q1829 1900 2028 1760 M2340 1712 Q2508 1840 2676 1712" fill="none" stroke="#3A2A2A" stroke-width="22" stroke-linecap="round"></path></g>' }] }] }],
+      css: `@keyframes ga-ks-bob { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-1.69%) rotate(2deg); } }
+        @keyframes ga-ks-br { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.012,1.022); } }
+        @keyframes ga-ks-puff { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes ga-ks-pom { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+        @keyframes ga-ks-ear { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.03,1.07); } }`
     }
   ];
   function giftArt(url) {
@@ -364,10 +427,11 @@
   }
   // style ของชิ้นที่ขยับ: --ga เก็บค่า animation ไว้ (CSS เปิดใช้เฉพาะตอนเล่น) + จุดหมุน
   function artMotion(a, m) {
-    if (!m || !m.anim) return '';
+    const extra = m ? (m.style || '') + (m.pos ? `left:${m.pos[0]}%;top:${m.pos[1]}%;width:${m.pos[2]}%;height:${m.pos[3]}%;` : '') : '';
+    if (!m || !m.anim) return extra ? ` style="${extra}"` : '';
     const d = a.dur * (m.k || 1);
     const delay = m.delay ? ` ${(a.dur * m.delay).toFixed(2)}s` : '';
-    return ` class="ga-a" style="--ga:${m.anim} ${d.toFixed(2)}s ${m.ease || 'ease-in-out'}${delay} infinite;transform-origin:${m.origin || '50% 50%'}"`;
+    return ` class="ga-a" style="--ga:${m.anim} ${d.toFixed(2)}s ${m.ease || 'ease-in-out'}${delay} infinite;transform-origin:${m.origin || '50% 50%'};${extra}"`;
   }
   let artUid = 0;
   function artLayerHtml(a, l) {
@@ -378,9 +442,8 @@
         `<g class="ga-eye"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"></ellipse>`
         + `<path d="M${cx - rx} ${cy} A${rx} ${ry} 0 0 0 ${cx + rx} ${cy}" fill="none" stroke="${stroke}" stroke-width="${sw}" stroke-linecap="round"></path></g>`).join('') + '</svg>';
     }
-    const m = artMotion(a, l);
-    return m ? `<span${m}><img src="${l.src}" alt="" draggable="false" style="width:100%;height:100%;display:block"></span>`
-      : `<img src="${l.src}" alt="" draggable="false">`;
+    if (!l.anim) return `<img src="${l.src}" alt="" draggable="false"${artMotion(a, l)}>`;
+    return `<span${artMotion(a, l)}><img src="${l.src}" alt="" draggable="false" style="width:100%;height:100%;display:block"></span>`;
   }
   // ฟอนต์ตัวหนังสือในภาพ (เช่น SUGAR MILK ใช้ Gaegu) โหลดครั้งเดียวต่อหน้า เฉพาะตอนมีชิ้นนั้นขึ้นจริง
   function loadArtFont(href) {
