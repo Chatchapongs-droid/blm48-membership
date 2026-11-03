@@ -149,6 +149,16 @@
             <div class="hint">ของรางวัลคิดต่อ 1 ที่นั่ง (ซื้อ 2 ที่นั่งได้ 2 เท่า) ผู้ซื้อกด Redeem เข้า Inventory ได้เมื่อได้เลขที่นั่งแล้ว และได้ Ticket Stub อัตโนมัติ</div>
         </div>
 
+        <div class="panel">
+            <h2><i class="fa-solid fa-gift"></i> ของที่ระลึกหลังจบการแสดง</h2>
+            <div class="rewards-box">
+                <div class="title"><i class="fas fa-gift"></i> ของที่ระลึกต่อ 1 ที่นั่ง (ทุกโซน)</div>
+                <div class="rw-list" id="souvenirs"></div>
+                <button type="button" class="btn-add" style="padding:6px" onclick="document.getElementById('souvenirs').insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่มของที่ระลึก</button>
+            </div>
+            <div class="hint" id="souvenir-hint">ผู้ถือบัตรทุกคนกดรับเข้า Inventory ได้หลังเวลาจบการแสดง (ถ้าไม่ใส่เวลาจบ = หลังเที่ยงคืนของวันแสดง) เพิ่มหรือแก้ได้ตลอด แม้การแสดงจบไปแล้ว · คนที่กดรับไปแล้วจะไม่ได้ของที่เพิ่มทีหลัง</div>
+        </div>
+
         <div id="manage" style="display:none"></div>
     </div>
 </div>
@@ -294,6 +304,17 @@
     document.getElementById('zones').appendChild(el);
   }
 
+  function readRewards(rows) {
+    return [...rows].map(r => {
+      const kind = r.querySelector('.rw-kind').value;
+      if (kind === 'item') {
+        return { kind, label: r.querySelector('.rw-label').value.trim(), itemType: r.querySelector('.rw-type').value.trim(),
+                 imageUrl: r.querySelector('.rw-img').value.trim() };
+      }
+      return { kind, amount: Number(r.querySelector('.rw-amount').value) || 0 };
+    }).filter(r => r.kind === 'item' ? r.label : r.amount > 0);
+  }
+
   function collect() {
     const rounds = [...document.querySelectorAll('.round-row')].map(el => ({
       id: el.dataset.id || null,
@@ -308,14 +329,7 @@
       price: el.querySelector('.z-price').value,
       capacity: el.querySelector('.z-cap').value,
       seatPrefix: el.querySelector('.z-prefix').value.trim(),
-      rewards: [...el.querySelectorAll('.reward-row')].map(r => {
-        const kind = r.querySelector('.rw-kind').value;
-        if (kind === 'item') {
-          return { kind, label: r.querySelector('.rw-label').value.trim(), itemType: r.querySelector('.rw-type').value.trim(),
-                   imageUrl: r.querySelector('.rw-img').value.trim() };
-        }
-        return { kind, amount: Number(r.querySelector('.rw-amount').value) || 0 };
-      }).filter(r => r.kind === 'item' ? r.label : r.amount > 0)
+      rewards: readRewards(el.querySelectorAll('.reward-row'))
     }));
     return {
       id: eventId || null,
@@ -333,6 +347,7 @@
       maxPerUser: document.getElementById('f-max').value,
       status: document.getElementById('f-status').value,
       memberIds: [...selected],
+      souvenirs: readRewards(document.querySelectorAll('#souvenirs .reward-row')),
       rounds, zones
     };
   }
@@ -397,7 +412,7 @@
             <div class="bk-top"><b>${escapeHtml(b.name || b.username || '-')}</b><span>${b.source === 'holder' ? 'บัตรผู้ซื้อสินค้า' : Number(b.total).toLocaleString() + ' Tokens'}</span></div>
             <div class="bk-sub">${escapeHtml(b.username || '')} · ${escapeHtml(b.zoneName)} · ${b.roundKind === 'express' ? 'Express' : 'Normal'} · ${b.quantity} ที่นั่ง
               · ${b.status === 'cancelled' ? '<span style="color:#d64545">ยกเลิก/คืน Token แล้ว</span>' : (b.seats || []).filter(Boolean).length ? 'ที่นั่ง ' + b.seats.map(escapeHtml).join(', ') : 'รอสุ่มที่นั่ง'}
-              ${b.redeemed ? ' · รับของแล้ว' : ''}</div>
+              ${b.redeemed ? ' · รับของแล้ว' : ''}${b.souvenirClaimed ? ' · รับของที่ระลึกแล้ว' : ''}</div>
             <div class="bk-sub">${escapeHtml(b.bookingNo)} · ${theaterDateTime(b.createdAt)}</div>
           </div>`).join('') : '<div class="hint">ยังไม่มีการจอง</div>'}
       </div>
@@ -459,6 +474,7 @@
     (e.rounds || []).forEach(addRound);
     document.getElementById('zones').innerHTML = '';
     (e.zones || []).forEach(addZone);
+    document.getElementById('souvenirs').innerHTML = (e.souvenirs || []).map(rewardRowHtml).join('');
     const locked = e.status === 'cancelled';
     document.getElementById('save-bar').style.display = locked ? 'none' : '';
     renderManage(e);

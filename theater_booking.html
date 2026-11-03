@@ -80,6 +80,39 @@
       <div class="inline-error" id="redeem-error" style="margin:12px 0 0"></div></div>`;
   }
 
+  // post-show souvenirs: event-wide, claimable once the show has ended
+  function souvenirBlock(b) {
+    if (b.status === 'cancelled' || !(b.souvenirs || []).length) return '';
+    let action;
+    if (b.souvenirsClaimedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Received · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
+    else if (!b.ticketIssued) action = `<div class="th-zone-note" style="margin-top:10px">รับได้หลังจบการแสดง</div>`;
+    else if (new Date(b.souvenirsAt) > new Date()) action = `<div class="th-zone-note" style="margin-top:10px">รับได้หลังจบการแสดง · ${theaterDateTime(b.souvenirsAt)}</div>`;
+    else action = `<button type="button" class="btn-yellow is-block" id="btn-souvenir" style="margin-top:12px" onclick="claimSouvenirs()">Claim Souvenir</button>`;
+    return `<div class="section"><div class="section-heading">After-show Souvenir</div>
+      <div class="th-rewards">${theaterRewardsHtml(b.souvenirs)}</div>${action}
+      <div class="inline-error" id="souvenir-error" style="margin:12px 0 0"></div></div>`;
+  }
+
+  async function claimSouvenirs() {
+    if (redeeming) return;
+    redeeming = true;
+    const btn = document.getElementById('btn-souvenir');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing';
+    const res = await blm48ClaimTheaterSouvenirs(user.username, Number(bookingId));
+    redeeming = false;
+    if (res && res.status === 'success') {
+      if (res.wallet) { Object.assign(user, { token: res.wallet.token, cookie: res.wallet.cookie, ge_token: res.wallet.geToken }); saveUserSession(user); }
+      await load();
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = 'Claim Souvenir';
+    const err = document.getElementById('souvenir-error');
+    err.textContent = (res && res.message) || 'ทำรายการไม่สำเร็จค่ะ';
+    err.style.display = 'block';
+  }
+
   function render() {
     const b = booking;
     let footer = '';
@@ -108,6 +141,7 @@
       </div>
       ${watchBlock(b)}
       ${rewardsBlock(b)}
+      ${souvenirBlock(b)}
       <div class="section">
         <div class="th-kv"><span class="k">Booking No.</span><span class="v">${escapeHtml(b.bookingNo)}<button type="button" class="th-copy" id="copy-btn" onclick="copyNo()">Copy</button></span></div>
         <div class="th-kv"><span class="k">Created At</span><span class="v">${theaterDateTime(b.createdAt)}</span></div>

@@ -84,6 +84,9 @@ function blm48GetTheaterBooking(username, bookingId) {
 function blm48RedeemTheaterRewards(username, bookingId) {
   return blm48Rpc('redeem_theater_rewards', { p_username: username, p_booking_id: bookingId });
 }
+function blm48ClaimTheaterSouvenirs(username, bookingId) {
+  return blm48Rpc('claim_theater_souvenirs', { p_username: username, p_booking_id: bookingId });
+}
 function blm48AdminListTheaterEvents(adminUsername) {
   return blm48Rpc('admin_list_theater_events', { p_admin_username: adminUsername });
 }
