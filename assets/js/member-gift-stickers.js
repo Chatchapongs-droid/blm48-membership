@@ -119,7 +119,7 @@
     .gift-art .ga-a { animation: var(--ga); } /* ภาพจากไฟล์ออกแบบขยับตลอด (ไม่ต้องรอกดเลือก) */
     .gift-art .ga-eye { animation: ga-blink 4.2s ease-in-out infinite; }
     @keyframes ga-blink { 0%,90%,100% { transform: scaleY(0); } 93% { transform: scaleY(1); } 96% { transform: scaleY(0); } }
-    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art .ga-a, .gift-art .ga-eye { animation: none !important; } }
+    @media (prefers-reduced-motion: reduce) { .gift-sticker .gs-bd, .gift-sticker .gs-tw, .gift-photo img, .gift-art * { animation: none !important; } }
   `;
   function photoSel(motion) {
     return `.selected .gift-photo.gp-a-${motion} img, .gift-photo.play.gp-a-${motion} img`;
@@ -179,7 +179,8 @@
   // หรือ image_url ยังเป็นรูปเดิมใน match · อัปรูป/วิดีโอใหม่เมื่อไหร่ก็ใช้ไฟล์นั้นแทน
   // ตัวละครกับชิ้นส่วนขยับแยกกัน + กะพริบตา เล่นตลอดทุกที่ · ระยะ translate เป็น % ของกรอบตัวละครในไฟล์ออกแบบ
   // layer: { src } รูป / { eyes: [[cx, cy, rx, ry, fill, stroke, strokeW], ...], viewBox } เปลือกตา
-  //        { layers: [...] } กลุ่มที่ขยับรวมกัน / { svg, viewBox } SVG ดิบ (เช่นตัว Z ลอย — ใส่ style --ga เองต่อชิ้น)
+  //        { layers: [...] } กลุ่มที่ขยับรวมกัน / { svg, viewBox } SVG ดิบ (เช่นตัว Z ลอย — ใส่ style --ga หรือคลาสใน css เองต่อชิ้น)
+  //        ใน svg ใช้ {{u}} ต่อท้าย id ของ gradient — แทนด้วยเลขไม่ซ้ำทุกครั้งที่วาด (ของขวัญชิ้นเดียวกันขึ้นหลายที่ในหน้าเดียวได้)
   //        anim = ชื่อ keyframes, k = คูณความยาวรอบ, origin, delay (สัดส่วนของรอบ), ease
   const GA = 'assets/images/gifts/';
   const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
@@ -256,6 +257,55 @@
         @keyframes ga-bw-breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.035,1.025); } }
         @keyframes ga-bw-wing { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.06,1.05); } }
         @keyframes ga-bw-z { 0% { transform: translate(0,20px) scale(.6); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(30px,-70px) scale(1.1); opacity: 0; } }`
+    },
+    { // Moon Cat — Khawjao (gift_044): แมวดำผ้าพันคอม่วงหน้าพระจันทร์ วาดเป็น SVG ล้วน (ครอปกรอบ 900 เหลือเฉพาะตัว+พระจันทร์)
+      gifts: ['gift_044'], match: [], ratio: 790 / 700, dur: 1.6, label: 'แมวดำตาสีม่วงพันผ้าพันคอสีม่วงห้อยจี้ดาว นั่งหน้าพระจันทร์ดวงโต',
+      layers: [{ viewBox: '100 50 700 790', svg: '<defs><radialGradient id="gamc{{u}}glow" cx="50%" cy="50%" r="50%"><stop offset="55%" stop-color="#E9D9FF" stop-opacity="0.55"></stop><stop offset="100%" stop-color="#E9D9FF" stop-opacity="0"></stop></radialGradient><radialGradient id="gamc{{u}}moon" cx="40%" cy="35%" r="70%"><stop offset="0%" stop-color="#FFFBF2"></stop><stop offset="100%" stop-color="#E8DAFA"></stop></radialGradient><radialGradient id="gamc{{u}}iris" cx="50%" cy="38%" r="65%"><stop offset="0%" stop-color="#C9A8FF"></stop><stop offset="60%" stop-color="#8B5CDB"></stop><stop offset="100%" stop-color="#4A2A8C"></stop></radialGradient><linearGradient id="gamc{{u}}scarf" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#A879EE"></stop><stop offset="100%" stop-color="#7A47CC"></stop></linearGradient></defs><g><circle class="ga-mc-glow" cx="450" cy="390" r="330" fill="url(#gamc{{u}}glow)"></circle><circle cx="450" cy="390" r="250" fill="url(#gamc{{u}}moon)"></circle><g fill="#D9C6F5" opacity="0.55"><circle cx="370" cy="300" r="30"></circle><circle cx="560" cy="270" r="18"></circle><circle cx="600" cy="420" r="26"></circle><circle cx="330" cy="470" r="16"></circle></g></g><ellipse class="ga-mc-shadow" cx="455" cy="800" rx="200" ry="24" fill="#4A2F7A" opacity="0.25"></ellipse><g class="ga-mc-tail"><path d="M560 760 C 660 760, 700 690, 680 620 C 668 578, 632 570, 622 600" fill="none" stroke="#211B30" stroke-width="44" stroke-linecap="round"></path><path d="M622 600 C 618 585, 628 575, 640 578" fill="none" stroke="#3B3054" stroke-width="10" stroke-linecap="round" opacity="0.8"></path></g><g class="ga-mc-body"><path d="M450 560 C 560 560, 600 660, 590 740 C 584 790, 540 805, 450 805 C 360 805, 316 790, 310 740 C 300 660, 340 560, 450 560 Z" fill="#211B30"></path><path d="M330 730 C 336 680, 360 620, 400 590" fill="none" stroke="#3B3054" stroke-width="6" stroke-linecap="round"></path><rect x="378" y="700" width="62" height="105" rx="31" fill="#262036"></rect><rect x="460" y="700" width="62" height="105" rx="31" fill="#262036"></rect><path d="M392 792 v12 M409 792 v12 M474 792 v12 M491 792 v12" stroke="#4A3F66" stroke-width="4" stroke-linecap="round"></path></g><g class="ga-mc-head"><g class="ga-mc-earL"><path d="M318 420 Q 292 300 300 238 Q 360 270 412 340 Z" fill="#211B30"></path><path d="M328 395 Q 314 315 318 272 Q 360 300 392 345 Z" fill="#B99BEB"></path></g><g class="ga-mc-earR"><path d="M582 420 Q 608 300 600 238 Q 540 270 488 340 Z" fill="#211B30"></path><path d="M572 395 Q 586 315 582 272 Q 540 300 508 345 Z" fill="#B99BEB"></path></g><ellipse cx="450" cy="470" rx="180" ry="152" fill="#211B30"></ellipse><path d="M300 430 C 320 360, 380 330, 450 328" fill="none" stroke="#3B3054" stroke-width="6" stroke-linecap="round"></path><ellipse cx="350" cy="540" rx="30" ry="15" fill="#C89BEA" opacity="0.45"></ellipse><ellipse cx="550" cy="540" rx="30" ry="15" fill="#C89BEA" opacity="0.45"></ellipse><g><ellipse cx="385" cy="478" rx="54" ry="60" fill="url(#gamc{{u}}iris)"></ellipse><ellipse cx="385" cy="488" rx="30" ry="36" fill="#1A1030"></ellipse><circle cx="366" cy="458" r="15" fill="#FFFFFF"></circle><circle cx="404" cy="508" r="7" fill="#FFFFFF" opacity="0.9"></circle></g><g><ellipse cx="515" cy="478" rx="54" ry="60" fill="url(#gamc{{u}}iris)"></ellipse><ellipse cx="515" cy="488" rx="30" ry="36" fill="#1A1030"></ellipse><circle cx="496" cy="458" r="15" fill="#FFFFFF"></circle><circle cx="534" cy="508" r="7" fill="#FFFFFF" opacity="0.9"></circle></g><g class="ga-mc-blink"><ellipse cx="385" cy="478" rx="60" ry="66" fill="#211B30"></ellipse><ellipse cx="515" cy="478" rx="60" ry="66" fill="#211B30"></ellipse><path d="M330 480 Q 385 520 440 480 M460 480 Q 515 520 570 480" fill="none" stroke="#B99BEB" stroke-width="7" stroke-linecap="round"></path></g><path d="M440 532 L460 532 L450 544 Z" fill="#F2A9CF"></path><path d="M450 544 Q 440 560 426 552 M450 544 Q 460 560 474 552" fill="none" stroke="#B99BEB" stroke-width="5" stroke-linecap="round"></path><g stroke="#9C86C9" stroke-width="4" stroke-linecap="round"><path d="M300 520 L232 506"></path><path d="M302 540 L236 546"></path><path d="M600 520 L668 506"></path><path d="M598 540 L664 546"></path></g></g><g class="ga-mc-scarf"><path d="M318 600 Q 450 650 582 600 L 588 628 Q 450 684 312 628 Z" fill="url(#gamc{{u}}scarf)"></path><path d="M330 612 Q 450 656 570 612" fill="none" stroke="#D7C0FA" stroke-width="5" stroke-linecap="round" opacity="0.8"></path><path class="ga-mc-tie" d="M350 620 C 330 660, 340 700, 316 734 L 352 742 C 368 706, 372 668, 376 630 Z" fill="#8E5BD8"></path><g class="ga-mc-charm"><path d="M450 646 L450 676" stroke="#E8D8FF" stroke-width="4" stroke-linecap="round"></path><path d="M450 668 L459 690 L483 692 L465 707 L471 731 L450 718 L429 731 L435 707 L417 692 L441 690 Z" fill="#F6D98A" stroke="#E1B85A" stroke-width="3" stroke-linejoin="round"></path><circle cx="444" cy="694" r="4" fill="#FFFFFF" opacity="0.8"></circle></g></g>' }],
+      css: `@keyframes ga-mc-blinkk { 0%,88%,100% { transform: scaleY(0); } 91% { transform: scaleY(1); } 94% { transform: scaleY(0); } }
+        @keyframes ga-mc-tilt { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        @keyframes ga-mc-breathe { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.015,1.03); } }
+        @keyframes ga-mc-tailwag { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(9deg); } }
+        @keyframes ga-mc-twitch { 0%,68%,100% { transform: rotate(0); } 72% { transform: rotate(-12deg); } 76% { transform: rotate(0); } 80% { transform: rotate(-9deg); } 84% { transform: rotate(0); } }
+        @keyframes ga-mc-swing { 0%,100% { transform: rotate(10deg); } 50% { transform: rotate(-10deg); } }
+        @keyframes ga-mc-sway { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+        @keyframes ga-mc-pulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.05); opacity: 1; } }
+        @keyframes ga-mc-shadowk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03,1); } }
+        .gift-art .ga-mc-blink { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: ga-mc-blinkk 4.8s ease-in-out infinite; }
+        .gift-art .ga-mc-head { transform-box: view-box; transform-origin: 450px 610px; animation: ga-mc-tilt 2.4s ease-in-out infinite; }
+        .gift-art .ga-mc-body, .gift-art .ga-mc-scarf { transform-box: view-box; transform-origin: 450px 805px; animation: ga-mc-breathe 1.6s ease-in-out infinite; }
+        .gift-art .ga-mc-tail { transform-box: view-box; transform-origin: 565px 765px; animation: ga-mc-tailwag 1.6s ease-in-out infinite; }
+        .gift-art .ga-mc-earR { transform-box: view-box; transform-origin: 560px 400px; animation: ga-mc-twitch 4.8s ease-in-out infinite; }
+        .gift-art .ga-mc-charm { transform-box: view-box; transform-origin: 450px 646px; animation: ga-mc-swing 1.6s ease-in-out -0.24s infinite; }
+        .gift-art .ga-mc-tie { transform-box: view-box; transform-origin: 362px 625px; animation: ga-mc-sway 1.6s ease-in-out -0.4s infinite; }
+        .gift-art .ga-mc-glow { transform-box: view-box; transform-origin: 450px 390px; animation: ga-mc-pulse 2.4s ease-in-out infinite; }
+        .gift-art .ga-mc-shadow { transform-box: fill-box; transform-origin: center; animation: ga-mc-shadowk 1.6s ease-in-out infinite; }`
+    },
+    { // ชรูมมี่บนพระจันทร์ — Mushroom (gift_050): เห็ดหมวกแดงนั่งตกดาวบนพระจันทร์เสี้ยว (ลอย > โยกพระจันทร์ > คันเบ็ด > สาย > ดาว)
+      gifts: ['gift_050'], match: [], ratio: 1, dur: 1.6, label: 'เห็ดหมวกแดงนั่งตกดาวบนพระจันทร์เสี้ยว',
+      layers: [
+        { viewBox: '12 -13 876 876', svg: '<defs><radialGradient id="gasd{{u}}g" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFF6C8" stop-opacity="0.55"></stop><stop offset="100%" stop-color="#FFF1B8" stop-opacity="0"></stop></radialGradient></defs><circle class="ga-sd-glow" cx="354" cy="361" r="360" fill="url(#gasd{{u}}g)"></circle>' },
+        { src: GA + 'shroomie-moon/star-tr.png', anim: 'ga-sd-sp', origin: '73.24% 11.72%' },
+        { anim: 'ga-sd-fl', k: 1.5, layers: [
+          { anim: 'ga-sd-rk', k: 1.5, origin: '39.06% 42.72%', layers: [
+            { src: GA + 'shroomie-moon/moon.png' },
+            { viewBox: '0 0 4096 4096', svg: '<g class="ga-sd-blink"><circle cx="2394" cy="2315" r="34" fill="#FFF4E6"></circle><circle cx="2477" cy="2235" r="34" fill="#FFF4E6"></circle><path d="M2366 2318 Q2394 2346 2422 2318 M2449 2238 Q2477 2266 2505 2238" fill="none" stroke="#3A2A22" stroke-width="10" stroke-linecap="round"></path></g>' },
+            { anim: 'ga-sd-rd', origin: '63.6% 58.54%', layers: [
+              { src: GA + 'shroomie-moon/rod.png' },
+              { anim: 'ga-sd-sw', origin: '90.04% 37.96%', delay: -0.3, layers: [
+                { src: GA + 'shroomie-moon/line.png' },
+                { src: GA + 'shroomie-moon/fish-star.png', anim: 'ga-sd-st', k: 0.5, origin: '84.89% 89.97%' }] }] }] }] },
+        { src: GA + 'shroomie-moon/sparkle-bl.png', anim: 'ga-sd-sp', origin: '21.97% 74.71%', delay: -0.5 },
+        { src: GA + 'shroomie-moon/plus.png', anim: 'ga-sd-sp', k: 0.5, origin: '91.19% 90.58%' }],
+      css: `@keyframes ga-sd-fl { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.05%); } }
+        @keyframes ga-sd-rk { 0%,100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+        @keyframes ga-sd-rd { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }
+        @keyframes ga-sd-sw { 0%,100% { transform: rotate(5deg); } 50% { transform: rotate(-5deg); } }
+        @keyframes ga-sd-st { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+        @keyframes ga-sd-sp { 0%,100% { transform: scale(.72); opacity: .65; } 50% { transform: scale(1.12); opacity: 1; } }
+        @keyframes ga-sd-gl { 0%,100% { opacity: .35; transform: scale(1); } 50% { opacity: .7; transform: scale(1.05); } }
+        @keyframes ga-sd-blinkk { 0%,88%,100% { transform: scaleY(0); } 91% { transform: scaleY(1); } 94% { transform: scaleY(0); } }
+        .gift-art .ga-sd-glow { transform-box: fill-box; transform-origin: center; animation: ga-sd-gl 1.6s ease-in-out infinite; }
+        .gift-art .ga-sd-blink { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); animation: ga-sd-blinkk 4.8s ease-in-out infinite; }`
     }
   ];
   function giftArt(url) {
@@ -281,9 +331,10 @@
     const delay = m.delay ? ` ${(a.dur * m.delay).toFixed(2)}s` : '';
     return ` class="ga-a" style="--ga:${m.anim} ${d.toFixed(2)}s ${m.ease || 'ease-in-out'}${delay} infinite;transform-origin:${m.origin || '50% 50%'}"`;
   }
+  let artUid = 0;
   function artLayerHtml(a, l) {
     if (l.layers) return `<span${artMotion(a, l)}>${l.layers.map(c => artLayerHtml(a, c)).join('')}</span>`;
-    if (l.svg) return `<svg viewBox="${l.viewBox}" aria-hidden="true">${l.svg}</svg>`;
+    if (l.svg) return `<svg viewBox="${l.viewBox}" aria-hidden="true">${l.svg.replace(/\{\{u\}\}/g, ++artUid)}</svg>`;
     if (l.eyes) {
       return `<svg viewBox="${l.viewBox}" preserveAspectRatio="none" aria-hidden="true">` + l.eyes.map(([cx, cy, rx, ry, fill, stroke, sw]) =>
         `<g class="ga-eye"><ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}"></ellipse>`
