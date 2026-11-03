@@ -113,7 +113,9 @@
     ${photoSel('breathe')} { animation: gs-breathe 3.6s ease-in-out infinite; }
     ${photoSel('glide')} { animation: gs-glide 2.8s ease-in-out infinite; transform-origin: 50% 50%; }
     @keyframes gs-glide { 0%,100% { transform: translate(-4px, 3px) rotate(-5deg); } 50% { transform: translate(4px, -6px) rotate(3deg); } }
-    .gift-art { position: relative; display: inline-block; flex-shrink: 0; }
+    /* กรอบนอกเป็นสี่เหลี่ยมจัตุรัสเท่าของขวัญชิ้นอื่นเสมอ (การ์ดสูงเท่ากัน) — ภาพทรงยาว/ทรงสูงจัดกลางใน .ga-frame */
+    .gift-art { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; vertical-align: middle; }
+    .gift-art .ga-frame { position: relative; display: block; flex-shrink: 0; }
     .gift-art .ga-body, .gift-art .ga-body span, .gift-art .ga-body img, .gift-art .ga-body svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
     .gift-art .ga-eye { transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
     .gift-art .ga-a { animation: var(--ga); } /* ภาพจากไฟล์ออกแบบขยับตลอด (ไม่ต้องรอกดเลือก) */
@@ -463,8 +465,9 @@
     const box = Number(size) || 70;
     const h = a.ratio >= 1 ? box : Math.round(box * a.ratio);
     const w = a.ratio >= 1 ? Math.round(box / a.ratio) : box;
-    return `<span class="gift-art${opts && opts.play ? ' play' : ''}" role="img" aria-label="${a.label}" style="width:${w}px;height:${h}px">`
-      + `<span class="ga-body"${a.scale ? ` style="transform:scale(${a.scale})"` : ''}>${artLayerHtml(a, Object.assign({}, a.body, { layers: a.layers }))}</span></span>`;
+    return `<span class="gift-art${opts && opts.play ? ' play' : ''}" role="img" aria-label="${a.label}" style="width:${box}px;height:${box}px">`
+      + `<span class="ga-frame" style="width:${w}px;height:${h}px">`
+      + `<span class="ga-body"${a.scale ? ` style="transform:scale(${a.scale})"` : ''}>${artLayerHtml(a, Object.assign({}, a.body, { layers: a.layers }))}</span></span></span>`;
   }
 
   // 🎬 ของขวัญที่อัปโหลดเป็นวิดีโอ MP4 -> เล่นวนเงียบ ๆ ตลอด แทน <img> (วิดีโอขยับเองอยู่แล้ว ไม่ต้องใส่ท่าเพิ่ม)
