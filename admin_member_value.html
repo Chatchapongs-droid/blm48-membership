@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | Member Value</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 860px; margin: 0 auto; padding: 14px 12px 60px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
+
+        .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .chip { border: 1px solid #eee; background: #fff; border-radius: 20px; padding: 6px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #666; cursor: pointer; }
+        .chip.active { background: #222; border-color: #222; color: #fff; }
+        .tabs { display: flex; gap: 8px; margin: 4px 0 12px; }
+        .filter-tab { flex: 1; border-radius: 20px; padding: 9px 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+        /* สรุปบนสุด */
+        .sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 6px; }
+        .sum-box { background: #f8f8f8; padding: 12px 10px; }
+        .sum-num { font-size: 18px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 5px; }
+        .sum-lbl { font-size: 12px; color: #767676; margin-top: 3px; }
+        .how { font-size: 12px; color: #767676; line-height: 1.7; margin: 8px 0 4px; }
+        .how b { color: #555; }
+
+        /* แถวเมมเบอร์ */
+        .m-row { display: grid; grid-template-columns: 34px 44px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
+        .m-rank { font-size: 15px; font-weight: 700; color: #999; text-align: center; }
+        .m-row.top1 .m-rank { color: #d99a00; } .m-row.top2 .m-rank { color: #8c8c8c; } .m-row.top3 .m-rank { color: #b0703a; }
+        .m-ava { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #f3f3f3; border: 1px solid #eee; }
+        .m-name { font-weight: 700; font-size: 15px; color: #333; display: flex; align-items: center; gap: 6px; }
+        .pill { font-size: 11px; font-weight: 700; background: #f1f1f1; color: #666; padding: 1px 7px; border-radius: 20px; }
+        .bar { height: 6px; background: #f3f3f3; border-radius: 4px; margin: 6px 0 4px; overflow: hidden; display: flex; }
+        .bar span { display: block; height: 100%; }
+        .c-merch { background: #ffc107; } .c-cookie { background: #ff85a2; } .c-vote { background: #4dabf7; } .c-theater { background: #9775fa; }
+        .m-sub { font-size: 12px; color: #767676; }
+        .m-total { text-align: right; font-weight: 700; font-size: 16px; color: #333; white-space: nowrap; }
+        .m-total small { display: block; font-size: 12px; font-weight: 600; color: #767676; }
+
+        /* รายละเอียด (กดแถวเพื่อกาง) */
+        .m-detail { display: none; grid-column: 3 / -1; font-size: 12.5px; color: #555; line-height: 1.8; padding-top: 2px; }
+        .m-row.open .m-detail { display: block; }
+        .d-line { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed #f0f0f0; }
+        .d-line span:first-child { display: flex; align-items: center; gap: 6px; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #767676; margin: 2px 0 6px; }
+        .legend span { display: inline-flex; align-items: center; gap: 5px; }
+        @media (max-width: 420px) { .m-row { grid-template-columns: 26px 38px minmax(0, 1fr) auto; gap: 8px; } .m-ava { width: 38px; height: 38px; } }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title">Member Value</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div class="chips" id="periods"></div>
+        <div class="tabs" id="groups"></div>
+        <div id="summary"></div>
+        <div class="legend">
+            <span><i class="dot c-merch"></i> สินค้า</span><span><i class="dot c-cookie"></i> Cookie &amp; Gift</span>
+            <span><i class="dot c-vote"></i> โหวต</span><span><i class="dot c-theater"></i> Theater</span>
+        </div>
+        <div id="list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
+        <div class="how"><b>คิดยังไง:</b> มูลค่าเป็นหน่วย Token · <b>สินค้า</b> = การ์ด/ของที่มีชื่อเมมเบอร์ ที่ขายได้ × ราคาที่จ่ายจริงต่อใบ ·
+            <b>Cookie &amp; Gift</b> = Cookie และของขวัญที่แฟนให้ (100 Cookie = 10 Token) หัก Campaign Refund (นับในเดือนของแคมเปญ) ·
+            <b>โหวต</b> = Token ที่โหวตให้ (หักที่คืนแล้ว) · <b>Theater</b> = ค่าบัตรแบ่งเท่ากันให้เมมเบอร์ที่ขึ้นแสดง · GE Token แสดงแยก ไม่รวมในยอด ·
+            ไม่นับการใช้จ่ายของบัญชี Role Admin/CEO (บัญชีทดสอบ)</div>
+    </div>
+</div>
+
+<script>
+  let user = null;
+  let rows = [];
+  let period = 'month';
+  let group = 'BLM48';
+  let reqSeq = 0;
+  const DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s200';
+
+  // ช่วงเวลาตามเวลาไทย (UTC+7)
+  function bkkStart(y, m, d) { return new Date(Date.UTC(y, m, d || 1) - 7 * 3600e3); }
+  function nowBkk() { const n = new Date(Date.now() + 7 * 3600e3); return { y: n.getUTCFullYear(), m: n.getUTCMonth() }; }
+  const PERIODS = [
+    ['month', 'This month', () => { const t = nowBkk(); return [bkkStart(t.y, t.m), null]; }],
+    ['last', 'Last month', () => { const t = nowBkk(); return [bkkStart(t.y, t.m - 1), bkkStart(t.y, t.m)]; }],
+    ['year', 'This year', () => { const t = nowBkk(); return [bkkStart(t.y, 0), null]; }],
+    ['all', 'All time', () => [null, null]]
+  ];
+
+  function fmt(n, d) { return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: d == null ? 0 : d }); }
+  function coin(n) { return `<i class="fa-solid fa-coins"></i> ${fmt(n)}`; }
+
+  function renderControls() {
+    document.getElementById('periods').innerHTML = PERIODS.map(([k, label]) =>
+      `<button type="button" class="chip ${k === period ? 'active' : ''}" onclick="setPeriod('${k}')">${label}</button>`).join('');
+    const groups = ['BLM48', 'NPT48'];
+    document.getElementById('groups').innerHTML = groups.map(g => {
+      const n = rows.filter(r => r.group === g).length;
+      return `<button type="button" class="filter-tab ${g === group ? 'active' : ''}" onclick="setGroup('${g}')">${g}${rows.length ? ` (${n})` : ''}</button>`;
+    }).join('');
+  }
+  function setPeriod(k) { period = k; try { sessionStorage.setItem('mvPeriod', k); } catch (e) {} load(); }
+  function setGroup(g) { group = g; try { sessionStorage.setItem('mvGroup', g); } catch (e) {} render(); }
+
+  async function load() {
+    renderControls();
+    const list = document.getElementById('list');
+    list.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+    const seq = ++reqSeq;
+    const [from, to] = PERIODS.find(p => p[0] === period)[2]();
+    try {
+      const { data, error } = await blm48Supabase.rpc('admin_member_value', {
+        p_admin_username: user.username, p_from: from ? from.toISOString() : null, p_to: to ? to.toISOString() : null });
+      if (seq !== reqSeq) return;
+      if (error) throw error;
+      if (!data || data.status !== 'success') { list.innerHTML = `<div class="empty-state">${escapeHtml((data && data.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      rows = (data.members || []).map(r => Object.assign(r, Object.fromEntries(['total', 'merchTokens', 'cookieTokens', 'voteTokens', 'theaterTokens', 'voteGe', 'cookies', 'giftCookies', 'refundCookies', 'merchQty', 'spenders'].map(k => [k, Number(r[k]) || 0]))));
+      render();
+    } catch (e) {
+      if (seq !== reqSeq) return;
+      console.error('Member value load error:', e);
+      list.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+    }
+  }
+
+  function render() {
+    renderControls();
+    const shown = rows.filter(r => r.group === group).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+    const sum = shown.reduce((s, r) => s + r.total, 0);
+    const top = shown[0];
+    const active = shown.filter(r => r.total > 0).length;
+    document.getElementById('summary').innerHTML = `
+      <div class="sum">
+        <div class="sum-box"><div class="sum-num">${coin(sum)}</div><div class="sum-lbl">มูลค่ารวม ${group}</div></div>
+        <div class="sum-box"><div class="sum-num" style="font-size:16px">${top && top.total > 0 ? escapeHtml(top.name) : '-'}</div><div class="sum-lbl">อันดับ 1${top && sum > 0 ? ` · ${Math.round(top.total / sum * 100)}% ของทั้งหมด` : ''}</div></div>
+        <div class="sum-box"><div class="sum-num">${active}<span style="font-size:13px;color:#767676;font-weight:600">/${shown.length}</span></div><div class="sum-lbl">เมมเบอร์ที่มีรายได้</div></div>
+      </div>`;
+    const max = Math.max(1, ...shown.map(r => r.total));
+    document.getElementById('list').innerHTML = shown.length ? shown.map((r, i) => {
+      const seg = (v, cls) => v > 0 ? `<span class="${cls}" style="width:${(v / max * 100).toFixed(2)}%"></span>` : '';
+      const parts = [['สินค้า', r.merchTokens], ['Cookie & Gift', r.cookieTokens], ['โหวต', r.voteTokens], ['Theater', r.theaterTokens]].filter(p => p[1] > 0);
+      return `
+      <div class="m-row ${i < 3 && r.total > 0 ? 'top' + (i + 1) : ''}" onclick="this.classList.toggle('open')">
+        <div class="m-rank">${i + 1}</div>
+        <img class="m-ava" src="${escapeAttr(r.profile || DEFAULT_AVATAR)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}'">
+        <div style="min-width:0">
+          <div class="m-name">${escapeHtml(r.name)}${r.status === 'Graduated' ? ' <span class="pill">Graduated</span>' : ''}</div>
+          <div class="bar">${seg(r.merchTokens, 'c-merch')}${seg(r.cookieTokens, 'c-cookie')}${seg(r.voteTokens, 'c-vote')}${seg(r.theaterTokens, 'c-theater')}</div>
+          <div class="m-sub">${parts.length ? parts.map(p => `${p[0]} ${fmt(p[1])}`).join(' · ') : 'ยังไม่มีรายได้ในช่วงนี้'}</div>
+        </div>
+        <div class="m-total">${coin(r.total)}<small>${fmt(r.spenders)} คนจ่าย</small></div>
+        <div class="m-detail">
+          <div class="d-line"><span><i class="dot c-merch"></i> สินค้า (${fmt(r.merchQty)} ชิ้น)</span><span>${fmt(r.merchTokens, 1)} Token</span></div>
+          <div class="d-line"><span><i class="dot c-cookie"></i> Cookie ที่แฟนให้</span><span>${fmt(r.cookies)} Cookie</span></div>
+          ${r.giftCookies ? `<div class="d-line"><span><i class="dot c-cookie"></i> ของขวัญในหน้าโหวต</span><span>${fmt(r.giftCookies)} Cookie</span></div>` : ''}
+          ${r.refundCookies ? `<div class="d-line"><span><i class="dot c-cookie"></i> หัก Campaign Refund</span><span>-${fmt(r.refundCookies)} Cookie</span></div>` : ''}
+          <div class="d-line"><span><i class="dot c-cookie"></i> = Cookie &amp; Gift</span><span>${fmt(r.cookieTokens, 1)} Token</span></div>
+          <div class="d-line"><span><i class="dot c-vote"></i> โหวตด้วย Token</span><span>${fmt(r.voteTokens)} Token</span></div>
+          <div class="d-line"><span><i class="dot c-theater"></i> Theater</span><span>${fmt(r.theaterTokens, 1)} Token</span></div>
+          ${r.voteGe ? `<div class="d-line"><span><i class="fa-solid fa-gem" style="font-size:11px"></i> โหวตด้วย GE Token (ไม่รวมในยอด)</span><span>${fmt(r.voteGe)} GE</span></div>` : ''}
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty-state">ไม่มีเมมเบอร์ในกลุ่มนี้</div>';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && user.role.toLowerCase() === 'admin'))) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+    try {
+      const p = sessionStorage.getItem('mvPeriod'); if (PERIODS.some(x => x[0] === p)) period = p;
+      const g = sessionStorage.getItem('mvGroup'); if (g === 'BLM48' || g === 'NPT48') group = g;
+    } catch (e) {}
+    document.getElementById('page-content').style.display = 'block';
+    load();
+  });
+</script>
+</body>
+</html>
