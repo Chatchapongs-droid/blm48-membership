@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | Photobook</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 760px; margin: 0 auto; padding: 14px 12px 100px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; line-height: 1.7; }
+        .intro { font-size: 12.5px; color: #767676; line-height: 1.7; margin: 2px 0 12px; }
+        .search { width: 100%; padding: 10px 14px; border: 1px solid #eee; border-radius: 10px; font-family: inherit; font-size: 14px; margin-bottom: 6px; }
+
+        /* แถวหนังสือ: ปก + ชื่อ + จำนวนหน้า + ใช้ที่ไหนบ้าง */
+        a.b-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit; }
+        .b-cover { width: 54px; height: 76px; flex: 0 0 54px; border-radius: 3px 6px 6px 3px; background: #f3f3f3 center/cover no-repeat;
+            box-shadow: inset 3px 0 0 rgba(0,0,0,.12); }
+        .b-row.hidden .b-cover, .b-row.hidden .b-title { opacity: .5; }
+        .b-info { flex: 1; min-width: 0; }
+        .b-title { font-weight: 700; font-size: 15px; color: #333; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .b-sub { font-size: 12.5px; color: #767676; margin-top: 3px; }
+        .b-uses { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+        .use { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+        .use.shop { background: #fff3c4; color: #7a5a00; }
+        .use.theater { background: #ffe6ee; color: #b3243f; }
+        .use.none { background: #f3f3f3; color: #767676; font-weight: 600; }
+        .pill-off { font-size: 11px; font-weight: 700; background: #f1f1f1; color: #666; padding: 2px 8px; border-radius: 20px; }
+        .b-arrow { color: #ccc; }
+
+        .fab-create {
+            position: fixed; right: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 200;
+            width: 58px; height: 58px; border-radius: 50%;
+            background: #ffc107; color: #222; font-size: 24px;
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); transition: transform 0.15s;
+        }
+        .fab-create:active { transform: scale(0.94); }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title">Photobook</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div class="intro">สร้างเล่มหนังสือ (ปกหน้า · รองปก · เนื้อหา · รองปกหลัง · ปกหลัง) แล้วนำไปขายใน Shop หรือแจกเป็นของที่ระลึก Theater · คนที่ได้รับจะเปิดอ่านเป็นหนังสือ 3D ใน Inventory</div>
+        <input id="search" class="search" type="search" placeholder="Search photobook..." oninput="render()">
+        <div id="book-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
+        <a class="fab-create" href="admin_photobook?id=new" aria-label="New Photobook" title="New Photobook"><i class="fas fa-plus"></i></a>
+    </div>
+</div>
+
+<script>
+  let user = null;
+  let books = [];
+
+  async function loadBooks() {
+    const list = document.getElementById('book-list');
+    try {
+      const { data, error } = await blm48Supabase.rpc('admin_list_photobooks', { p_admin_username: user.username });
+      if (error) throw error;
+      if (!data || data.status !== 'success') { list.innerHTML = `<div class="empty-state">${escapeHtml((data && data.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      books = data.books || [];
+      render();
+    } catch (e) {
+      console.error('Load photobooks error:', e);
+      list.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+    }
+  }
+
+  function usesHtml(b) {
+    const shop = (b.shopUses || []).map(u => `<span class="use shop"><i class="fa-solid fa-bag-shopping"></i> ${escapeHtml(u.name || u.id)}</span>`);
+    const th = (b.theaterUses || []).map(u => `<span class="use theater"><i class="fa-solid fa-masks-theater"></i> ${escapeHtml(u.title || ('#' + u.id))}</span>`);
+    const all = shop.concat(th);
+    return `<div class="b-uses">${all.length ? all.join('') : '<span class="use none">ยังไม่ได้นำไปใช้</span>'}</div>`;
+  }
+
+  function render() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const rows = books.filter(b => !q || String(b.title || '').toLowerCase().includes(q) || String(b.description || '').toLowerCase().includes(q));
+    document.getElementById('book-list').innerHTML = rows.length ? rows.map(b => `
+      <a class="b-row ${b.status === 'hidden' ? 'hidden' : ''}" href="admin_photobook?id=${encodeURIComponent(b.id)}">
+        <div class="b-cover" style="background-image:url('${escapeAttr(b.coverUrl || '')}')"></div>
+        <div class="b-info">
+          <div class="b-title">${escapeHtml(b.title || 'Untitled')}${b.status === 'hidden' ? ' <span class="pill-off">Hidden</span>' : ''}</div>
+          <div class="b-sub">${Number(b.pageCount || 0).toLocaleString()} หน้า · มีคนได้รับแล้ว ${Number(b.owners || 0).toLocaleString()} คน</div>
+          ${usesHtml(b)}
+        </div>
+        <i class="fas fa-chevron-right b-arrow"></i>
+      </a>`).join('')
+      : `<div class="empty-state">${q ? 'ไม่พบโฟโต้บุ๊ค' : 'ยังไม่มีโฟโต้บุ๊ค<br>กด + เพื่อสร้างเล่มแรก'}</div>`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && user.role.toLowerCase() === 'admin'))) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+    document.getElementById('page-content').style.display = 'block';
+    loadBooks();
+  });
+</script>
+</body>
+</html>

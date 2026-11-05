@@ -18,6 +18,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabase-client.js"></script>
     <script src="assets/js/common.js"></script>
+    <script src="assets/js/admin-photobook-picker.js"></script>
     <script src="assets/js/admin-pin.js"></script>
     <script src="assets/js/theater.js"></script>
     <style>
@@ -287,11 +288,23 @@
               <button type="button" class="rw-upload" aria-label="อัปโหลดรูป" onclick="this.nextElementSibling.click()"><i class="fa-solid fa-upload"></i></button>
               <input type="file" accept="image/*" hidden onchange="uploadRewardImage(this)">
             </div>
+            <button type="button" class="btn-add btn-pb-pick" style="padding:6px;justify-content:center" onclick="pickRewardPhotobook(this)"><i class="fa-solid fa-book"></i> Photobook</button>
           </div>
           <input class="rw-amount" type="number" min="1" placeholder="จำนวน" value="${rw.amount || ''}" style="display:${rw.kind === 'item' ? 'none' : 'block'}">
         </div>
         <button type="button" class="btn-del" onclick="this.closest('.reward-row').remove()"><i class="fa-solid fa-xmark"></i></button>
       </div>`;
+  }
+  // ใช้เล่มจากหน้า Admin Photobook เป็นไอเทมรางวัล: ชื่อ/ประเภท/รูปปก (ระบบผูกเล่มด้วยรูปปก → เปิดอ่าน 3D ใน Inventory ได้)
+  function pickRewardPhotobook(btn) {
+    blm48TogglePhotobookPicker(btn, user.username, b => {
+      const box = btn.closest('.rw-item');
+      box.querySelector('.rw-label').value = b.title;
+      box.querySelector('.rw-type').value = 'BLM48 Photobook';
+      const img = box.querySelector('.rw-img');
+      img.value = b.coverUrl;
+      syncRewardThumb(img);
+    });
   }
   function syncRewardThumb(input) {
     const url = input.value.trim();

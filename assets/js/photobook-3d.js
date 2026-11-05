@@ -1,5 +1,7 @@
 // 📖 โฟโต้บุ๊ค 3D: หนังสือปกแข็งหมุนดูได้รอบเล่ม → แตะเพื่อเปิด → พลิกหน้ากระดาษตามนิ้ว (มีแสงเงา/เสียง/สั่น)
 // ใช้: blm48OpenPhotobook3D({ title, cover, folder })
+//   folder = "photobook:<id>" → เล่มที่สร้างจากหน้า Admin Photobook (ตาราง photobooks: ปกหน้า/รองปกหน้า/เนื้อหา/รองปกหลัง/ปกหลัง)
+//   หรือส่ง { pages, innerFront, innerBack, back } มาตรงๆ ก็ได้ (หน้า Admin ใช้พรีวิว)
 //   folder = โฟลเดอร์รูปใน Supabase Storage (bucket app-assets) เช่น "photobooks/GINO KAMI7 GE1"
 //   ไฟล์ page_001 = ปกหน้า (ข้ามไป ใช้รูป cover ของไอเทมแทน), page_002... = หน้าด้านใน
 // รูปหน้าต้นฉบับใหญ่มาก (3333x5000, ~1.5MB) จึงย่อเหลือกว้าง 1100px ในเครื่อง + เก็บแคชไว้ เปิดครั้งหน้าเร็วทันที
@@ -184,7 +186,10 @@
   window.blm48OpenPhotobook3D = function (opts) {
     injectStyles();
     const title = opts.title || 'PhotoBook';
-    const coverUrl = opts.cover || '';
+    let coverUrl = opts.cover || '';
+    let innerFrontUrl = opts.innerFront || '';  // รองปกหน้า (ไม่มี = ลาย BLM48)
+    let innerBackUrl = opts.innerBack || '';    // รองปกหลัง
+    let backUrl = opts.back || '';              // ปกหลัง (ไม่มี = ปกหลังเบลอ + โลโก้)
 
     const o = document.createElement('div');
     o.className = 'pb-overlay';
@@ -293,10 +298,14 @@
 
       board = document.createElement('div');
       board.className = 'pb-board';
-      const boardIn = face('is-board is-endpaper');
-      setImg(boardIn, ENDPAPER);
-      const boardOut = face('is-back is-board', `<div class="pb-backcover"><div class="bg"></div><img src="${LOGO}" alt="" draggable="false"><span>${esc(title)}</span></div>`);
-      boardOut.querySelector('.bg').style.backgroundImage = coverUrl ? `url("${coverUrl}")` : '';
+      const boardIn = face('is-board' + (innerBackUrl ? '' : ' is-endpaper'));
+      setImg(boardIn, innerBackUrl || ENDPAPER);
+      let boardOut;
+      if (backUrl) { boardOut = face('is-back is-board'); setImg(boardOut, backUrl); }
+      else {
+        boardOut = face('is-back is-board', `<div class="pb-backcover"><div class="bg"></div><img src="${LOGO}" alt="" draggable="false"><span>${esc(title)}</span></div>`);
+        boardOut.querySelector('.bg').style.backgroundImage = coverUrl ? `url("${coverUrl}")` : '';
+      }
       board.appendChild(boardIn); board.appendChild(boardOut);
       obj.appendChild(board);
       board._in = boardIn;
@@ -308,8 +317,8 @@
         if (i === 0) {
           front = face('is-cover', '<div class="pb-img"></div><div class="pb-gloss"></div>');
           setImg(front, coverUrl);
-          back = face('is-back is-cover is-endpaper');
-          setImg(back, ENDPAPER);
+          back = face('is-back is-cover' + (innerFrontUrl ? '' : ' is-endpaper'));
+          setImg(back, innerFrontUrl || ENDPAPER);
         } else {
           frontPage = 2 * i - 2; backPage = 2 * i - 1;
           front = face('is-loading');
@@ -647,8 +656,21 @@
     // ---------- เริ่ม ----------
     async function start() {
       try {
-        if (!opts.folder || !sbClient()) throw new Error('no folder');
-        pages = await listPages(opts.folder);
+        if (Array.isArray(opts.pages)) pages = opts.pages.slice();
+        else if (/^photobook:d+$/.test(opts.folder || '')) {
+          const sb = sbClient();
+          const u = typeof getUserSession === 'function' ? getUserSession() : null;
+          const { data, error } = await sb.rpc('get_photobook', { p_username: (u && u.username) || '', p_ref: opts.folder });
+          if (error) throw error;
+          if (!data || data.status !== 'success') { if (alive) showError((data && data.message) || 'เปิดโฟโต้บุ๊คไม่สำเร็จค่ะ'); return; }
+          const b = data.book;
+          pages = b.pages || [];
+          coverUrl = b.coverUrl || coverUrl;
+          innerFrontUrl = b.innerFrontUrl || ''; innerBackUrl = b.innerBackUrl || ''; backUrl = b.backUrl || '';
+        } else {
+          if (!opts.folder || !sbClient()) throw new Error('no folder');
+          pages = await listPages(opts.folder);
+        }
         if (!alive) return;
         if (!pages.length) { showError('ยังไม่มีหน้าในโฟโต้บุ๊คเล่มนี้ค่ะ'); return; }
         // สัดส่วนหน้า: ใช้จากรูปปก (หน้าในเป็นสัดส่วนเดียวกัน) จะได้ไม่ต้องรอโหลดหน้าใหญ่

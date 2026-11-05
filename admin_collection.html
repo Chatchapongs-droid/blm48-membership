@@ -19,6 +19,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="assets/js/supabase-client.js"></script>
     <script src="assets/js/common.js"></script>
+    <script src="assets/js/admin-photobook-picker.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
@@ -630,6 +631,7 @@
       <div class="tools-row">
         <button type="button" class="${draft.items.length ? 'btn-mini' : 'btn btn-up'}" onclick="document.getElementById('file-many').click()"><i class="fa-solid fa-images"></i> Upload หลายรูป</button>
         <button type="button" class="btn-mini" onclick="addCardRow()"><i class="fa-solid fa-plus"></i> เพิ่มการ์ด</button>
+        <button type="button" class="btn-mini btn-pb-pick" onclick="pickPhotobook(this)"><i class="fa-solid fa-book"></i> Photobook</button>
         <button type="button" class="btn-mini" onclick="toggleBox('auto-box')" ${draft.items.length ? '' : 'disabled'}><i class="fa-solid fa-percent"></i> ตั้งอัตราอัตโนมัติ</button>
       </div>
       <div class="auto-box" id="auto-box">
@@ -721,6 +723,16 @@
     const c = findCard(key);
     c.tag = c.tag === 'SSR' ? null : 'SSR';
     renderCards(); renderSaveBar();
+  }
+  // เพิ่มเล่มจากหน้า Admin Photobook เป็นไอเทม: ใช้รูปปกหน้าของเล่ม (ระบบผูกเล่มด้วยรูปปก) คนที่ได้ไปเปิดอ่านเป็นหนังสือ 3D ได้
+  function pickPhotobook(btn) {
+    blm48TogglePhotobookPicker(btn, user.username, b => {
+      if (draft.items.some(i => i.imageUrl === b.coverUrl)) return toast('เล่มนี้อยู่ในคอลเลกชันแล้ว');
+      if (!draft.items.length && (!String(draft.category || '').trim() || draft.category === 'Coaster')) { draft.category = 'BLM48 Photobook'; renderInfo(); }
+      addCard(b.title, b.coverUrl);
+      cardFilter = 'all';
+      renderCards(); renderSaveBar();
+    }, btn.parentElement);
   }
   function addCard(name, imageUrl) {
     draft.items.push({ key: 'k' + (++keySeq), id: null, name: name || '', imageUrl: imageUrl || '', pct: 0, tag: null, stock: 0, sold: 0, add: '' });

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | Photobook</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/photobook-3d.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 760px; margin: 0 auto; padding: 16px 12px 120px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .loading-state, .empty-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
+
+        .sec { margin-bottom: 22px; }
+        .sec-title { font-size: 13px; font-weight: 700; color: #333; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+        .sec-title .n { font-weight: 600; color: #767676; }
+        .sec-note { font-size: 12px; color: #767676; line-height: 1.6; margin-bottom: 10px; }
+        .form-field { margin-bottom: 12px; }
+        .form-field label { display: block; font-size: 12.5px; color: #666; font-weight: 600; margin-bottom: 5px; }
+        .form-field input, .form-field textarea { width: 100%; padding: 10px 12px; border-radius: 10px; font-family: inherit; font-size: 14px; border: 1px solid #e6e6e6; }
+        .form-field textarea { resize: vertical; min-height: 64px; }
+
+        /* โครงเล่ม: 4 ช่องปก (ปกหน้า / รองปกหน้า / รองปกหลัง / ปกหลัง) */
+        .covers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        @media (max-width: 480px) { .covers { grid-template-columns: repeat(2, 1fr); } }
+        .slot { display: flex; flex-direction: column; gap: 6px; }
+        .slot-lbl { font-size: 12px; font-weight: 700; color: #555; }
+        .slot-lbl small { font-weight: 600; color: #767676; }
+        .thumb { position: relative; aspect-ratio: 2 / 3; border-radius: 4px 8px 8px 4px; background: #fafafa center/cover no-repeat;
+            border: 1.5px dashed #ddd; display: flex; align-items: center; justify-content: center; color: #bbb; font-size: 22px; cursor: pointer; overflow: hidden; }
+        .thumb.has { border: 1px solid #eee; color: transparent; }
+        .thumb .busy { position: absolute; inset: 0; background: rgba(255,255,255,.75); display: flex; align-items: center; justify-content: center; color: #c8151d; font-size: 20px; }
+        .slot-acts { display: flex; gap: 4px; }
+        .btn-mini { border: 1px solid #e6e6e6; background: #fff; color: #555; border-radius: 16px; padding: 5px 10px; font-family: inherit; font-size: 11.5px; font-weight: 600; cursor: pointer; }
+        .btn-mini:disabled { opacity: .45; cursor: default; }
+        .btn-mini.danger { color: #d6304f; }
+
+        /* เนื้อหา: กริดหน้า เรียงลำดับด้วยปุ่มซ้าย/ขวา */
+        .pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+        .pg { display: flex; flex-direction: column; gap: 5px; }
+        .pg .thumb { cursor: default; border-radius: 4px; }
+        .pg-no { position: absolute; left: 5px; top: 5px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+        .pg-acts { display: flex; justify-content: space-between; }
+        .pg-acts .btn-mini { padding: 4px 9px; }
+        .add-pages { aspect-ratio: 2 / 3; border: 1.5px dashed #ffc107; background: #fffbef; color: #8a6400; border-radius: 4px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 6px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .add-pages i { font-size: 20px; }
+
+        .seg { display: flex; gap: 6px; }
+        .seg button { flex: 1; border: 1px solid #e6e6e6; background: #fff; border-radius: 20px; padding: 9px; font-family: inherit; font-size: 13px; font-weight: 700; color: #666; cursor: pointer; }
+        .seg button.on { background: #222; border-color: #222; color: #fff; }
+
+        /* ใช้ที่ไหนบ้าง */
+        .use-box { border: 1px solid #f0f0f0; border-radius: 12px; padding: 12px 14px; }
+        .use-row { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; }
+        .use-row + .use-row { border-top: 1px solid #f5f5f5; }
+        .use-ic { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+        .use-ic.shop { background: #fff3c4; color: #7a5a00; }
+        .use-ic.theater { background: #ffe6ee; color: #b3243f; }
+        .use-body { flex: 1; min-width: 0; font-size: 12.5px; color: #767676; line-height: 1.6; }
+        .use-body b { color: #333; font-size: 13.5px; }
+        .use-links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+        .use-links a { font-size: 12px; font-weight: 700; color: #333; background: #f5f5f5; padding: 4px 10px; border-radius: 20px; text-decoration: none; }
+
+        .bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #f0f0f0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); z-index: 150; }
+        .bar-in { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; }
+        .bar button { border-radius: 22px; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-preview { flex: 0 0 auto; border: 1px solid #e6e6e6; background: #fff; color: #333; padding: 12px 16px !important; }
+        .btn-save { flex: 1; border: none; background: #ffc107; color: #222; }
+        .btn-save:disabled, .btn-preview:disabled { opacity: .55; cursor: default; }
+        .msg { border-radius: 12px; padding: 10px 14px; font-size: 12.5px; margin-bottom: 12px; display: none; line-height: 1.6; }
+        .msg.error { display: block; background: #ffeef0; color: #d6304f; }
+        .msg.ok { display: block; background: #e6f9ee; color: #1a7f45; }
+
+        .del-zone { margin-top: 8px; padding-top: 16px; border-top: 1px solid #f0f0f0; }
+        .btn-danger { width: 100%; border: 1px solid #ffc2cc; background: #fff1f3; color: #d6304f; border-radius: 20px; padding: 11px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .confirm-box { background: #fff1f3; border: 1px solid #ffc2cc; border-radius: 12px; padding: 12px 14px; font-size: 12.5px; color: #b3243f; line-height: 1.7; }
+        .confirm-actions { display: flex; gap: 8px; margin-top: 10px; }
+        .confirm-actions button { flex: 1; border: none; border-radius: 20px; padding: 10px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .btn-cancel { background: #f1f1f1; color: #666; }
+        .btn-confirm-del { background: #ff5c7a; color: #fff; }
+        .note { font-size: 11.5px; color: #767676; line-height: 1.6; }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="goBack()" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title" id="page-title">Photobook</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div id="root"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
+    </div>
+</div>
+<input type="file" id="file-one" accept="image/*" hidden>
+<input type="file" id="file-pages" accept="image/*" multiple hidden>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const rawId = params.get('id');
+  const isNew = !rawId || rawId === 'new';
+  let user = null;
+  let book = null;      // ค่าที่กำลังแก้
+  let meta = null;      // owners / shopUses / theaterUses
+  let changed = false;
+  let dirty = false;
+  let busy = 0;         // จำนวนไฟล์ที่กำลังอัปโหลด
+  let slotTarget = null;
+
+  const SLOTS = [
+    { key: 'coverUrl', label: 'ปกหน้า', req: true },
+    { key: 'innerFrontUrl', label: 'รองปกหน้า', hint: 'ไม่ใส่ = ลาย BLM48' },
+    { key: 'innerBackUrl', label: 'รองปกหลัง', hint: 'ไม่ใส่ = ลาย BLM48' },
+    { key: 'backUrl', label: 'ปกหลัง', hint: 'ไม่ใส่ = ปกเบลอ + โลโก้' }
+  ];
+  const MAX_BYTES = 15 * 1024 * 1024;
+  const MAX_W = 1800; // ย่อรูปก่อนอัปโหลด (ตัวอ่าน 3D ใช้กว้าง 1100px อยู่แล้ว) อัปเร็ว + เปิดเร็ว
+
+  function goBack() {
+    if (dirty && !confirm('ยังไม่ได้บันทึก ออกจากหน้านี้เลยไหม?')) return;
+    blm48Back('admin_photobooks', { refresh: changed });
+  }
+  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  async function load() {
+    const root = document.getElementById('root');
+    if (isNew) {
+      book = { title: '', description: '', coverUrl: '', innerFrontUrl: '', innerBackUrl: '', backUrl: '', pages: [], status: 'active' };
+      meta = { owners: 0, shopUses: [], theaterUses: [] };
+      render();
+      return;
+    }
+    try {
+      const id = Number(rawId);
+      const [one, all] = await Promise.all([
+        blm48Supabase.rpc('admin_get_photobook', { p_admin_username: user.username, p_id: id }),
+        blm48Supabase.rpc('admin_list_photobooks', { p_admin_username: user.username })
+      ]);
+      if (one.error) throw one.error;
+      if (!one.data || one.data.status !== 'success') { root.innerHTML = `<div class="empty-state">${escapeHtml((one.data && one.data.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      const b = one.data.book;
+      book = { id: b.id, title: b.title || '', description: b.description || '', coverUrl: b.coverUrl || '', innerFrontUrl: b.innerFrontUrl || '',
+        innerBackUrl: b.innerBackUrl || '', backUrl: b.backUrl || '', pages: (b.pages || []).slice(), status: b.status === 'hidden' ? 'hidden' : 'active' };
+      const li = all.data && all.data.books ? all.data.books.find(x => x.id === b.id) : null;
+      meta = { owners: b.owners || 0, shopUses: (li && li.shopUses) || [], theaterUses: (li && li.theaterUses) || [] };
+      render();
+    } catch (e) {
+      console.error('Load photobook error:', e);
+      root.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+    }
+  }
+
+  function render() {
+    document.getElementById('page-title').textContent = isNew ? 'New Photobook' : 'Edit Photobook';
+    document.getElementById('root').innerHTML = `
+      <div id="msg" class="msg"></div>
+
+      <div class="sec">
+        <div class="form-field"><label>ชื่อหนังสือ</label><input id="f-title" maxlength="80" value="${escapeAttr(book.title)}" placeholder="เช่น Emmy’s Find Your Lucky Leaf"></div>
+        <div class="form-field"><label>คำอธิบาย <span class="note">(ไม่บังคับ)</span></label><textarea id="f-desc" maxlength="300">${escapeHtml(book.description)}</textarea></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><i class="fa-solid fa-book"></i> ปก</div>
+        <div class="sec-note">ทุกหน้าควรเป็นสัดส่วนเดียวกับปกหน้า (แนวตั้ง เช่น 2:3) · กดที่ช่องเพื่ออัปโหลด</div>
+        <div class="covers" id="covers"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><i class="fa-regular fa-images"></i> เนื้อหา <span class="n" id="page-count"></span></div>
+        <div class="sec-note">เลือกได้ทีละหลายรูป เรียงตามชื่อไฟล์ · ใช้ปุ่ม ‹ › เพื่อย้ายตำแหน่ง</div>
+        <div class="pages" id="pages"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><i class="fa-regular fa-eye"></i> การแสดงผล</div>
+        <div class="seg" id="seg-status">
+          <button type="button" data-v="active" class="${book.status === 'active' ? 'on' : ''}">Active</button>
+          <button type="button" data-v="hidden" class="${book.status === 'hidden' ? 'on' : ''}">Hidden</button>
+        </div>
+        <div class="sec-note" style="margin-top:6px">Hidden = ซ่อนจากรายการเลือกในหน้า Shop/Theater · คนที่ได้รับไปแล้วยังเปิดอ่านได้</div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-title"><i class="fa-solid fa-link"></i> นำไปใช้</div>
+        ${isNew ? '<div class="sec-note">บันทึกเล่มก่อน แล้วไปที่หน้า Shop หรือ Theater กดปุ่ม <b>Photobook</b> เพื่อเลือกเล่มนี้</div>' : usesHtml()}
+      </div>
+
+      ${isNew ? '' : `<div class="del-zone" id="del-zone">${delZoneHtml()}</div>`}
+
+      <div class="bar"><div class="bar-in">
+        <button type="button" class="btn-preview" id="btn-preview" onclick="preview()"><i class="fa-solid fa-book-open"></i> Preview</button>
+        <button type="button" class="btn-save" id="btn-save" onclick="save()"><i class="fas fa-check"></i> ${isNew ? 'Create Photobook' : 'Save'}</button>
+      </div></div>`;
+
+    document.getElementById('f-title').addEventListener('input', e => { book.title = e.target.value; dirty = true; });
+    document.getElementById('f-desc').addEventListener('input', e => { book.description = e.target.value; dirty = true; });
+    document.getElementById('seg-status').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      book.status = b.dataset.v; dirty = true;
+      document.querySelectorAll('#seg-status button').forEach(x => x.classList.toggle('on', x === b));
+    });
+    renderCovers();
+    renderPages();
+  }
+
+  function usesHtml() {
+    const shop = meta.shopUses || [], th = meta.theaterUses || [];
+    return `<div class="use-box">
+      <div class="use-row"><div class="use-ic shop"><i class="fa-solid fa-bag-shopping"></i></div><div class="use-body">
+        <b>Shop</b><br>${shop.length ? 'ขายอยู่ใน:' : 'ยังไม่ได้ขาย · เปิดหน้า New Collection แล้วกด <b>+ Photobook</b> ในแท็บการ์ด'}
+        <div class="use-links">${shop.map(u => `<a href="${u.preorder ? 'admin_preorder' : 'admin_collection?id=' + encodeURIComponent(u.id)}">${escapeHtml(u.name || u.id)}</a>`).join('')}
+          <a href="admin_collections"><i class="fa-solid fa-plus"></i> New Collection</a></div>
+      </div></div>
+      <div class="use-row"><div class="use-ic theater"><i class="fa-solid fa-masks-theater"></i></div><div class="use-body">
+        <b>Theater</b><br>${th.length ? 'เป็นของที่ระลึก/รางวัลใน:' : 'ยังไม่ได้ใช้ · ในหน้าแก้ไขรอบการแสดง กด <b>Photobook</b> ที่แถวของที่ระลึกหรือรางวัลโซน'}
+        <div class="use-links">${th.map(u => `<a href="admin_theater_event?id=${encodeURIComponent(u.id)}">${escapeHtml(u.title || '#' + u.id)}</a>`).join('')}
+          <a href="admin_theaters"><i class="fa-solid fa-masks-theater"></i> Theaters</a></div>
+      </div></div>
+      <div class="note" style="margin-top:6px">มีคนได้รับเล่มนี้แล้ว ${Number(meta.owners || 0).toLocaleString()} คน</div>
+    </div>`;
+  }
+
+  function delZoneHtml() {
+    return meta.owners > 0
+      ? '<div class="note">มีคนได้รับเล่มนี้แล้ว ลบไม่ได้ · ถ้าไม่อยากให้เลือกใช้ต่อ ให้ตั้งเป็น Hidden แล้วกด Save</div>'
+      : '<button type="button" class="btn-danger" onclick="askDelete()"><i class="fa-solid fa-trash"></i> Delete Photobook</button>';
+  }
+
+  function thumb(url, extra) {
+    return `<div class="thumb ${url ? 'has' : ''}" ${url ? `style="background-image:url('${escapeAttr(url)}')"` : ''}${extra || ''}>${url ? '' : '<i class="fa-regular fa-image"></i>'}</div>`;
+  }
+
+  function renderCovers() {
+    document.getElementById('covers').innerHTML = SLOTS.map(s => `
+      <div class="slot">
+        <div class="slot-lbl">${s.label}${s.req ? ' <small>*</small>' : ''}</div>
+        <div data-slot="${s.key}">${thumb(book[s.key], ` onclick="pickSlot('${s.key}')" role="button" tabindex="0" aria-label="อัปโหลด${s.label}"`)}</div>
+        <div class="slot-acts">${book[s.key]
+          ? `<button type="button" class="btn-mini" onclick="pickSlot('${s.key}')">Change</button>${s.req ? '' : `<button type="button" class="btn-mini danger" onclick="clearSlot('${s.key}')">Remove</button>`}`
+          : `<span class="note">${s.hint || 'จำเป็น'}</span>`}</div>
+      </div>`).join('');
+  }
+
+  function renderPages() {
+    const n = book.pages.length;
+    document.getElementById('page-count').textContent = n ? `(${n} หน้า)` : '';
+    document.getElementById('pages').innerHTML = book.pages.map((u, i) => `
+      <div class="pg">
+        <div style="position:relative">${thumb(u)}<span class="pg-no">${i + 1}</span></div>
+        <div class="pg-acts">
+          <button type="button" class="btn-mini" onclick="movePage(${i},-1)" ${i === 0 ? 'disabled' : ''} aria-label="Move left"><i class="fa-solid fa-chevron-left"></i></button>
+          <button type="button" class="btn-mini danger" onclick="removePage(${i})" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button>
+          <button type="button" class="btn-mini" onclick="movePage(${i},1)" ${i === n - 1 ? 'disabled' : ''} aria-label="Move right"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>`).join('') + `
+      <button type="button" class="add-pages" onclick="document.getElementById('file-pages').click()" ${busy ? 'disabled' : ''}>
+        ${busy ? `<i class="fa-solid fa-spinner fa-spin"></i> Uploading ${busy}...` : '<i class="fa-solid fa-plus"></i> Add pages'}
+      </button>`;
+  }
+
+  function setMsg(text, kind) {
+    const el = document.getElementById('msg');
+    if (!el) return;
+    el.className = 'msg' + (text ? ' ' + (kind || 'error') : '');
+    el.textContent = text || '';
+    if (text) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // ย่อรูปใหญ่เป็นกว้าง MAX_W ก่อนอัป (เก็บ JPEG ไว้) · รูปเล็กกว่านั้นอัปตามเดิม
+  async function shrink(file) {
+    try {
+      const bmp = await createImageBitmap(file);
+      if (bmp.width <= MAX_W) { bmp.close(); return file; }
+      const c = document.createElement('canvas');
+      c.width = MAX_W; c.height = Math.round(bmp.height * MAX_W / bmp.width);
+      const ctx = c.getContext('2d'); ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(bmp, 0, 0, c.width, c.height); bmp.close();
+      const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9));
+      return blob ? new File([blob], (file.name || 'page').replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file;
+    } catch (e) { return file; }
+  }
+  async function upload(file) {
+    if (!file.type.startsWith('image/') || file.size > MAX_BYTES) throw new Error('size');
+    return blm48UploadImageToBucket('app-assets', 'photobooks/book-' + (book.id || 'new'), await shrink(file));
+  }
+
+  function pickSlot(key) { slotTarget = key; document.getElementById('file-one').click(); }
+  function clearSlot(key) { book[key] = ''; dirty = true; renderCovers(); }
+
+  document.getElementById('file-one').addEventListener('change', async e => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    const key = slotTarget;
+    if (!file || !key) return;
+    const box = document.querySelector(`[data-slot="${key}"] .thumb`);
+    if (box) box.insertAdjacentHTML('beforeend', '<div class="busy"><i class="fa-solid fa-spinner fa-spin"></i></div>');
+    busy++; syncBar();
+    try { book[key] = await upload(file); dirty = true; setMsg(''); }
+    catch (err) { setMsg(err.message === 'size' ? 'กรุณาเลือกไฟล์รูปภาพไม่เกิน 15MB' : 'อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง'); }
+    busy--; syncBar();
+    renderCovers();
+  });
+
+  document.getElementById('file-pages').addEventListener('change', async e => {
+    const files = Array.from(e.target.files || []).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+    e.target.value = '';
+    if (!files.length) return;
+    const bad = files.filter(f => !f.type.startsWith('image/') || f.size > MAX_BYTES);
+    if (bad.length) { setMsg(`ข้ามไป ${bad.length} ไฟล์ (ไม่ใช่รูปหรือใหญ่เกิน 15MB)`); }
+    const ok = files.filter(f => !bad.includes(f));
+    // จองตำแหน่งไว้ตามลำดับไฟล์ อัปทีละ 3 ไฟล์ แล้วค่อยเติม URL
+    const start = book.pages.length;
+    const results = new Array(ok.length).fill(null);
+    busy += ok.length; syncBar(); renderPages();
+    let next = 0, failed = 0;
+    async function worker() {
+      while (next < ok.length) {
+        const i = next++;
+        try { results[i] = await upload(ok[i]); } catch (err) { failed++; }
+        busy--; syncBar(); renderPages();
+      }
+    }
+    await Promise.all([worker(), worker(), worker()]);
+    book.pages.splice(start, 0, ...results.filter(Boolean));
+    dirty = true;
+    renderPages();
+    if (failed) setMsg(`อัปโหลดไม่สำเร็จ ${failed} ไฟล์ กรุณาเพิ่มใหม่อีกครั้ง`);
+  });
+
+  function movePage(i, d) {
+    const j = i + d;
+    if (j < 0 || j >= book.pages.length) return;
+    [book.pages[i], book.pages[j]] = [book.pages[j], book.pages[i]];
+    dirty = true; renderPages();
+  }
+  function removePage(i) { book.pages.splice(i, 1); dirty = true; renderPages(); }
+
+  function syncBar() {
+    const s = document.getElementById('btn-save');
+    if (s) s.disabled = busy > 0;
+  }
+
+  function preview() {
+    if (!book.coverUrl) return setMsg('ใส่รูปปกหน้าก่อนนะคะ');
+    if (!book.pages.length) return setMsg('เพิ่มหน้าเนื้อหาอย่างน้อย 1 หน้าก่อนนะคะ');
+    blm48OpenPhotobook3D({ title: book.title || 'PhotoBook', cover: book.coverUrl, innerFront: book.innerFrontUrl, innerBack: book.innerBackUrl,
+      back: book.backUrl, pages: book.pages });
+  }
+
+  async function save() {
+    book.title = document.getElementById('f-title').value.trim();
+    book.description = document.getElementById('f-desc').value.trim();
+    if (!book.title) return setMsg('กรุณากรอกชื่อหนังสือ');
+    if (!book.coverUrl) return setMsg('กรุณาใส่รูปปกหน้า');
+    if (!book.pages.length) return setMsg('ต้องมีหน้าเนื้อหาอย่างน้อย 1 หน้า');
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    try {
+      const { data, error } = await blm48Supabase.rpc('admin_save_photobook', {
+        p_admin_username: user.username, p_id: isNew ? null : book.id,
+        p_book: { title: book.title, description: book.description, coverUrl: book.coverUrl, innerFrontUrl: book.innerFrontUrl,
+          innerBackUrl: book.innerBackUrl, backUrl: book.backUrl, pages: book.pages, status: book.status }
+      });
+      if (error) throw error;
+      if (!data || data.status !== 'success') { setMsg((data && data.message) || 'บันทึกไม่สำเร็จ'); }
+      else {
+        dirty = false; changed = true;
+        if (isNew) { blm48Replace('admin_photobook?id=' + data.id + '&created=1'); return; }
+        setMsg(data.message || 'บันทึกเรียบร้อยแล้วค่ะ', 'ok');
+      }
+    } catch (e) {
+      console.error('Save photobook error:', e);
+      setMsg('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่อีกครั้ง');
+    }
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fas fa-check"></i> ${isNew ? 'Create Photobook' : 'Save'}`;
+  }
+
+  function askDelete() {
+    document.getElementById('del-zone').innerHTML = `
+      <div id="del-msg" class="msg"></div>
+      <div class="confirm-box"><b>ลบ “${escapeHtml(book.title || 'Untitled')}” ถาวร?</b> ย้อนกลับไม่ได้
+        <div class="confirm-actions">
+          <button type="button" class="btn-cancel" onclick="document.getElementById('del-zone').innerHTML = delZoneHtml()">Cancel</button>
+          <button type="button" class="btn-confirm-del" id="del-btn" onclick="deleteBook()">Delete</button>
+        </div>
+      </div>`;
+  }
+  async function deleteBook() {
+    const btn = document.getElementById('del-btn');
+    const msg = document.getElementById('del-msg');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+      const { data, error } = await blm48Supabase.rpc('admin_delete_photobook', { p_admin_username: user.username, p_id: book.id });
+      if (error) throw error;
+      if (data && data.status === 'success') { dirty = false; changed = true; blm48Back('admin_photobooks', { refresh: true }); return; }
+      msg.className = 'msg error'; msg.textContent = (data && data.message) || 'ลบไม่สำเร็จ';
+    } catch (e) {
+      msg.className = 'msg error'; msg.textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่อีกครั้ง';
+    }
+    btn.disabled = false; btn.textContent = 'Delete';
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && user.role.toLowerCase() === 'admin'))) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+    document.getElementById('page-content').style.display = 'block';
+    load().then(() => { if (params.has('created')) { changed = true; setMsg('สร้างโฟโต้บุ๊คเรียบร้อยแล้วค่ะ', 'ok'); } });
+  });
+</script>
+</body>
+</html>
