@@ -411,6 +411,41 @@
         @keyframes ga-ks-puff { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         @keyframes ga-ks-pom { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
         @keyframes ga-ks-ear { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.03,1.07); } }`
+    },
+    { // Ponkko — Tine (gift_057): น้องนากผูกผ้าพันคอสีเหลือง โบกมือทักทาย ส่ายหาง (ไม่ใส่เงาพื้นตามกติกา)
+      gifts: ['gift_057'], match: [], ratio: 710 / 679, dur: 1.6, label: 'น้องนากพองโกะผูกผ้าพันคอสีเหลือง โบกมือทักทายและส่ายหาง',
+      body: { anim: 'ga-pk-br', origin: '50% 97%' },
+      layers: [
+        { src: GA + 'otter/tail.png', anim: 'ga-pk-tail', origin: '77.5% 84.2%', delay: -0.25 },
+        { src: GA + 'otter/body.png' },
+        { src: GA + 'otter/paw.png', anim: 'ga-pk-paw', k: 0.5, origin: '8.2% 69%' }],
+      css: `@keyframes ga-pk-br { 0%,100% { transform: translateY(0) scale(1.02,.98); } 50% { transform: translateY(-1.69%) scale(.99,1.02); } }
+        @keyframes ga-pk-paw { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-11deg); } }
+        @keyframes ga-pk-tail { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(4deg); } }`
+    },
+    { // ออบติมัส — Bumblebee (gift_032): น้องผึ้งผมยาวชุดชมพู ปีกกระพือ ลอยขึ้นลง ดาว/ดอกไม้รอบตัววิบวับ
+      gifts: ['gift_032'], match: [], ratio: 787 / 832, dur: 1.6, label: 'น้องผึ้งผมยาวใส่ชุดชมพู ปีกกระพือ ลอยขึ้นลง พร้อมดาวและดอกไม้วิบวับ',
+      layers: [
+        { anim: 'ga-bb-hov', k: 1.5, origin: '50% 60%', layers: [
+          { src: GA + 'bumblebee/wing.png', anim: 'ga-bb-wing', k: 0.25, origin: '52.1% 46.7%' },
+          { src: GA + 'bumblebee/antenna-left.png', anim: 'ga-bb-ant', k: 0.5, origin: '47.3% 24.3%' },
+          { src: GA + 'bumblebee/antenna-right.png', anim: 'ga-bb-ant', k: 0.5, origin: '58.3% 24.3%', delay: -0.25 },
+          { src: GA + 'bumblebee/body.png' },
+          { viewBox: '0 0 832 787', svg: '<g class="ga-blink48"><ellipse cx="365" cy="321" rx="27" ry="34" fill="#F5CD92"></ellipse><path d="M338 321 A27 34 0 0 0 392 321" fill="none" stroke="#5A3A2E" stroke-width="4" stroke-linecap="round"></path></g><g class="ga-blink48"><ellipse cx="512" cy="321" rx="27" ry="34" fill="#F5CD92"></ellipse><path d="M485 321 A27 34 0 0 0 539 321" fill="none" stroke="#5A3A2E" stroke-width="4" stroke-linecap="round"></path></g>' }] },
+        { src: GA + 'bumblebee/deco-1.png', anim: 'ga-bb-dk', k: 1.5, origin: '91.5% 20.9%' },
+        { src: GA + 'bumblebee/deco-2.png', anim: 'ga-bb-dk', k: 1.5, origin: '20.1% 28.8%', delay: -0.37 },
+        { src: GA + 'bumblebee/deco-3.png', anim: 'ga-bb-dk', k: 1.5, origin: '92.9% 38.2%', delay: -0.74 },
+        { src: GA + 'bumblebee/bow.png', anim: 'ga-bb-bow', origin: '12.8% 64%', delay: -1.11 },
+        { src: GA + 'bumblebee/deco-4.png', anim: 'ga-bb-dk', k: 1.5, origin: '89.5% 54.4%', delay: -1.48 },
+        { src: GA + 'bumblebee/deco-5.png', anim: 'ga-bb-dk', k: 1.5, origin: '14.7% 80.9%', delay: -1.85 },
+        { src: GA + 'bumblebee/deco-6.png', anim: 'ga-bb-dk', k: 1.5, origin: '27.2% 85.2%', delay: -2.22 },
+        { src: GA + 'bumblebee/sticker.png', anim: 'ga-bb-stk', origin: '86.5% 85.2%' }],
+      css: `@keyframes ga-bb-hov { 0%,100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-2.29%) rotate(1.2deg); } }
+        @keyframes ga-bb-wing { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(.86); } }
+        @keyframes ga-bb-ant { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+        @keyframes ga-bb-dk { 0%,100% { transform: scale(.92) rotate(-10deg); } 50% { transform: scale(1.12) rotate(10deg); } }
+        @keyframes ga-bb-bow { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-1.02%); } }
+        @keyframes ga-bb-stk { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }`
     }
   ];
   function giftArt(url) {
