@@ -23,9 +23,34 @@
     gacha_single9: BG_CIRCLE, gacha_5thGenNewShip: BG_CIRCLE,
     votemajor_tanabata2026: BG_PHOTOCARD
   };
+  // รูปด้านหลังที่แอดมินอัปโหลดในหน้า admin_collection (collections.back_image) มาก่อนรายการข้างบน
+  let uploadedBacks = null; // { byId: {}, byName: {} } · { image, style: 'card' | 'shape' }
+  let uploadedBacksLoading = null;
+  function loadUploadedBacks() {
+    if (uploadedBacks) return Promise.resolve(uploadedBacks);
+    if (uploadedBacksLoading) return uploadedBacksLoading;
+    if (typeof blm48Rpc !== 'function') return Promise.resolve(null);
+    uploadedBacksLoading = blm48Rpc('get_collection_back_images', {}).then(list => {
+      const map = { byId: {}, byName: {} };
+      (Array.isArray(list) ? list : []).forEach(b => {
+        const v = { image: b.backImage, style: b.backStyle === 'card' ? 'card' : 'shape' };
+        if (b.id) map.byId[b.id] = v;
+        if (b.name) map.byName[String(b.name).trim()] = v;
+      });
+      uploadedBacks = map;
+      return map;
+    }).catch(() => null);
+    return uploadedBacksLoading;
+  }
+  loadUploadedBacks();
+
+  // -> { image, card } · card = ภาพเต็มใบมุมโค้ง (Photocard) / false = PNG ตามรูปทรง (Coaster)
   function backFor(opts) {
     const name = String(opts.collection || '').trim();
-    return COLLECTION_BG[name] || COLLECTION_ID_BG[opts.collectionId] || '';
+    const up = uploadedBacks && (uploadedBacks.byId[opts.collectionId] || uploadedBacks.byName[name]);
+    if (up) return { image: up.image, card: up.style !== 'shape' };
+    const image = COLLECTION_BG[name] || COLLECTION_ID_BG[opts.collectionId] || '';
+    return { image, card: image === BG_PHOTOCARD };
   }
 
   function injectStyles() {
@@ -904,8 +929,9 @@
     injectStyles();
     const o = document.createElement('div');
     o.className = 'v3d-overlay';
-    const backArt = backFor(opts);
-    const backClass = backArt ? ' is-art' + (backArt === BG_PHOTOCARD ? ' is-card' : '') : '';
+    const back = backFor(opts);
+    const backArt = back.image;
+    const backClass = backArt ? ' is-art' + (back.card ? ' is-card' : '') : '';
     o.innerHTML = `
       <div class="v3d-title"></div>
       <button type="button" class="v3d-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
@@ -937,6 +963,17 @@
       o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i> Spin';
     }
     document.body.appendChild(o);
+    // เปิดก่อนโหลดรายการรูปด้านหลังเสร็จ -> โหลดเสร็จแล้วค่อยเปลี่ยนด้านหลังให้
+    if (!uploadedBacks) {
+      loadUploadedBacks().then(() => {
+        const b = backFor(opts);
+        if (!b.image || b.image === backArt) return;
+        const face = o.querySelector('.v3d-back');
+        face.classList.add('is-art');
+        face.classList.toggle('is-card', b.card);
+        face.querySelector('img').src = b.image;
+      });
+    }
     // สร้างแก้ว 3D หลังวางลงหน้าแล้ว (ต้องรู้ขนาดจริง) ถ้าไม่สำเร็จก็แสดงเป็นการ์ดแบนเหมือนเดิม
     if (cupMode) {
       const asCard = () => { // สร้างแก้วไม่ได้ → กลับเป็นการ์ดแบน (พลิกดูด้านหลังได้ตามปกติ)
