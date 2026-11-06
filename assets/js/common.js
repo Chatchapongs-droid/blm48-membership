@@ -184,6 +184,14 @@ document.addEventListener('DOMContentLoaded', function initSwipeBackGesture() {
   document.head.appendChild(s);
 })();
 
+// 🫧 Bubble Float หลังไอคอนแท็บที่เปิดอยู่ในเมนูล่าง — ตัวโค้ดอยู่ใน assets/js/nav-bubble.js
+(function loadNavBubble() {
+  if (document.querySelector('script[src*="nav-bubble.js"]')) return;
+  const s = document.createElement('script');
+  s.src = 'assets/js/nav-bubble.js';
+  document.head.appendChild(s);
+})();
+
 // 📱 [เปิดโพสต์เต็มจอ] กดที่พื้นที่ว่างของการ์ดโพสต์ (index.html/member.html) เพื่อไปหน้า postdetail
 // แบบเต็มจอโพสต์เดียว กดย้อนกลับได้ - ไม่ทำงานถ้าคลิกโดนปุ่ม/ลิงก์/รูป/ช่องคอมเมนต์ที่มี action ของตัวเองอยู่แล้ว
 // (เช็คจาก tagName ของปุ่ม/ลิงก์/อินพุตมาตรฐาน บวกกับ attribute onclick ที่ผูกไว้ตรงๆ เช่นรูปโปรไฟล์/ชื่อผู้โพส)
