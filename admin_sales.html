@@ -319,7 +319,7 @@
 
       const giftWalletItems = rankRows((d.giftsWallet?.items || []).map(it =>
         ({ args: [it.name, it.tier, it.imageUrl, it.qtySold, 'ชิ้น', it.cookieRevenue, 'Cookie'], revenue: it.cookieRevenue, extra: { giftId: it.giftId } })));
-      const giftWalletCard = renderSalesCard('fa-gifts', 'Gift Shop', '', giftWalletItems,
+      const giftWalletCard = renderSalesCard('fa-gifts', 'Gift Shop', 'ตั้งแต่ 1 พ.ย. 2026', giftWalletItems,
         'ยังไม่มีการซื้อ', 'รวมทั้งหมด', `${Number(d.giftsWallet?.totals?.cookieRevenue || 0).toLocaleString()} Cookie`);
 
       // แยกตามราคาขาย 2 ระดับที่มีจริงในระบบ (shop.html: 10 Token → 100 Cookie, 100 Token → 1000 Cookie)
