@@ -657,7 +657,7 @@
     async function start() {
       try {
         if (Array.isArray(opts.pages)) pages = opts.pages.slice();
-        else if (/^photobook:d+$/.test(opts.folder || '')) {
+        else if (/^photobook:\d+$/.test(opts.folder || '')) {
           const sb = sbClient();
           const u = typeof getUserSession === 'function' ? getUserSession() : null;
           const { data, error } = await sb.rpc('get_photobook', { p_username: (u && u.username) || '', p_ref: opts.folder });
