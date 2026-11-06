@@ -521,7 +521,6 @@
         { value: 'all',       label: 'All',             cats: null },
         { value: 'ssr',       label: 'SSR',             cats: ['BLM48 SSR Photo', 'SSR_card'] },
         { value: 'preorder',  label: 'Pre-order',       cats: ['Pre-order'] },
-        { value: 'theater',   label: 'Fanmeet & Concert', cats: ['Theaters & Concerts'] },
         { value: 'photobook', label: 'BLM48 Photobook', cats: ['BLM48 Photobook'] },
         { value: 'photocard', label: 'BLM48 PhotoCard', cats: ['BLM48 PhotoCard'] },
         { value: 'photoset',  label: 'BLM48 PhotoSet',  cats: ['BLM48 PhotoSet'] },
@@ -649,8 +648,6 @@
             case 'BLM48 SSR Photo':
             case 'SSR_card':
                 return '#e0b953'; // ทอง
-            case 'Theaters & Concerts':
-                return '#e64980'; // ชมพูเข้ม ของจากงาน Fanmeet / Concert
             case 'Pre-order':
                 return '#c9932c'; // ทองเข้ม เหมือนป้าย [Pre-order] ในหน้า shop
             case 'BLM48 Cafe':
@@ -695,7 +692,6 @@
 
     // หมวดที่มีตัวกรองย่อยตามชื่องาน/คอลเลกชัน
     const SUB_FILTER_CATEGORY = {
-        theater: 'Theaters & Concerts',
         coaster: 'Coaster',
         thankyou: 'Thank You Card',
         photoset: 'BLM48 PhotoSet',
@@ -794,7 +790,6 @@ function renderInventoryData() {
         if (currentPrimaryTab === 'ssr' && item.category !== 'BLM48 SSR Photo' && item.category !== 'SSR_card') return false;
 
         if (currentPrimaryTab === 'preorder' && item.category !== 'Pre-order') return false;
-        if (currentPrimaryTab === 'theater' && item.category !== 'Theaters & Concerts') return false;
 
         if (currentPrimaryTab === 'photoset' && item.category !== 'BLM48 PhotoSet') return false;
         if (currentPrimaryTab === 'photobook' && item.category !== 'BLM48 Photobook') return false;
@@ -889,7 +884,7 @@ function renderInventoryData() {
     let currentPreviewItem = null;
 
     // หมวดหมู่ที่ห้ามลบ เพราะหายาก/มีค่า ป้องกันผู้ใช้กดลบพลาดของสำคัญ
-    const PROTECTED_DELETE_CATEGORIES = ['BLM48 SSR Photo', 'SSR_card', 'BLM48 Photobook', 'Pre-order', 'Theaters & Concerts'];
+    const PROTECTED_DELETE_CATEGORIES = ['BLM48 SSR Photo', 'SSR_card', 'BLM48 Photobook', 'Pre-order'];
     let deleteQty = 1;
 
     function openPreview(item) {
