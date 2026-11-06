@@ -446,6 +446,116 @@
         @keyframes ga-bb-dk { 0%,100% { transform: scale(.92) rotate(-10deg); } 50% { transform: scale(1.12) rotate(10deg); } }
         @keyframes ga-bb-bow { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-1.02%); } }
         @keyframes ga-bb-stk { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }`
+    },
+    { // ไดโนร้องเพลง — Kuea (gift_047 จูราสสิคโฮก): ไดโนคอยาวโยกตัวร้องเพลง กุญแจทองแกว่ง โน้ต/ประกายลอยรอบตัว
+      gifts: ['gift_047'], match: [], ratio: 1, dur: 1.6, label: 'ไดโนเสาร์คอยาวร้องเพลง ห้อยกุญแจทอง มีโน้ตดนตรีและประกายลอยรอบตัว',
+      layers: [
+        { viewBox: '34 34 832 832', svg: [
+          ['star', 0, '<path d="M120 176 L126.7 193.3 L144 200 L126.7 206.7 L120 224 L113.3 206.7 L96 200 L113.3 193.3Z" fill="#F2D27A"'],
+          ['star', -0.7, '<path d="M790 140 L795.6 154.4 L810 160 L795.6 165.6 L790 180 L784.4 165.6 L770 160 L784.4 154.4Z" fill="#9FDCC0"'],
+          ['star', -1.3, '<path d="M800 578 L806.2 593.8 L822 600 L806.2 606.2 L800 622 L793.8 606.2 L778 600 L793.8 593.8Z" fill="#F2D27A"'],
+          ['star', -0.4, '<path d="M100 624 L104.5 635.5 L116 640 L104.5 644.5 L100 656 L95.5 644.5 L84 640 L95.5 635.5Z" fill="#F7B8C8"'],
+          ['star', -1.0, '<path d="M470 44 L474.5 55.5 L486 60 L474.5 64.5 L470 76 L465.5 64.5 L454 60 L465.5 55.5Z" fill="#9FDCC0"'],
+          ['star', -0.2, '<circle cx="240" cy="100" r="6" fill="#F7B8C8"'],
+          ['star', -0.9, '<circle cx="720" cy="380" r="5" fill="#9FDCC0"'],
+          ['star', -1.6, '<circle cx="70" cy="420" r="5" fill="#F2D27A"'],
+          ['heart', 0, '<path d="M730 290 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#F7B8C8"'],
+          ['heart', -1.1, '<path d="M170 360 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#F2D27A"'],
+          ['heart', -2.0, '<path d="M770 470 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#9FDCC0"']
+        ].map(([c, d, el]) => `${el} class="ga-dn-${c}" style="animation-delay:${d}s"></${el.slice(1, el.indexOf(' '))}>`).join('') },
+        { anim: 'ga-dn-sway', k: 1.5, origin: '50% 94%', layers: [
+          { src: GA + 'dino/back.png' },
+          { src: GA + 'dino/swirl.png', anim: 'ga-dn-swl', k: 1.5 },
+          { src: GA + 'dino/body.png' },
+          { src: GA + 'dino/key.png', anim: 'ga-dn-key', origin: '66.9% 55%' }] },
+        ...[['note-1', '33.5% 43.3%'], ['note-2', '77.3% 50%'], ['note-3', '74.5% 33.4%'], ['note-4', '25.2% 62.1%'], ['note-5', '33.8% 59.7%'],
+          ['note-6', '50% 43%'], ['note-7', '45.3% 18.3%'], ['note-8', '43.5% 32.2%'], ['spark-1', '76.9% 52%'], ['spark-2', '29.2% 68%'],
+          ['spark-3', '41.7% 49.3%'], ['spark-4', '51.7% 23.1%'], ['spark-5', '75.4% 63.8%'], ['note-9', '72.6% 44.8%'], ['spark-6', '33.4% 52.4%'],
+          ['spark-7', '69.5% 79.2%'], ['spark-8', '50.7% 53.7%']].map(([f, o], i) => f.startsWith('note')
+          ? { src: GA + 'dino/' + f + '.png', anim: 'ga-dn-bob', k: 1.5, origin: o, delay: -0.21 * i }
+          : { src: GA + 'dino/' + f + '.png', anim: 'ga-dn-spk', k: 0.75, origin: o, delay: -0.21 * i })],
+      css: `.gift-art .ga-dn-star { transform-box: fill-box; transform-origin: center; animation: ga-dn-twinkle 2.4s ease-in-out infinite; }
+        .gift-art .ga-dn-heart { transform-box: fill-box; transform-origin: center; animation: ga-dn-float 2.4s ease-out infinite; }
+        @keyframes ga-dn-twinkle { 0%,100% { transform: scale(.3) rotate(0deg); opacity: 0; } 40% { transform: scale(1) rotate(20deg); opacity: 1; } 70% { transform: scale(.85) rotate(35deg); opacity: .8; } }
+        @keyframes ga-dn-float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-90px); opacity: 0; } }
+        @keyframes ga-dn-sway { 0%,100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
+        @keyframes ga-dn-key { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+        @keyframes ga-dn-swl { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.6%); } }
+        @keyframes ga-dn-bob { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-0.84%) rotate(8deg); } }
+        @keyframes ga-dn-spk { 0%,100% { transform: scale(.55) rotate(0deg); opacity: .5; } 50% { transform: scale(1.2) rotate(30deg); opacity: 1; } }`
+    },
+    { // สาวหูแมวประดับเพชร — Krystal (gift_046 คริสตี้จัง): หัวโยก หูกระดิก เพชร/ประกายบนผมวิบวับ กะพริบตา
+      // match = รูปนิ่งที่อัปไว้ 2026-11-06 (ให้แอนิเมชันแทนรูปนั้น; อัปรูปใหม่เมื่อไหร่ก็ใช้รูปใหม่)
+      gifts: ['gift_046'], match: [SB + 'gift-gift_046_1793946532425_zccdr1.png'], ratio: 687 / 796, dur: 1.6, label: 'สาวผมดำหูแมว ตาสีฟ้า มีเพชรและประกายบนผม หูกระดิก ตากะพริบ',
+      layers: [
+        { anim: 'ga-cg-head', k: 1.5, origin: '50% 95%', layers: [
+          { src: GA + 'cat-girl/head.png' },
+          { src: GA + 'cat-girl/ear-left.png', anim: 'ga-cg-earL', k: 3, origin: '42.9% 24.2%' },
+          { src: GA + 'cat-girl/ear-right.png', anim: 'ga-cg-earR', k: 3, origin: '54.3% 24.2%' },
+          ...[['gem-1', 'gem', '35.1% 33%'], ['star-1', 'tw', '28.2% 31.6%'], ['star-2', 'tw', '70.7% 32.5%'], ['gem-2', 'gem', '59.3% 34.4%'],
+            ['gem-3', 'gem', '73.5% 43.5%'], ['swirl-1', 'swl', '35.3% 42%'], ['gem-4', 'gem', '23.7% 45.2%'], ['star-3', 'tw', '63.3% 43%'],
+            ['swirl-2', 'swl', '55.9% 47.3%'], ['star-4', 'tw', '30% 46.9%']].map(([f, a, o], i) =>
+            ({ src: GA + 'cat-girl/' + f + '.png', anim: 'ga-cg-' + a, k: a === 'tw' ? 0.75 : 1, origin: o, delay: -0.29 * i })),
+          { viewBox: '0 0 796 687', svg: '<g class="ga-blink48"><ellipse cx="302.6" cy="485.5" rx="69.2" ry="64.6" fill="#FDF0F8"></ellipse><path d="M259.7 483.5 Q302.6 512.6 345.5 483.5" fill="none" stroke="#6E5566" stroke-width="5" stroke-linecap="round"></path></g><g class="ga-blink48"><ellipse cx="455" cy="485.5" rx="69.2" ry="64.6" fill="#FDF0F8"></ellipse><path d="M412.1 483.5 Q455 512.6 497.9 483.5" fill="none" stroke="#6E5566" stroke-width="5" stroke-linecap="round"></path></g>' }] }],
+      css: `@keyframes ga-cg-head { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-1.75%) rotate(2deg); } }
+        @keyframes ga-cg-earL { 0%,58%,100% { transform: rotate(0deg); } 63% { transform: rotate(-7deg); } 68% { transform: rotate(0deg); } 73% { transform: rotate(-5deg); } 78% { transform: rotate(0deg); } }
+        @keyframes ga-cg-earR { 0%,8%,30%,100% { transform: rotate(0deg); } 13% { transform: rotate(7deg); } 18% { transform: rotate(0deg); } 23% { transform: rotate(5deg); } }
+        @keyframes ga-cg-gem { 0%,100% { transform: translateY(0) rotate(-6deg) scale(1); } 50% { transform: translateY(-0.87%) rotate(6deg) scale(1.1); } }
+        @keyframes ga-cg-tw { 0%,100% { transform: scale(.55) rotate(0deg); opacity: .5; } 50% { transform: scale(1.25) rotate(45deg); opacity: 1; } }
+        @keyframes ga-cg-swl { 0%,100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }`
+    },
+    { // แรคคูนโบกมือ — Jayden (gift_042 Jaykeeper): แรคคูนขยิบตาแลบลิ้น โยกตัว โบกมือสองข้าง ประกายวิบวับ
+      gifts: ['gift_042'], match: [], ratio: 1, dur: 1.6, label: 'แรคคูนขยิบตาแลบลิ้น โบกมือทั้งสองข้าง',
+      layers: [
+        { anim: 'ga-rc-bod', origin: '50% 93%', layers: [
+          { src: GA + 'raccoon/body.png' },
+          { src: GA + 'raccoon/paw-left.png', anim: 'ga-rc-pl', k: 0.5, origin: '18% 57.5%' },
+          { src: GA + 'raccoon/paw-right.png', anim: 'ga-rc-pr', k: 0.5, origin: '72.7% 75.5%', delay: -0.25 }] },
+        { src: GA + 'raccoon/tick-1.png', anim: 'ga-rc-tk', k: 0.5, origin: '22.8% 26.4%' },
+        { src: GA + 'raccoon/tick-2.png', anim: 'ga-rc-tk', k: 0.5, origin: '88.1% 51.4%', delay: -0.25 }],
+      css: `@keyframes ga-rc-bod { 0%,100% { transform: translateY(0) rotate(-1.5deg); } 50% { transform: translateY(-0.96%) rotate(1.5deg); } }
+        @keyframes ga-rc-pl { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+        @keyframes ga-rc-pr { 0%,100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
+        @keyframes ga-rc-tk { 0%,100% { transform: scale(.82); opacity: .6; } 50% { transform: scale(1.15); opacity: 1; } }`
+    },
+    { // กล้ามโต (ซ้าย → ขวา) — Sora (gift_056 โอตะโซระ): ตัวกล้ามยิ้ม → สลับเป็นท่าเบ่งกล้ามหน้าบี้ เหงื่อตก แล้ววนกลับ
+      gifts: ['gift_056'], match: [], ratio: 1, dur: 1.6, label: 'ตัวกล้ามโตยิ้มอยู่ แล้วเบ่งกล้ามแรงขึ้นจนหน้าบี้และเหงื่อตก',
+      layers: [
+        { style: 'transform:scale(1.55);transform-origin:50% 48%;', layers: [
+          { style: 'transform:translate(25.84%,2.4%);', layers: [
+            { anim: 'ga-mu-a', k: 3, origin: '24.2% 71.8%', layers: [
+              { anim: 'ga-mu-hop', k: 0.5, layers: [
+                { src: GA + 'muscle/a-body.png' },
+                { src: GA + 'muscle/a-tick.png', anim: 'ga-mu-tk', k: 0.5, origin: '24.2% 28.9%' }] }] }] },
+          { style: 'transform:translate(-26.2%,1.32%);', layers: [
+            { anim: 'ga-mu-b', k: 3, origin: '76.2% 72.8%', layers: [
+              { anim: 'ga-mu-shk', k: 0.125, ease: 'linear', origin: '76.2% 72.8%', layers: [{ src: GA + 'muscle/b-body.png' }] },
+              { src: GA + 'muscle/b-sweat.png', anim: 'ga-mu-sw', k: 0.5 },
+              { src: GA + 'muscle/b-wobble.png', anim: 'ga-mu-wb', k: 0.25, ease: 'linear' }] }] }] }],
+      css: `@keyframes ga-mu-a { 0%,32% { opacity: 1; transform: scale(1); } 37% { opacity: 1; transform: scale(1.07,.93); } 42% { opacity: 0; transform: scale(1.14,.86); } 88% { opacity: 0; transform: scale(.9); } 94% { opacity: 1; transform: scale(1.04); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes ga-mu-b { 0%,37% { opacity: 0; transform: scale(.9); } 42% { opacity: 1; transform: scale(1.1,.92); } 48% { opacity: 1; transform: scale(1); } 86% { opacity: 1; transform: scale(1); } 92%,100% { opacity: 0; transform: scale(.94); } }
+        @keyframes ga-mu-hop { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.96%); } }
+        @keyframes ga-mu-shk { 0%,100% { transform: translateX(-0.6%) rotate(-1.5deg); } 50% { transform: translateX(0.6%) rotate(1.5deg); } }
+        @keyframes ga-mu-tk { 0%,100% { transform: scale(.85); opacity: .6; } 50% { transform: scale(1.12); opacity: 1; } }
+        @keyframes ga-mu-sw { 0% { transform: translateY(-0.72%); opacity: .3; } 50% { transform: translateY(0.48%); opacity: 1; } 100% { transform: translateY(-0.72%); opacity: .3; } }
+        @keyframes ga-mu-wb { 0%,100% { opacity: 1; } 50% { opacity: .25; } }`
+    },
+    { // แฮมสเตอร์ร้องเพลง — Nina (gift_051 หมูหยอง): แฮมสเตอร์ใส่โบว์เด้งตัวร้องเพลง โบว์แกว่ง โน้ต/หัวใจลอย
+      gifts: ['gift_051'], match: [], ratio: 1, dur: 1.6, label: 'แฮมสเตอร์ใส่โบว์ยิ้มร้องเพลง มีโน้ตดนตรีและหัวใจลอยรอบตัว',
+      layers: [
+        { anim: 'ga-hm-bod', origin: '50% 83%', layers: [
+          { src: GA + 'hamster/body.png' },
+          { src: GA + 'hamster/bow.png', anim: 'ga-hm-bow', k: 0.5, origin: '51% 25.1%' }] },
+        ...[['note-1', '19.4% 31.2%'], ['heart-1', '82.5% 46.8%'], ['note-2', '81.5% 29.3%'], ['heart-2', '23.2% 66%'], ['note-3', '17.1% 55.2%'],
+          ['note-4', '81.1% 65.4%'], ['heart-3', '30.2% 19.2%'], ['tick-1', '69.7% 22%'], ['tick-2', '75.7% 58.7%'], ['tick-3', '20.8% 42.3%']].map(([f, o], i) => {
+          const t = f.split('-')[0];
+          return { src: GA + 'hamster/' + f + '.png', anim: 'ga-hm-' + t, k: t === 'note' ? 1.5 : t === 'tick' ? 0.5 : 1, origin: o, delay: -0.23 * i };
+        })],
+      css: `@keyframes ga-hm-bod { 0%,100% { transform: translateY(0) scale(1.03,.97); } 50% { transform: translateY(-1.68%) scale(.98,1.03); } }
+        @keyframes ga-hm-bow { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+        @keyframes ga-hm-heart { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-0.96%) scale(1.14); } }
+        @keyframes ga-hm-note { 0%,100% { transform: translateY(0) rotate(-10deg); } 50% { transform: translateY(-1.44%) rotate(10deg); } }
+        @keyframes ga-hm-tick { 0%,100% { transform: scale(.8); opacity: .55; } 50% { transform: scale(1.15); opacity: 1; } }`
     }
   ];
   function giftArt(url) {
