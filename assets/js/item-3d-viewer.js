@@ -79,7 +79,11 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .v3d-title .ssr { display: inline-block; font-size: 11px; font-weight: 700; color: #3b2a00; background: linear-gradient(135deg,#ffe9a3,#f3c548);
         border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: 1px; }
-      .v3d-scene { perspective: 1100px; width: 100%; display: flex; justify-content: center; }
+      .v3d-scene { perspective: 1100px; width: 100%; display: flex; justify-content: center; transform-origin: 50% 50%; will-change: transform; }
+      .v3d-scene.is-easing { transition: transform 0.25s ease; }
+      /* ซูมแล้วการ์ดใหญ่ทับปุ่ม -> ให้หัวข้อ/ปุ่มอยู่ด้านบนเสมอ */
+      .v3d-close, .v3d-title, .v3d-hint, .v3d-actions { position: relative; z-index: 2; }
+      .v3d-close, .v3d-title { position: absolute; }
       .v3d-card { position: relative; width: min(68vw, 300px); transform-style: preserve-3d; cursor: grab; will-change: transform; }
       .v3d-card:active { cursor: grabbing; }
       .v3d-face { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
@@ -943,7 +947,7 @@
           <div class="v3d-face v3d-back${backClass}"><img src="${backArt || BACK_LOGO}" alt="" draggable="false"></div>
         </div>
       </div>
-      <div class="v3d-hint">Drag to rotate · Double-tap to flip</div>
+      <div class="v3d-hint">Drag to rotate · Pinch to zoom · Double-tap to flip</div>
       <div class="v3d-actions">
         <button type="button" class="v3d-btn" data-act="flip"><i class="fa-solid fa-rotate"></i> Flip</button>
         <button type="button" class="v3d-btn" data-act="reset"><i class="fa-solid fa-arrows-to-dot"></i> Reset</button>
@@ -961,7 +965,7 @@
     if (cupMode) {
       o.classList.add('is-cafe');
       card.classList.add('is-cup');
-      o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Double-tap to spin';
+      o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Pinch to zoom · Double-tap to spin';
       o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i> Spin';
     }
     document.body.appendChild(o);
@@ -981,7 +985,7 @@
       const asCard = () => { // สร้างแก้วไม่ได้ → กลับเป็นการ์ดแบน (พลิกดูด้านหลังได้ตามปกติ)
         cupMode = false;
         card.classList.remove('is-cup');
-        o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Double-tap to flip';
+        o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Pinch to zoom · Double-tap to flip';
         o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i> Flip';
       };
       const useCup = c => {
@@ -1038,16 +1042,53 @@
       target = cupMode ? { rx: -10, ry: Math.round(ry / 360) * 360 + 360 } : { rx: 0, ry: Math.round((ry + 180) / 180) * 180 };
     }
 
+    // 🔍 ซูม: 2 นิ้วถ่างเข้า/ออก (ลาก 2 นิ้วเลื่อนดูได้) · คอม: Ctrl+ล้อเมาส์ / ถ่างบนทัชแพด
+    const scene = o.querySelector('.v3d-scene');
+    const ZOOM_MIN = 1, ZOOM_MAX = 4;
+    let zoom = 1, panX = 0, panY = 0;
+    const pointers = new Map();     // pointerId -> { x, y }
+    let pinch = null;               // { dist, zoom, mx, my, panX, panY }
+    function applyZoom(ease) {
+      if (zoom <= 1.001) { zoom = 1; panX = panY = 0; }
+      // จำกัดการเลื่อนไม่ให้การ์ดหลุดจอ
+      const lim = (zoom - 1) * 0.5;
+      panX = Math.max(-innerWidth * lim, Math.min(innerWidth * lim, panX));
+      panY = Math.max(-innerHeight * lim, Math.min(innerHeight * lim, panY));
+      scene.classList.toggle('is-easing', !!ease);
+      scene.style.transform = zoom === 1 ? '' : `translate(${panX}px, ${panY}px) scale(${zoom})`;
+    }
+    function pinchInfo() {
+      const [a, b] = [...pointers.values()];
+      return { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
+    }
+
     o.addEventListener('pointerdown', (e) => {
       if (e.target.closest('button')) return;
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      try { o.setPointerCapture(e.pointerId); } catch (_) {}
+      if (pointers.size === 2) { // นิ้วที่สอง = เริ่มซูม (หยุดหมุน)
+        dragging = false; vx = vy = 0; lastTap = 0;
+        const p = pinchInfo();
+        pinch = { dist: p.dist, zoom, mx: p.mx, my: p.my, panX, panY };
+        return;
+      }
+      if (pointers.size > 2) return;
       const now = Date.now();
       if (now - lastTap < 300) { flip(); lastTap = 0; return; }
       lastTap = now;
       dragging = true; touched = true; target = null; vx = vy = 0;
       lastX = e.clientX; lastY = e.clientY; lastT = now;
-      o.setPointerCapture(e.pointerId);
     });
     o.addEventListener('pointermove', (e) => {
+      if (pointers.has(e.pointerId)) pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pointers.size >= 2) {
+        const p = pinchInfo();
+        zoom = Math.max(ZOOM_MIN * 0.85, Math.min(ZOOM_MAX, pinch.zoom * p.dist / pinch.dist));
+        panX = pinch.panX + (p.mx - pinch.mx);
+        panY = pinch.panY + (p.my - pinch.my);
+        applyZoom(false);
+        return;
+      }
       if (!dragging) return;
       const dx = e.clientX - lastX, dy = e.clientY - lastY;
       ry += dx * 0.45; rx = Math.max(-40, Math.min(40, rx - dy * 0.35));
@@ -1055,12 +1096,33 @@
       vy = dx * 0.45 * (16 / dt); vx = -dy * 0.35 * (16 / dt);
       lastX = e.clientX; lastY = e.clientY; lastT = now;
     });
-    const end = () => { dragging = false; };
+    const end = (e) => {
+      pointers.delete(e.pointerId);
+      if (pinch && pointers.size < 2) {
+        pinch = null;
+        if (zoom < ZOOM_MIN) zoom = ZOOM_MIN; // ถ่างเล็กเกินแล้วเด้งกลับขนาดปกติ
+        applyZoom(true);
+        // นิ้วที่เหลืออยู่หมุนต่อได้เลย ไม่กระตุก
+        const rest = [...pointers.values()][0];
+        if (rest) { dragging = true; lastX = rest.x; lastY = rest.y; lastT = Date.now(); }
+        return;
+      }
+      if (!pointers.size) dragging = false;
+    };
     o.addEventListener('pointerup', end);
     o.addEventListener('pointercancel', end);
+    o.addEventListener('wheel', (e) => {
+      if (!e.ctrlKey && !e.metaKey) return; // ล้อเมาส์ธรรมดาไม่ซูม (Ctrl+ล้อ / ถ่างทัชแพดเท่านั้น)
+      e.preventDefault();
+      zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom * Math.exp(-Math.max(-100, Math.min(100, e.deltaY)) * 0.002)));
+      applyZoom(false);
+    }, { passive: false });
 
     o.querySelector('[data-act="flip"]').addEventListener('click', flip);
-    o.querySelector('[data-act="reset"]').addEventListener('click', () => { touched = true; vx = vy = 0; target = { rx: 0, ry: Math.round(ry / 360) * 360 }; });
+    o.querySelector('[data-act="reset"]').addEventListener('click', () => {
+      touched = true; vx = vy = 0; target = { rx: 0, ry: Math.round(ry / 360) * 360 };
+      zoom = 1; applyZoom(true);
+    });
 
     function close() {
       closed = true;
