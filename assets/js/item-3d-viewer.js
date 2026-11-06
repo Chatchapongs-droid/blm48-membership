@@ -79,12 +79,13 @@
         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
       .v3d-title .ssr { display: inline-block; font-size: 11px; font-weight: 700; color: #3b2a00; background: linear-gradient(135deg,#ffe9a3,#f3c548);
         border-radius: 999px; padding: 2px 8px; margin-left: 6px; vertical-align: 1px; }
-      .v3d-scene { perspective: 1100px; width: 100%; display: flex; justify-content: center; transform-origin: 50% 50%; will-change: transform; }
+      .v3d-scene { perspective: 1100px; width: 100%; display: flex; justify-content: center; align-items: center; transform-origin: 50% 50%; }
+      .v3d-scene.is-easing .v3d-card { transition: width 0.25s ease, margin 0.25s ease; }
       .v3d-scene.is-easing { transition: transform 0.25s ease; }
       /* ซูมแล้วการ์ดใหญ่ทับปุ่ม -> ให้หัวข้อ/ปุ่มอยู่ด้านบนเสมอ */
       .v3d-close, .v3d-title, .v3d-hint, .v3d-actions { position: relative; z-index: 2; }
       .v3d-close, .v3d-title { position: absolute; }
-      .v3d-card { position: relative; width: min(68vw, 300px); transform-style: preserve-3d; cursor: grab; will-change: transform; }
+      .v3d-card { position: relative; width: min(68vw, 300px); flex-shrink: 0; transform-style: preserve-3d; cursor: grab; will-change: transform; }
       .v3d-card:active { cursor: grabbing; }
       .v3d-face { position: absolute; inset: 0; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
       /* เงาตามรูปทรงของจริง (ของทรงกลม/พื้นใส เช่น Coaster จะไม่เห็นกรอบสี่เหลี่ยม) */
@@ -1048,6 +1049,7 @@
     let zoom = 1, panX = 0, panY = 0;
     const pointers = new Map();     // pointerId -> { x, y }
     let pinch = null;               // { dist, zoom, mx, my, panX, panY }
+    let baseW = 0, baseH = 0;       // ขนาดการ์ดตอนไม่ซูม
     function applyZoom(ease) {
       if (zoom <= 1.001) { zoom = 1; panX = panY = 0; }
       // จำกัดการเลื่อนไม่ให้การ์ดหลุดจอ
@@ -1055,7 +1057,22 @@
       panX = Math.max(-innerWidth * lim, Math.min(innerWidth * lim, panX));
       panY = Math.max(-innerHeight * lim, Math.min(innerHeight * lim, panY));
       scene.classList.toggle('is-easing', !!ease);
-      scene.style.transform = zoom === 1 ? '' : `translate(${panX}px, ${panY}px) scale(${zoom})`;
+      if (cupMode) { // แก้ว 3D วาดเป็นภาพอยู่แล้ว ใช้ scale ได้
+        scene.style.transform = zoom === 1 ? '' : `translate(${panX}px, ${panY}px) scale(${zoom})`;
+        return;
+      }
+      // การ์ด: ขยายขนาดจริง (ไม่ใช้ scale) ให้เบราว์เซอร์วาดจากรูปความละเอียดเต็ม ภาพไม่แตก
+      // margin ติดลบชดเชย ให้ปุ่ม/ข้อความรอบๆ ไม่ขยับ
+      if (zoom === 1) {
+        card.style.width = card.style.margin = scene.style.perspective = '';
+        scene.style.transform = '';
+        return;
+      }
+      if (!card.style.width) { baseW = card.offsetWidth; baseH = card.offsetHeight; }
+      card.style.width = (baseW * zoom) + 'px';
+      card.style.margin = `${-baseH * (zoom - 1) / 2}px ${-baseW * (zoom - 1) / 2}px`;
+      scene.style.perspective = (1100 * zoom) + 'px'; // มุมมอง 3D เท่าเดิมแม้การ์ดใหญ่ขึ้น
+      scene.style.transform = `translate(${panX}px, ${panY}px)`;
     }
     function pinchInfo() {
       const [a, b] = [...pointers.values()];
