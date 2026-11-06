@@ -1,5 +1,5 @@
 // 🔍 ดูสินค้าแบบ 3D: ลากหมุนการ์ด/สินค้าได้รอบทิศ + แสงโฮโลแกรมตามมุม · แตะสองครั้ง = พลิกดูด้านหลัง
-// ใช้: blm48Open3DViewer({ image, label, isSSR, collection?, collectionId? })
+// ใช้: blm48Open3DViewer({ image, label, isSSR, collection?, collectionId?, back? })
 (function () {
   const BACK_LOGO = 'https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s300';
 
@@ -46,6 +46,8 @@
 
   // -> { image, card } · card = ภาพเต็มใบมุมโค้ง (Photocard) / false = PNG ตามรูปทรง (Coaster)
   function backFor(opts) {
+    // ด้านหลังเฉพาะชิ้น (เช่น Ticket Stub ของงาน Fanmeet) มาก่อนด้านหลังของคอลเลกชัน
+    if (opts.back) return { image: opts.back, card: true };
     const name = String(opts.collection || '').trim();
     const up = uploadedBacks && (uploadedBacks.byId[opts.collectionId] || uploadedBacks.byName[name]);
     if (up) return { image: up.image, card: up.style !== 'shape' };
