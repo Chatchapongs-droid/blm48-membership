@@ -1036,7 +1036,7 @@ function renderInventoryData() {
     // เปิดเป็นหนังสือ 3D (ซ้อนบนหน้าต่างพรีวิว ปิดแล้วกลับมาที่พรีวิวเดิม) ถ้าโหลดตัว 3D ไม่ได้ค่อยใช้ตัวอ่านแบบเดิม
     function openPhotobook3D(item) {
         if (window.blm48OpenPhotobook3D) {
-            blm48OpenPhotobook3D({ title: item.name, cover: item.img, folder: item.fileUrl });
+            blm48OpenPhotobook3D({ title: item.name, cover: item.img, folder: item.fileUrl, studio: true });
             return;
         }
         closePreview();

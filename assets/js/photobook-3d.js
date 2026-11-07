@@ -173,6 +173,26 @@
       .pb-overlay[data-mode="closed"] .pb-closed-ui, .pb-overlay[data-mode="open"] .pb-open-ui { display: flex; }
       .pb-msg { position: absolute; left: 24px; right: 24px; top: 50%; transform: translateY(-50%); text-align: center; font-size: 14px; line-height: 1.6; z-index: 4; }
       .pb-msg .pb-btn { margin-top: 14px; }
+
+      /* 🎬 Studio (หน้า inventory: opts.studio) — ฉากสตูดิโอสีขาว + เงาใต้เล่ม · ปุ่มเครื่องมือกลมเรียงด้านข้างขวา */
+      .pb-overlay.is-studio { color: #222; background: linear-gradient(to bottom, #ececee 0%, #f5f5f6 50%, #ffffff 66%, #ffffff 100%); }
+      .pb-overlay.is-studio .pb-stage { right: 60px; }
+      .pb-overlay.is-studio .pb-floor { background: radial-gradient(ellipse at center, rgba(0,0,0,0.16) 0%, rgba(0,0,0,0) 70%); }
+      .pb-overlay.is-studio .pb-title { color: #333; }
+      .pb-overlay.is-studio .pb-title small { color: #6e6e73; }
+      .pb-overlay.is-studio .pb-icon-btn { background: #ededef; color: #6e6e73; }
+      .pb-overlay.is-studio .pb-hint { color: #6e6e73; }
+      .pb-overlay.is-studio .pb-scrub { color: #555; }
+      .pb-overlay.is-studio .pb-scrub input { accent-color: #8e8e93; }
+      .pb-overlay.is-studio .pb-btn { border: none; background: #ededef; color: #6e6e73; }
+      .pb-overlay.is-studio .pb-btn:disabled { opacity: 0.45; }
+      .pb-side { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); z-index: 3; display: flex; flex-direction: column; gap: 10px; }
+      .pb-side .pb-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-size: 15px; display: flex; align-items: center; justify-content: center;
+        box-shadow: none; transition: background 0.2s, color 0.2s, transform 0.15s; }
+      .pb-side .pb-btn:active { transform: scale(0.92); }
+      .pb-side .pb-btn.is-on, .pb-side .pb-btn.primary:not(:disabled) { background: #8e8e93; color: #fff; }
+      .pb-overlay[data-mode="closed"] .pb-side [data-act="zoom"], .pb-overlay[data-mode="closed"] .pb-side [data-act="shut"],
+      .pb-overlay[data-mode="open"] .pb-side [data-act="open"] { display: none; }
     `;
     document.head.appendChild(st);
   }
@@ -227,6 +247,20 @@
     const zoomBtn = o.querySelector('[data-act="zoom"]');
     const prevBtn = o.querySelector('[data-act="prev"]');
     const nextBtn = o.querySelector('[data-act="next"]');
+    // Studio: ย้ายปุ่ม เปิดอ่าน / ซูม / ปิดเล่ม / เสียง ไปเป็นปุ่มกลมไอคอนล้วนเรียงด้านข้าง (ลูกศร + แถบเลื่อนหน้ายังอยู่ด้านล่าง)
+    const studio = !!opts.studio;
+    if (studio) {
+      o.classList.add('is-studio');
+      const side = document.createElement('div');
+      side.className = 'pb-side';
+      openBtn.innerHTML = '<i class="fa-solid fa-book-open"></i>'; openBtn.setAttribute('aria-label', 'เปิดอ่าน');
+      const shutBtn = o.querySelector('[data-act="shut"]');
+      shutBtn.innerHTML = '<i class="fa-solid fa-book"></i>'; shutBtn.setAttribute('aria-label', 'ปิดเล่ม');
+      soundBtn.classList.add('pb-btn');
+      side.append(openBtn, zoomBtn, shutBtn, soundBtn);
+      o.appendChild(side);
+      o.querySelector('.pb-closed-ui').remove();
+    }
     function paintSound() { soundBtn.innerHTML = muted ? '<i class="fa-solid fa-volume-xmark"></i>' : '<i class="fa-solid fa-volume-high"></i>'; }
     paintSound();
 
@@ -267,12 +301,13 @@
     // ---------- ขนาดตามจอ ----------
     function layout() {
       const vw = window.innerWidth, vh = window.innerHeight;
-      const availW = vw - 24, availH = vh - 64 - 170;
+      const side = studio ? 60 : 0; // Studio: เว้นที่ให้แถบปุ่มด้านขวา
+      const availW = vw - 24 - side, availH = vh - 64 - 170;
       W = Math.floor(Math.max(90, Math.min(availW / 2, availH / ratio)));
       H = Math.round(W * ratio);
       T = clamp(Math.min(W * 0.085, 6 + L * 0.55), 6, 22);
       sClosed = clamp(Math.min((availW * 0.64) / W, (availH * 0.98) / H), 1, 2.2);
-      zoomS = Math.max(1, Math.min((vw - 16) / W, (vh - 64 - 120) / H));
+      zoomS = Math.max(1, Math.min((vw - 16 - side) / W, (vh - 64 - 120) / H));
       obj.style.setProperty('--W', W + 'px');
       obj.style.setProperty('--H', H + 'px');
       obj.style.setProperty('--T', T + 'px');
@@ -433,7 +468,8 @@
       prevBtn.disabled = t <= 1 && zoomSide !== 'R';
       nextBtn.disabled = t >= L && zoomSide !== 'L';
       zoomBtn.classList.toggle('is-on', !!zoomSide);
-      zoomBtn.innerHTML = zoomSide ? '<i class="fa-solid fa-magnifying-glass-minus"></i> ย่อ' : '<i class="fa-solid fa-magnifying-glass-plus"></i> ซูม';
+      zoomBtn.innerHTML = zoomSide ? '<i class="fa-solid fa-magnifying-glass-minus"></i>' + (studio ? '' : ' ย่อ') : '<i class="fa-solid fa-magnifying-glass-plus"></i>' + (studio ? '' : ' ซูม');
+      zoomBtn.setAttribute('aria-label', zoomSide ? 'ย่อ' : 'ซูม');
       if (mode === 'closed') hint.textContent = ready ? 'ลากเพื่อหมุนดูรอบเล่ม · แตะที่หนังสือเพื่อเปิดอ่าน' : 'กำลังเตรียมหนังสือ...';
       else if (mode === 'open') hint.textContent = zoomSide ? 'ปัดซ้าย-ขวาเพื่ออ่านทีละหน้า' : 'ลากมุมกระดาษหรือแตะซ้าย-ขวาเพื่อพลิกหน้า';
       openBtn.disabled = !ready;
