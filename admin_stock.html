@@ -272,7 +272,7 @@
   }
 
   function resolveDriveImage(url) {
-    const fallback = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+    const fallback = '/assets/images/default-avatar.png';
     if (!url) return fallback;
     if (url.includes('drive.google.com')) {
       const driveMatch = url.match(/[-\w]{25,}/);
@@ -427,7 +427,7 @@
         <tr class="${rowClass}">
           <td>
             <div class="name-cell">
-              <img src="${escapeAttr(resolveDriveImage(it.imageUrl))}" onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';">
+              <img src="${escapeAttr(resolveDriveImage(it.imageUrl))}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
               <span class="n-text">${escapeHtml(it.name)}</span>
             </div>
           </td>

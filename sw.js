@@ -32,7 +32,7 @@ self.addEventListener('push', (event) => {
     const title = payload.title || 'BLM48';
     const options = {
       body: payload.body || '',
-      icon: payload.avatar || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000',
+      icon: payload.avatar || '/assets/images/default-avatar.png',
       badge: 'https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s192',
       data: { url: payload.url || '/notification' }
     };

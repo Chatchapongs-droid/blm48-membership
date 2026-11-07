@@ -532,7 +532,7 @@ function commentTimeAgo(ts) {
 // กด Reply ที่คอมเมนต์ไหนก็ได้ (รวมถึง reply) -> ช่องพิมพ์หลักขึ้นแถบ "Replying to ชื่อ" + เติม @ชื่อ ให้
 // ฝั่ง server (add_comment) ผูก reply ของ reply เข้ากับคอมเมนต์บนสุดเอง + แจ้งเตือนเจ้าของคอมเมนต์ที่ถูกตอบ
 // =========================================================================
-const BLM48_CMT_DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+const BLM48_CMT_DEFAULT_AVATAR = '/assets/images/default-avatar.png';
 const BLM48_CMT_BADGE_ROLES = ['member', 'admin', 'ceo'];
 const BLM48_CMT_BADGE = `<svg class="cmt-verified" viewBox="0 0 24 24"><path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"/></svg>`;
 
@@ -1671,7 +1671,7 @@ function showIosNotification({ avatar, title, text, onClick }) {
   const el = document.createElement('div');
   el.className = 'blm48-ios-noti';
   el.innerHTML = `
-    <img class="blm48-ios-noti-avatar" src="${escapeAttr(avatar || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000')}" alt="">
+    <img class="blm48-ios-noti-avatar" src="${escapeAttr(avatar || '/assets/images/default-avatar.png')}" alt="">
     <div class="blm48-ios-noti-body">
       <div class="blm48-ios-noti-row1">
         <span class="blm48-ios-noti-title">${escapeHtml(title)}</span>

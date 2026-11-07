@@ -203,7 +203,7 @@
   }
 
   function resolveDriveImage(url) {
-    const fallback = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+    const fallback = '/assets/images/default-avatar.png';
     if (!url) return fallback;
     if (url.includes('drive.google.com')) {
       const driveMatch = url.match(/[-\w]{25,}/);
@@ -217,7 +217,7 @@
 
   // รูปย่อ: ของขวัญที่ image_url ยังเป็น 'url' ให้วาดสติ๊กเกอร์ตาม gift_id เหมือนหน้าส่งของขวัญ
   function giftThumbHtml(giftId, thumb) {
-    const img = `<img class="sales-item-thumb" src="${escapeAttr(resolveDriveImage(thumb === 'url' ? null : thumb))}" onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';">`;
+    const img = `<img class="sales-item-thumb" src="${escapeAttr(resolveDriveImage(thumb === 'url' ? null : thumb))}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">`;
     if (!giftId || !window.blm48GiftImageHtml) return img;
     return `<div class="sales-item-thumb gift">${window.blm48GiftImageHtml(giftId, thumb, 34, img)}</div>`;
   }

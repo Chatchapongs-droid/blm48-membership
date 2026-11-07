@@ -454,7 +454,7 @@
                 const formatCookieCount = Number(champ.totalCookie).toLocaleString();
                 
                 const memberName = champ.name ? champ.name : 'Unknown Member';
-                const avatarImg = champ.profileImage ? champ.profileImage : 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s400';
+                const avatarImg = champ.profileImage ? champ.profileImage : '/assets/images/default-avatar.png';
 
                 // 🎨 แยกสีตามวง: กรอบรูป BLM48 = #ffde5b, NPT48 = #66cbff + แถบโค้งซ้ายสีอ่อนของวง
                 const isNPT48 = (champ.groupName || 'BLM48').toString().trim().toUpperCase() === 'NPT48';

@@ -148,7 +148,7 @@
   function setSort(k) { sortBy = k; store('adminGiftsSort', k); render(); }
 
   // ของขวัญหมวดเมมเบอร์: เจ้าของมาจากแผนที่สติ๊กเกอร์ (gift_name บางชิ้นเป็นชื่อแฟนด้อม) + รูปโปรไฟล์จาก get_all_members
-  const DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s200';
+  const DEFAULT_AVATAR = '/assets/images/default-avatar.png';
   let members = {};
   function giftMember(g) {
     return g.tier === 'Normal' ? '' : ((window.blm48GiftMemberName && window.blm48GiftMemberName(g.giftId)) || '');

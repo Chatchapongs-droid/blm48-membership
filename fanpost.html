@@ -202,7 +202,7 @@
     </div>
   </a>
   <a href="profile" class="tab-item">
-    <img id="tab-profile-img" src="https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000" style="border-radius: 50%; object-fit: cover; border: 2px solid #ffb3c1;">
+    <img id="tab-profile-img" src="/assets/images/default-avatar.png" style="border-radius: 50%; object-fit: cover; border: 2px solid #ffb3c1;">
   </a>
 </div>
 
@@ -283,7 +283,7 @@
     if (!post) return '';
 
     const canManage = hasManagementPermission(post.authorUsername);
-    const authorProfileImg = post.profile_img || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+    const authorProfileImg = post.profile_img || '/assets/images/default-avatar.png';
     const authorName = escapeHtml(post.authorName || 'Anonymous');
 
     const rawDate = post.timestamp || post.date || 'เมื่อสักครู่';
@@ -691,7 +691,7 @@
           commentId: result.commentId, username: currentUser.username,
           name: currentUser.name || currentUser.username || 'Anonymous',
           role: currentUser.role || 'user',
-          profile_img: currentUser.profile_img || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000',
+          profile_img: currentUser.profile_img || '/assets/images/default-avatar.png',
           text: commentText, likes: 0, isLiked: false
         }, postId, false));
         commentListEl.scrollTop = commentListEl.scrollHeight;

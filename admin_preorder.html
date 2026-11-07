@@ -227,7 +227,7 @@
   }
 
   function fallbackAvatar(url) {
-    return url && url.trim() !== '' ? url : 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+    return url && url.trim() !== '' ? url : '/assets/images/default-avatar.png';
   }
 
   // ยืนยันในการ์ด: { orderId, action: 'shipped' | 'pending' | 'reveal', busy, error }
@@ -306,7 +306,7 @@
       return `
         <div class="order-card" data-order-id="${o.orderId}">
           <div class="order-head">
-            <img class="order-avatar" src="${fallbackAvatar(o.userAvatar)}" onerror="this.onerror=null;this.src='https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';">
+            <img class="order-avatar" src="${fallbackAvatar(o.userAvatar)}" onerror="this.onerror=null;this.src='/assets/images/default-avatar.png';">
             <div class="order-user-info">
               <div class="order-user-name">${escapeHtml(o.userName || o.username)}</div>
               <div class="order-user-sub">@${escapeHtml(o.username)} · #${o.orderId}</div>

@@ -346,7 +346,7 @@
     if (!post) return '';
 
     const canManage = hasManagementPermission(post.authorUsername);
-    const authorProfileImg = post.profile_img || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000';
+    const authorProfileImg = post.profile_img || '/assets/images/default-avatar.png';
     const authorName = escapeHtml(post.authorName || 'Anonymous Member');
 
     const rawDate = post.timestamp || post.date || 'เมื่อสักครู่';
@@ -843,7 +843,7 @@
           username: currentUser.username,
           name: currentUser.name || currentUser.username || 'Anonymous',
           role: currentUser.role || 'user',
-          profile_img: currentUser.profile_img || 'https://lh3.googleusercontent.com/d/1rebp2F8vyP0nyvsEOFD9Nw2mPcRtVqtG=s1000',
+          profile_img: currentUser.profile_img || '/assets/images/default-avatar.png',
           text: commentText,
           likes: 0,
           isLiked: false
