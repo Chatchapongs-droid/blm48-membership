@@ -116,6 +116,33 @@
       .v3d-actions { margin-top: 14px; display: flex; gap: 10px; }
       .v3d-btn { border: 1px solid rgba(255,255,255,0.25); background: rgba(255,255,255,0.08); color: #fff; border-radius: 999px; padding: 8px 16px;
         font-family: inherit; font-size: 13px; cursor: pointer; }
+
+      /* 🎬 Studio (หน้า inventory: opts.studio) — ฉากสตูดิโอสีขาว + พื้นขาว + เงาใต้สินค้า · เมนูเป็นปุ่มกลมเรียงด้านข้างขวา */
+      .v3d-overlay.is-studio, .v3d-overlay.is-studio.is-cafe { color: #222; isolation: isolate;
+        background: linear-gradient(to bottom, #ececee 0%, #f5f5f6 50%, #ffffff 66%, #ffffff 100%); }
+      .v3d-overlay.is-studio::before { content: ''; position: absolute; inset: 0; z-index: -2; pointer-events: none; filter: none;
+        background: radial-gradient(60% 42% at 50% 42%, rgba(255,255,255,0.95), rgba(255,255,255,0) 72%); }
+      .v3d-overlay.is-studio::after { content: ''; position: absolute; left: 50%; top: calc(50% + min(48vw, 210px)); width: min(62vw, 280px); height: 34px;
+        transform: translate(-50%, -50%); z-index: -1; border-radius: 50%; pointer-events: none;
+        background: radial-gradient(closest-side, rgba(0,0,0,0.14), rgba(0,0,0,0)); filter: blur(4px); }
+      .v3d-overlay.is-studio.is-cafe::after { top: calc(50% + min(42vw, 188px)); }
+      .v3d-overlay.is-studio .v3d-title { color: #333; text-shadow: none; }
+      .v3d-overlay.is-studio .v3d-close { background: #ededef; color: #6e6e73; }
+      .v3d-overlay.is-studio .v3d-front img { filter: drop-shadow(0 16px 18px rgba(0,0,0,0.16)) brightness(var(--br, 1)) saturate(var(--sat, 1)); }
+      .v3d-overlay.is-studio .v3d-back.is-art img { filter: drop-shadow(0 16px 18px rgba(0,0,0,0.16)); }
+      .v3d-overlay.is-studio .v3d-back, .v3d-overlay.is-studio .v3d-back.is-art.is-card { box-shadow: 0 16px 34px rgba(0,0,0,0.16); }
+      .v3d-overlay.is-studio .v3d-back.is-art { box-shadow: none; }
+      .v3d-overlay.is-studio .v3d-hint { position: absolute; left: 16px; right: 16px; bottom: calc(26px + env(safe-area-inset-bottom)); margin: 0;
+        color: #6e6e73; text-shadow: none; }
+      .v3d-overlay.is-studio .v3d-actions { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); margin: 0;
+        flex-direction: column; gap: 10px; }
+      .v3d-overlay.is-studio .v3d-btn { width: 40px; height: 40px; padding: 0; border: none; border-radius: 50%; background: #ededef; color: #8e8e93;
+        font-size: 15px; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s, transform 0.15s; }
+      .v3d-overlay.is-studio .v3d-btn:active { transform: scale(0.92); }
+      .v3d-overlay.is-studio .v3d-btn.on { background: #8e8e93; color: #fff; }
+      .v3d-overlay.is-studio .v3d-btn .lbl { display: none; }
+      .v3d-btn[data-act="zoom"] { display: none; }
+      .v3d-overlay.is-studio .v3d-btn[data-act="zoom"] { display: flex; }
     `;
     document.head.appendChild(st);
   }
@@ -950,9 +977,11 @@
       </div>
       <div class="v3d-hint">Drag to rotate · Pinch to zoom · Double-tap to flip</div>
       <div class="v3d-actions">
-        <button type="button" class="v3d-btn" data-act="flip"><i class="fa-solid fa-rotate"></i> Flip</button>
-        <button type="button" class="v3d-btn" data-act="reset"><i class="fa-solid fa-arrows-to-dot"></i> Reset</button>
+        <button type="button" class="v3d-btn" data-act="flip" aria-label="Flip"><i class="fa-solid fa-rotate"></i><span class="lbl"> Flip</span></button>
+        <button type="button" class="v3d-btn" data-act="zoom" aria-label="Zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+        <button type="button" class="v3d-btn" data-act="reset" aria-label="Reset"><i class="fa-solid fa-arrows-to-dot"></i><span class="lbl"> Reset</span></button>
       </div>`;
+    if (opts.studio) o.classList.add('is-studio');
     const titleEl = o.querySelector('.v3d-title');
     titleEl.textContent = opts.label || '';
     if (opts.isSSR) titleEl.insertAdjacentHTML('beforeend', '<span class="ssr">SSR</span>');
@@ -967,7 +996,8 @@
       o.classList.add('is-cafe');
       card.classList.add('is-cup');
       o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Pinch to zoom · Double-tap to spin';
-      o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i> Spin';
+      o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i><span class="lbl"> Spin</span>';
+      o.querySelector('[data-act="flip"]').setAttribute('aria-label', 'Spin');
     }
     document.body.appendChild(o);
     // เปิดก่อนโหลดรายการรูปด้านหลังเสร็จ -> โหลดเสร็จแล้วค่อยเปลี่ยนด้านหลังให้
@@ -987,7 +1017,8 @@
         cupMode = false;
         card.classList.remove('is-cup');
         o.querySelector('.v3d-hint').textContent = 'Drag to rotate · Pinch to zoom · Double-tap to flip';
-        o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i> Flip';
+        o.querySelector('[data-act="flip"]').innerHTML = '<i class="fa-solid fa-rotate"></i><span class="lbl"> Flip</span>';
+        o.querySelector('[data-act="flip"]').setAttribute('aria-label', 'Flip');
       };
       const useCup = c => {
         if (!c) { asCard(); return; }
@@ -1138,8 +1169,17 @@
     o.querySelector('[data-act="flip"]').addEventListener('click', flip);
     o.querySelector('[data-act="reset"]').addEventListener('click', () => {
       touched = true; vx = vy = 0; target = { rx: 0, ry: Math.round(ry / 360) * 360 };
-      zoom = 1; applyZoom(true);
+      zoom = 1; applyZoom(true); syncZoomBtn();
     });
+    // ปุ่มซูม (แถบด้านข้างในโหมด Studio): ขยาย 2 เท่า / กดอีกครั้งกลับขนาดปกติ
+    const zoomBtn = o.querySelector('[data-act="zoom"]');
+    function syncZoomBtn() { zoomBtn.classList.toggle('on', zoom > 1.001); }
+    zoomBtn.addEventListener('click', () => {
+      zoom = zoom > 1.001 ? 1 : 2; panX = panY = 0;
+      applyZoom(true); syncZoomBtn();
+    });
+    o.addEventListener('pointerup', syncZoomBtn);
+    o.addEventListener('wheel', syncZoomBtn, { passive: true });
 
     function close() {
       closed = true;
