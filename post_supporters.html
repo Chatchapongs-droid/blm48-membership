@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | Top Supporters</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#fff9db">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <link rel="icon" sizes="192x192" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s192">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <style>
+        /* 👑 Top Supporters ของโพสต์ (กดแถวรูป 3 อันดับ + ยอดคุกกี้ใต้โพสต์) — ดีไซน์เดียวกับ campaign_supporters.html */
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; padding: 0; min-height: 100vh; color: #222; background: #ffffff; }
+        .page-wrapper { max-width: 640px; margin: 0 auto; }
+
+        .hero { background: linear-gradient(160deg, #fff9db 0%, #ffec99 55%, #ffe066 100%); padding: 8px 12px 26px; text-align: center; }
+        .top-bar { position: sticky; top: 0; z-index: 20; background: #fff9db; display: grid; grid-template-columns: 38px 1fr 38px; align-items: center; padding: 14px 12px 6px; text-align: center; }
+        .back-btn { background: none; border: none; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; color: #222; font-size: 20px; cursor: pointer; }
+        .top-title { font-weight: 700; font-size: 18px; color: #222; }
+        .post-total { display: inline-flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 700; color: #555; margin: 6px 0 24px; }
+        .post-total i, .champ-amount i, .sup-amount i { color: #d2691e; }
+        .post-total i.fa-heart, .sup-amount i.fa-heart { color: #ff6b8a; }
+
+        .champ-wrap { position: relative; width: 132px; height: 132px; margin: 0 auto; }
+        .champ-wrap img { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 6px 18px rgba(204,153,0,.28); background: #fff; pointer-events: none; }
+        .champ-badge { position: absolute; top: -6px; right: -12px; width: 52px; height: 52px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff3bf 0%, #fcc419 45%, #e8a700 100%); border: 3px solid #fff; color: #fff; font-size: 24px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(204,153,0,.35); text-shadow: 0 1px 2px rgba(150,100,0,.5); }
+        .champ-name { margin-top: 14px; font-size: 17px; font-weight: 600; color: #333; }
+        .champ-amount { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; background: #fff; border-radius: 20px; padding: 6px 18px; font-size: 18px; font-weight: 700; color: #333; }
+
+        .list { padding: 6px 12px 40px; }
+        .sup-row { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-bottom: 1px solid #eee; }
+        .rank { width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; border: 1.5px solid #222; color: #222; }
+        .rank.silver { border: none; color: #fff; background: radial-gradient(circle at 35% 30%, #f8f9fa 0%, #ced4da 50%, #adb5bd 100%); text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+        .rank.bronze { border: none; color: #fff; background: radial-gradient(circle at 35% 30%, #ffd8a8 0%, #fd7e14 50%, #d9480f 100%); text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+        .sup-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background: #f1f3f5; pointer-events: none; }
+        .sup-name { flex: 1; min-width: 0; font-size: 16px; color: #222; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sup-amount { display: flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 700; color: #333; flex-shrink: 0; }
+
+        .state { text-align: center; color: #6b6b6b; padding: 40px 20px; font-size: 14px; }
+        .state i { display: block; font-size: 34px; margin-bottom: 10px; color: #fcc419; }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="top-bar">
+        <button type="button" class="back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="top-title" id="top-title">Top Supporters</div>
+        <span></span>
+    </div>
+    <div class="hero">
+        <div id="champ-zone"><div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div></div>
+    </div>
+    <div class="list" id="list"></div>
+</div>
+
+<script>
+  const postId = new URLSearchParams(window.location.search).get('id') || '';
+  const DEFAULT_AVATAR = 'https://raw.githubusercontent.com/Chatchapong-Sing/stockManagement/main/default-profile.png';
+  const cookieIcon = '<i class="fa-solid fa-cookie-bite"></i>';
+  const heartIcon = '<i class="fa-solid fa-heart"></i>';
+
+  function goBack() {
+    blm48Back(`postdetail?id=${encodeURIComponent(postId)}`);
+  }
+
+  // โพสต์เมมเบอร์: แฟนคลับเรียงตามคุกกี้ที่ให้โพสต์ (กดรูป -> fan) / โพสต์แฟนคลับ: เมมเบอร์ที่กดใจ (กดรูป -> member)
+  function render(res) {
+    const isFanPost = res.postType && res.postType !== 'member';
+    const list = res.supporters || [];
+    const champZone = document.getElementById('champ-zone');
+    const listEl = document.getElementById('list');
+    const link = (s) => isFanPost ? memberLinkAttr(s.name) : profileLinkAttr(s.username);
+
+    if (isFanPost) {
+      document.getElementById('top-title').textContent = 'Member Likes';
+      document.title = 'BLM48 Membership | Member Likes';
+      champZone.innerHTML = `<div class="post-total" style="margin-bottom:0">${heartIcon} ${Number(res.count || 0).toLocaleString()}</div>`;
+      listEl.innerHTML = list.length ? list.map(s => `
+        <div class="sup-row"${link(s)}>
+          <img class="sup-avatar" src="${escapeAttr(s.img || DEFAULT_AVATAR)}" alt="" draggable="false">
+          <div class="sup-name">${escapeHtml(s.name || s.username)}</div>
+          <div class="sup-amount">${heartIcon}</div>
+        </div>`).join('') : `<div class="state"><i class="fa-regular fa-heart"></i>ยังไม่มีเมมเบอร์กดใจโพสต์นี้</div>`;
+      return;
+    }
+
+    const total = `<div class="post-total">${cookieIcon} ${Number(res.total || 0).toLocaleString()}</div>`;
+    if (list.length === 0) {
+      champZone.innerHTML = total + `<div class="state" style="padding-top:0"><i class="fa-solid fa-trophy"></i>ยังไม่มีผู้ซัพพอร์ต เป็นคนแรกเลย!</div>`;
+      listEl.innerHTML = '';
+      return;
+    }
+    const top = list[0];
+    champZone.innerHTML = total + `
+      <div class="champ-wrap"${link(top)}>
+        <img src="${escapeAttr(top.img || DEFAULT_AVATAR)}" alt="" draggable="false">
+        <div class="champ-badge">1</div>
+      </div>
+      <div class="champ-name"><span${link(top)}>${escapeHtml(top.name || top.username)}</span></div>
+      <div class="champ-amount">${cookieIcon} ${Number(top.cookies).toLocaleString()}</div>`;
+
+    listEl.innerHTML = list.slice(1).map(s => {
+      const cls = s.rank === 2 ? 'silver' : s.rank === 3 ? 'bronze' : '';
+      return `
+        <div class="sup-row"${link(s)}>
+          <div class="rank ${cls}">${s.rank}</div>
+          <img class="sup-avatar" src="${escapeAttr(s.img || DEFAULT_AVATAR)}" alt="" draggable="false">
+          <div class="sup-name">${escapeHtml(s.name || s.username)}</div>
+          <div class="sup-amount">${cookieIcon} ${Number(s.cookies).toLocaleString()}</div>
+        </div>`;
+    }).join('');
+  }
+
+  async function loadSupporters() {
+    const res = await blm48GetPostSupporters(postId);
+    if (res && res.postId) { render(res); return; }
+    const msg = res && res.networkError ? res.message : 'ไม่พบโพสต์นี้';
+    document.getElementById('champ-zone').innerHTML = `<div class="state">${escapeHtml(msg)}<br><button type="button" onclick="location.reload()" style="margin-top:14px; border:none; border-radius:20px; padding:8px 20px; background:#ffd43b; font-family:inherit; font-weight:600; cursor:pointer;">ลองใหม่</button></div>`;
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    if (!postId) { window.location.href = 'index'; return; }
+    loadSupporters();
+  });
+</script>
+</body>
+</html>

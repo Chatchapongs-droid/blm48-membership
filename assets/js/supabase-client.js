@@ -197,6 +197,11 @@ function blm48SendMemberGift(username, memberName, giftId, quantity, fromBackpac
 function blm48GetPostGiftSummaries(postIds) {
   return blm48Rpc('get_post_gift_summaries', { p_post_ids: postIds });
 }
+// หน้า Top Supporters ของโพสต์: { postId, postType, total (posts.cookies), count, supporters: [{ rank, username, name, img, cookies }] }
+// โพสต์เมมเบอร์ = แฟนคลับเรียงตามคุกกี้ที่ให้โพสต์ (ไลก์/คอมเมนต์/ไลก์คอมเมนต์ 9 + ของขวัญ) / โพสต์แฟนคลับ = เมมเบอร์ที่กดใจ
+function blm48GetPostSupporters(postId) {
+  return blm48Rpc('get_post_supporters', { p_post_id: String(postId) });
+}
 // เมมเบอร์ที่กดใจโพสต์ (โพสต์แฟนคลับ): [{ postId, count, likers: [{ username, name, img }] (สูงสุด 5) }]
 function blm48GetPostMemberLikers(postIds) {
   return blm48Rpc('get_post_member_likers', { p_post_ids: postIds });

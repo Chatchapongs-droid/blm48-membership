@@ -738,9 +738,9 @@ function blm48PostStatsActionsHtml(post, opts) {
   const commentsClick = opts.onCommentsClick || `window.location.href='postdetail?id=${encodeURIComponent(post.id || '')}'`;
   return `
     <div class="pf-stats">
-      ${canGift ? `<div class="pf-gifts" id="post-gifts-${id}" data-post-id="${id}" data-member="${escapeAttr(opts.memberName || '')}">
+      ${canGift ? `<div class="pf-gifts" id="post-gifts-${id}" data-post-id="${id}" data-member-name="${escapeAttr(opts.memberName || '')}" role="button" onclick="blm48OpenPostSupporters('${id}')">
         <span class="pf-gifters" id="post-gifters-${id}"></span><span class="pf-gift-total"><span id="post-cookies-count-${id}">${blm48ShortCount(post.cookies || 0)}</span> Cookies</span>
-      </div>` : `<div class="pf-likers" id="post-likers-${id}" data-post-id="${id}"><span class="pf-liker-avatars" id="post-liker-avatars-${id}"></span></div>`}
+      </div>` : `<div class="pf-likers" id="post-likers-${id}" data-post-id="${id}" role="button" onclick="blm48OpenPostSupporters('${id}')"><span class="pf-liker-avatars" id="post-liker-avatars-${id}"></span></div>`}
       <button type="button" class="pf-comment-count" onclick="${commentsClick}"><span id="comment-count-${id}">${comments.length}</span> Comments</button>
     </div>
     <div class="pf-actions">
@@ -795,6 +795,12 @@ function blm48PostCommentPreviewHtml(post, opts) {
     </div>`;
 }
 
+// 👑 กดแถวรูป 3 อันดับ + ยอดคุกกี้ (โพสต์เมมเบอร์) / แถวรูปเมมเบอร์ที่กดใจ (โพสต์แฟนคลับ) -> หน้า Top Supporters ของโพสต์นั้น
+function blm48OpenPostSupporters(postId) {
+  if (!postId) return;
+  window.location.href = `post_supporters?id=${encodeURIComponent(postId)}`;
+}
+
 // 🎁 กด Send Gift ในโพสต์: เปิดแผงของขวัญ (ไม่โชว์โปรไฟล์เมมเบอร์) — ทุกบัญชีที่ล็อกอินแล้ว
 let blm48GiftSheetLoading = null;
 function blm48LoadGiftSheet() {
@@ -826,7 +832,7 @@ async function blm48OpenPostGift(postId) {
     return;
   }
   blm48OpenMemberGift({
-    name: (holder && holder.dataset.member) || '',
+    name: (holder && holder.dataset.memberName) || '',
     postId,
     hideRecipient: true,
     onSent: (res) => { updatePostCookiesUI(postId, res && res.postCookies); blm48QueuePostGifts([postId]); }
@@ -853,7 +859,7 @@ async function blm48FlushPostGifts() {
       const s = map[id] || { gifts: 0, gifters: [] };
       const giftersEl = document.getElementById(`post-gifters-${id}`);
       if (giftersEl) giftersEl.innerHTML = (s.gifters || []).map((g, i) =>
-        `<span class="pf-gifter" data-fan="${escapeAttr(g.username || '')}">${blm48MedalAvatarHtml(g.img, i, 32, g.name)}</span>`
+        `<span class="pf-gifter">${blm48MedalAvatarHtml(g.img, i, 32, g.name)}</span>`
       ).join('');
     });
   } catch (e) { console.error('Post gift summary error:', e); }
@@ -910,7 +916,7 @@ async function blm48FlushPostLikers() {
       const likers = s.likers || [];
       const more = (Number(s.count) || 0) - likers.length;
       el.innerHTML = likers.map(m =>
-        `<img class="pf-liker" src="${escapeAttr(m.img || BLM48_CMT_DEFAULT_AVATAR)}" alt="${escapeAttr(m.name || '')}" title="${escapeAttr(m.name || '')}" onclick="window.location.href='member?name=${encodeURIComponent(m.name || '').replace(/'/g, '%27')}'">`
+        `<img class="pf-liker" src="${escapeAttr(m.img || BLM48_CMT_DEFAULT_AVATAR)}" alt="${escapeAttr(m.name || '')}" title="${escapeAttr(m.name || '')}">`
       ).join('') + (more > 0 ? `<span class="pf-liker-more">+${more}</span>` : '');
     });
   } catch (e) { console.error('Post member likers error:', e); }
@@ -941,6 +947,7 @@ async function blm48FlushPostLikers() {
   st.id = 'blm48-post-footer-css';
   st.textContent = `
     .pf-stats { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0 8px; min-height: 40px; }
+    .pf-gifts, .pf-likers { cursor: pointer; }
     .pf-gifts { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 0.92rem; color: #555; }
     .pf-gifters { display: inline-flex; align-items: center; }
     .pf-gifter { display: inline-flex; margin-right: -4px; cursor: pointer; }
