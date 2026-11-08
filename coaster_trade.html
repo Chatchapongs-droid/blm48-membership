@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | Coaster Trade</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <style>
+        /* 🔁 Coaster Trade — บอร์ดเทรดสาธารณะ "มีใบนี้ อยากได้ใบนั้น" (แรร์เท่ากัน, ฟรี, 3 ครั้ง/วัน, บัญชี 14 วันขึ้นไป) */
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #222; background: #ffffff; }
+        .page { max-width: 640px; margin: 0 auto; padding-bottom: 48px; }
+
+        .top-bar { position: sticky; top: 0; z-index: 30; background: #fff; display: grid; grid-template-columns: 40px 1fr 40px; align-items: center; padding: 14px 12px 8px; text-align: center; }
+        .back-btn { background: none; border: none; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #222; font-size: 20px; cursor: pointer; }
+        .top-title { font-weight: 700; font-size: 18px; }
+
+        .quota { margin: 4px 12px 0; display: flex; gap: 8px; }
+        .quota-box { flex: 1; background: #fff9db; border-radius: 14px; padding: 10px 12px; }
+        .quota-num { font-size: 18px; font-weight: 700; }
+        .quota-label { font-size: 12px; color: #6b6b6b; }
+        .notice { margin: 10px 12px 0; background: #fff4e6; color: #8a4b00; border-radius: 12px; padding: 10px 12px; font-size: 13.5px; display: flex; gap: 8px; align-items: flex-start; }
+
+        .tabs { display: flex; margin: 14px 12px 0; border-bottom: 1px solid #eee; position: sticky; top: 62px; background: #fff; z-index: 20; }
+        .tab { flex: 1; background: none; border: none; font-family: inherit; font-size: 15px; font-weight: 600; color: #6b6b6b; padding: 12px 0; cursor: pointer; border-bottom: 2.5px solid transparent; margin-bottom: -1px; }
+        .tab.active { color: #222; border-bottom-color: #ffd43b; }
+
+        .chips { display: flex; gap: 8px; padding: 12px 12px 4px; overflow-x: auto; scrollbar-width: none; }
+        .chips::-webkit-scrollbar { display: none; }
+        .chip { flex-shrink: 0; border: 1px solid #e5e5e5; background: #fff; border-radius: 18px; padding: 6px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #555; cursor: pointer; }
+        .chip.active { background: #222; border-color: #222; color: #fff; }
+
+        .rar { display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .3px; padding: 2px 7px; border-radius: 8px; background: #f1f3f5; color: #555; vertical-align: middle; }
+        .rar.ssr { background: linear-gradient(90deg, #ffe3f1, #e5dbff, #d0f4ff); color: #6741d9; }
+
+        /* listing card */
+        .listing { margin: 12px 12px 0; border: 1px solid #eee; border-radius: 18px; padding: 12px; }
+        .l-head { display: flex; align-items: center; gap: 10px; }
+        .l-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #f1f3f5; flex-shrink: 0; }
+        .l-owner { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .l-time { font-size: 12px; color: #6b6b6b; flex-shrink: 0; }
+        .l-body { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 6px; align-items: center; margin-top: 12px; }
+        .l-side-label { font-size: 11.5px; color: #6b6b6b; font-weight: 600; margin-bottom: 6px; }
+        .l-arrow { text-align: center; color: #adb5bd; font-size: 16px; }
+        .coaster-img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #f8f9fa; border-radius: 14px; display: block; }
+        .l-name { font-size: 12.5px; font-weight: 600; margin-top: 6px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .l-coll { font-size: 11px; color: #6b6b6b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .want-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .want-grid.one { grid-template-columns: 1fr; }
+        .want-any { aspect-ratio: 1; border: 1.5px dashed #ced4da; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12.5px; color: #555; padding: 8px; gap: 6px; }
+        .want-any i { font-size: 22px; color: #adb5bd; }
+        .l-actions { margin-top: 12px; display: flex; gap: 8px; }
+        .btn { flex: 1; border: none; border-radius: 22px; padding: 10px 14px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; background: #ffd43b; color: #222; }
+        .btn.ghost { background: #f1f3f5; color: #333; }
+        .btn.danger { background: #ffe3e3; color: #c92a2a; }
+        .btn:disabled { opacity: .45; cursor: default; }
+
+        .expand { margin-top: 12px; border-top: 1px solid #f1f3f5; padding-top: 12px; }
+        .expand-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
+        .pick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .pick { position: relative; border: 2px solid transparent; border-radius: 14px; padding: 0; background: none; cursor: pointer; text-align: left; font-family: inherit; }
+        .pick.sel { border-color: #fcc419; }
+        .pick .coaster-img { border-radius: 12px; }
+        .pick-count { position: absolute; top: 4px; right: 4px; background: rgba(34,34,34,.75); color: #fff; font-size: 10.5px; font-weight: 700; border-radius: 8px; padding: 1px 6px; }
+        .pick-check { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #fcc419; color: #222; font-size: 11px; display: none; align-items: center; justify-content: center; }
+        .pick.sel .pick-check { display: flex; }
+        .pick-name { font-size: 11px; font-weight: 600; margin-top: 4px; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        .confirm-row { margin-top: 12px; background: #fff9db; border-radius: 14px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5; }
+
+        /* post form */
+        .section { padding: 14px 12px 0; }
+        .step-title { font-size: 15px; font-weight: 700; margin: 6px 0 10px; display: flex; align-items: center; gap: 8px; }
+        .step-num { width: 22px; height: 22px; border-radius: 50%; background: #ffd43b; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+        .opt-row { display: flex; gap: 8px; margin-bottom: 10px; }
+        .opt { flex: 1; border: 1.5px solid #e5e5e5; border-radius: 14px; background: #fff; padding: 10px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #444; cursor: pointer; }
+        .opt.active { border-color: #fcc419; background: #fff9db; color: #222; }
+        .select { width: 100%; border: 1px solid #e5e5e5; border-radius: 12px; padding: 10px 12px; font-family: inherit; font-size: 14px; background: #fff; margin-bottom: 10px; color: #222; }
+        .hint { font-size: 12.5px; color: #6b6b6b; margin: -2px 0 10px; }
+        .submit-bar { position: sticky; bottom: 0; background: #fff; padding: 12px; border-top: 1px solid #f1f3f5; margin-top: 18px; }
+
+        .status-tag { font-size: 11.5px; font-weight: 700; border-radius: 10px; padding: 3px 9px; flex-shrink: 0; }
+        .status-tag.open { background: #e7f5ff; color: #1864ab; }
+        .status-tag.done { background: #ebfbee; color: #2b8a3e; }
+        .status-tag.cancelled { background: #f1f3f5; color: #6b6b6b; }
+
+        .state { text-align: center; color: #6b6b6b; padding: 40px 20px; font-size: 14px; line-height: 1.6; }
+        .state i { display: block; font-size: 30px; margin-bottom: 10px; color: #fcc419; }
+        .hidden { display: none !important; }
+
+        .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 10px 18px; border-radius: 22px; font-size: 14px; opacity: 0; transition: .25s; z-index: 100; max-width: calc(100% - 24px); text-align: center; pointer-events: none; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        @media (min-width: 560px) { .pick-grid { grid-template-columns: repeat(5, 1fr); } }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="top-bar">
+        <button type="button" class="back-btn" onclick="blm48Back('inventory')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+        <div class="top-title">Coaster Trade</div>
+        <span></span>
+    </div>
+
+    <div class="quota">
+        <div class="quota-box"><div class="quota-num" id="q-used">–</div><div class="quota-label">Trades today</div></div>
+        <div class="quota-box"><div class="quota-num" id="q-open">–</div><div class="quota-label">Open listings</div></div>
+    </div>
+    <div class="notice hidden" id="notice"><i class="fa-solid fa-circle-info" style="margin-top:3px"></i><span id="notice-text"></span></div>
+
+    <div class="tabs">
+        <button type="button" class="tab" data-tab="board" onclick="setTab('board')">Board</button>
+        <button type="button" class="tab" data-tab="post" onclick="setTab('post')">Post</button>
+        <button type="button" class="tab" data-tab="mine" onclick="setTab('mine')">My Trades</button>
+    </div>
+
+    <div id="view-board">
+        <div class="chips" id="board-chips"></div>
+        <div id="board-list"><div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div></div>
+    </div>
+
+    <div id="view-post" class="hidden"></div>
+
+    <div id="view-mine" class="hidden">
+        <div id="mine-list"><div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div></div>
+    </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const username = getUsername();
+  const DEFAULT_AVATAR = '/assets/images/default-avatar.png';
+  const params = new URLSearchParams(location.search);
+  let tab = ['board', 'post', 'mine'].includes(params.get('tab')) ? params.get('tab') : 'board';
+
+  let me = null;            // { eligible, reason, usedToday, dailyLimit, openCount, maxOpen }
+  let listings = [];
+  let myCoasters = [];      // [{ collectionId, collectionName, name, imageUrl, rarity, count, inventoryId }]
+  let catalog = null;
+  let boardFilter = 'all';  // all | match | Normal | SSR
+  let openListing = null;   // listing id ที่กางแผงแลกอยู่
+  let pickedForListing = null;
+  let confirmCancel = null;
+  let busy = false;
+  // ฟอร์มลงประกาศ
+  let post = { offerKey: null, mode: 'any', want: [], coll: '' };
+
+  const keyOf = (c) => c.collectionId + '|' + c.name;
+  const rarBadge = (r) => r === 'SSR' ? '<span class="rar ssr">SSR</span>' : '<span class="rar">Normal</span>';
+  const img = (url) => `<img class="coaster-img" src="${escapeAttr(url || '')}" alt="" draggable="false" loading="lazy">`;
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+
+  function timeAgo(iso) {
+    const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+    if (s < 60) return 'Just now';
+    if (s < 3600) return Math.floor(s / 60) + 'm ago';
+    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+    return new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'Asia/Bangkok' });
+  }
+
+  function setTab(t) {
+    tab = t;
+    document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+    ['board', 'post', 'mine'].forEach(v => document.getElementById('view-' + v).classList.toggle('hidden', v !== t));
+    history.replaceState(null, '', t === 'board' ? 'coaster_trade' : 'coaster_trade?tab=' + t);
+    if (t === 'post') renderPost();
+    if (t === 'mine') loadMine();
+  }
+
+  function renderQuota() {
+    if (!me) return;
+    document.getElementById('q-used').textContent = `${me.usedToday} / ${me.dailyLimit}`;
+    document.getElementById('q-open').textContent = `${me.openCount} / ${me.maxOpen}`;
+    const notice = document.getElementById('notice');
+    let msg = '';
+    if (!me.eligible) msg = me.reason;
+    else if (me.usedToday >= me.dailyLimit) msg = 'You have used all your trades for today. Come back tomorrow (cancelling a listing gives the trade back).';
+    notice.classList.toggle('hidden', !msg);
+    document.getElementById('notice-text').textContent = msg;
+  }
+  const canAct = () => me && me.eligible && me.usedToday < me.dailyLimit;
+
+  // ใบของฉันที่ใช้แลกประกาศนี้ได้
+  function matchesFor(l) {
+    return myCoasters.filter(c => c.rarity === l.rarity
+      && !(c.collectionId === l.offer.collectionId && c.name === l.offer.name)
+      && (l.want.length === 0 || l.want.some(w => w.collectionId === c.collectionId && w.name === c.name)));
+  }
+
+  // ---------------- Board ----------------
+  function renderBoard() {
+    const chips = [['all', 'All'], ['match', 'I can trade'], ['Normal', 'Normal'], ['SSR', 'SSR']];
+    document.getElementById('board-chips').innerHTML = chips.map(([k, label]) =>
+      `<button type="button" class="chip${boardFilter === k ? ' active' : ''}" onclick="boardFilter='${k}';renderBoard()">${label}</button>`).join('');
+
+    let list = listings;
+    if (boardFilter === 'match') list = list.filter(l => !l.mine && matchesFor(l).length);
+    else if (boardFilter !== 'all') list = list.filter(l => l.rarity === boardFilter);
+
+    const el = document.getElementById('board-list');
+    if (!list.length) {
+      el.innerHTML = `<div class="state"><i class="fa-solid fa-right-left"></i>${boardFilter === 'match'
+        ? 'No listings match the Coasters you have yet' : 'No trade listings yet<br>Be the first to post one!'}</div>`;
+      return;
+    }
+    el.innerHTML = list.map(listingHtml).join('');
+  }
+
+  function wantHtml(l) {
+    if (!l.want.length) {
+      return `<div class="want-any"><i class="fa-solid fa-shuffle"></i>Any<br>${rarBadge(l.rarity)}</div>`;
+    }
+    if (l.want.length === 1) {
+      const w = l.want[0];
+      return `${img(w.imageUrl)}<div class="l-name">${escapeHtml(w.name)}</div><div class="l-coll">${escapeHtml(w.collectionName || '')}</div>`;
+    }
+    return `<div class="want-grid" style="grid-template-columns:repeat(${l.want.length},1fr)">${l.want.map(w => `<div>${img(w.imageUrl)}</div>`).join('')}</div>
+      <div class="l-name">${l.want.map(w => escapeHtml(w.name)).join(', ')}</div>`;
+  }
+
+  function listingHtml(l) {
+    const owner = l.owner || {};
+    const head = `<div class="l-head">
+        <img class="l-avatar" src="${escapeAttr(owner.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(owner.username)} draggable="false">
+        <div class="l-owner"${profileLinkAttr(owner.username)}>${escapeHtml(owner.name || '')}${l.mine ? ' <span style="color:#6b6b6b;font-weight:500">(You)</span>' : ''}</div>
+        <div class="l-time">${timeAgo(l.createdAt)}</div>
+      </div>`;
+    const body = `<div class="l-body">
+        <div><div class="l-side-label">Have ${rarBadge(l.rarity)}</div>${img(l.offer.imageUrl)}
+          <div class="l-name">${escapeHtml(l.offer.name)}</div><div class="l-coll">${escapeHtml(l.offer.collectionName || '')}</div></div>
+        <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
+        <div><div class="l-side-label">Want</div>${wantHtml(l)}</div>
+      </div>`;
+
+    let actions = '';
+    if (l.mine) {
+      actions = confirmCancel === l.id
+        ? `<div class="confirm-row">Cancel this listing? The Coaster goes back to your Inventory, and you get today's trade back (if it was posted today).</div>
+           <div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=null;rerender()">Keep</button>
+           <button type="button" class="btn danger" onclick="doCancel(${l.id})"${busy ? ' disabled' : ''}>Cancel listing</button></div>`
+        : `<div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=${l.id};rerender()">Cancel listing</button></div>`;
+    } else {
+      const matches = matchesFor(l);
+      if (openListing !== l.id) {
+        actions = `<div class="l-actions"><button type="button" class="btn" onclick="openTrade(${l.id})"${matches.length && canAct() ? '' : ' disabled'}>
+          ${matches.length ? 'Trade' : 'No matching Coaster'}</button></div>`;
+      } else {
+        const sel = matches.find(c => keyOf(c) === pickedForListing);
+        actions = `<div class="expand">
+            <div class="expand-title">Choose a Coaster to give (${matches.length})</div>
+            <div class="pick-grid">${matches.map((c, i) => `
+              <button type="button" class="pick${keyOf(c) === pickedForListing ? ' sel' : ''}" onclick="pickMatch(${l.id}, ${i})">
+                ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
+                ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
+                <div class="pick-name">${escapeHtml(c.name)}</div>
+              </button>`).join('')}</div>
+            ${sel ? `<div class="confirm-row">Give <b>${escapeHtml(sel.name)}</b><br>Get <b>${escapeHtml(l.offer.name)}</b> · Trades cannot be undone</div>` : ''}
+            <div class="l-actions"><button type="button" class="btn ghost" onclick="openListing=null;pickedForListing=null;rerender()">Close</button>
+              <button type="button" class="btn" onclick="doAccept(${l.id})"${sel && !busy ? '' : ' disabled'}>Confirm trade</button></div>
+          </div>`;
+      }
+    }
+    return `<div class="listing" id="listing-${l.id}">${head}${body}${actions}</div>`;
+  }
+
+  function openTrade(id) { openListing = id; pickedForListing = null; rerender(); }
+  function rerender() { if (tab === 'board') renderBoard(); else if (tab === 'mine') renderMine(); }
+
+  async function doAccept(id) {
+    const l = listings.find(x => x.id === id);
+    const c = l && matchesFor(l).find(x => keyOf(x) === pickedForListing);
+    if (!c || busy) return;
+    busy = true; rerender();
+    const res = await blm48AcceptCoasterTrade(username, id, c.inventoryId);
+    busy = false;
+    if (res && res.status === 'success') {
+      toast(`Trade complete! You got ${l.offer.name}`);
+      openListing = null; pickedForListing = null;
+    } else {
+      toast((res && res.message) || 'Trade failed. Please try again.');
+    }
+    await loadAll();
+  }
+
+  async function doCancel(id) {
+    if (busy) return;
+    busy = true; rerender();
+    const res = await blm48CancelCoasterTrade(username, id);
+    busy = false;
+    confirmCancel = null;
+    toast(res && res.status === 'success' ? 'Listing cancelled. The Coaster is back in your Inventory' : ((res && res.message) || 'Something went wrong. Please try again.'));
+    await loadAll();
+    if (tab === 'mine') loadMine();
+  }
+
+  // ---------------- Post ----------------
+  async function renderPost() {
+    const el = document.getElementById('view-post');
+    if (me && !me.eligible) { el.innerHTML = `<div class="state"><i class="fa-solid fa-lock"></i>${escapeHtml(me.reason)}</div>`; return; }
+    if (!myCoasters.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-box-open"></i>You have no tradable Coasters in your Inventory yet</div>`; return; }
+    if (post.mode === 'pick' && !catalog) {
+      el.innerHTML = `<div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div>`;
+      const res = await blm48GetCoasterTradeCatalog();
+      catalog = Array.isArray(res) ? res : [];
+    }
+    const offer = myCoasters.find(c => keyOf(c) === post.offerKey);
+
+    let html = `<div class="section">
+      <div class="step-title"><span class="step-num">1</span>Your Coaster</div>
+      <div class="pick-grid">${myCoasters.map((c, i) => `
+        <button type="button" class="pick${keyOf(c) === post.offerKey ? ' sel' : ''}" onclick="selectOffer(${i})">
+          ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
+          ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
+          <div class="pick-name">${c.rarity === 'SSR' ? '<span class="rar ssr">SSR</span> ' : ''}${escapeHtml(c.name)}</div>
+        </button>`).join('')}</div>
+    </div>`;
+
+    if (offer) {
+      html += `<div class="section">
+        <div class="step-title"><span class="step-num">2</span>You want ${rarBadge(offer.rarity)}</div>
+        <div class="hint">Only Coasters of the same rarity can be traded (any collection)</div>
+        <div class="opt-row">
+          <button type="button" class="opt${post.mode === 'any' ? ' active' : ''}" onclick="post.mode='any';renderPost()">Any</button>
+          <button type="button" class="opt${post.mode === 'pick' ? ' active' : ''}" onclick="post.mode='pick';renderPost()">Choose (max 3)</button>
+        </div>`;
+      if (post.mode === 'pick' && catalog) {
+        const pool = catalog.filter(c => c.rarity === offer.rarity && keyOf(c) !== post.offerKey);
+        const colls = [...new Map(pool.map(c => [c.collectionId, c.collectionName])).entries()];
+        if (!colls.some(([id]) => id === post.coll)) post.coll = colls.length ? colls[0][0] : '';
+        const shown = pool.filter(c => c.collectionId === post.coll);
+        html += `<select class="select" onchange="post.coll=this.value;renderPost()">${colls.map(([id, name]) =>
+            `<option value="${escapeAttr(id)}"${id === post.coll ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select>
+          <div class="hint">Selected ${post.want.length} / 3</div>
+          <div class="pick-grid">${shown.map(c => {
+            const on = post.want.includes(keyOf(c));
+            return `<button type="button" class="pick${on ? ' sel' : ''}" onclick="toggleWant(${catalog.indexOf(c)})">
+              ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span><div class="pick-name">${escapeHtml(c.name)}</div></button>`;
+          }).join('')}</div>`;
+      }
+      html += `</div>`;
+      const ready = post.mode === 'any' || post.want.length > 0;
+      const blocked = !canAct() || me.openCount >= me.maxOpen;
+      html += `<div class="submit-bar">
+        <button type="button" class="btn" style="width:100%" onclick="doPost()"${ready && !blocked && !busy ? '' : ' disabled'}>
+          ${me.openCount >= me.maxOpen ? '5 open listings reached' : 'Post listing'}</button>
+        <div class="hint" style="text-align:center;margin:8px 0 0">This Coaster is held while the listing is open. You can cancel anytime.</div>
+      </div>`;
+    }
+    el.innerHTML = html;
+  }
+
+  function pickMatch(id, i) {
+    const l = listings.find(x => x.id === id) || mine.find(x => x.id === id);
+    const c = l && matchesFor(l)[i];
+    if (c) { pickedForListing = keyOf(c); rerender(); }
+  }
+  function selectOffer(i) {
+    const key = myCoasters[i] ? keyOf(myCoasters[i]) : null;
+    const prev = myCoasters.find(c => keyOf(c) === post.offerKey);
+    const next = myCoasters.find(c => keyOf(c) === key);
+    post.offerKey = key;
+    if (!prev || !next || prev.rarity !== next.rarity) post.want = [];
+    post.want = post.want.filter(k => k !== key);
+    renderPost();
+  }
+  function toggleWant(i) {
+    const key = catalog[i] ? keyOf(catalog[i]) : null;
+    if (!key) return;
+    if (post.want.includes(key)) post.want = post.want.filter(k => k !== key);
+    else if (post.want.length < 3) post.want.push(key);
+    else toast('You can choose up to 3');
+    renderPost();
+  }
+
+  async function doPost() {
+    const offer = myCoasters.find(c => keyOf(c) === post.offerKey);
+    if (!offer || busy) return;
+    const want = post.mode === 'any' ? [] : post.want.map(k => {
+      const i = k.indexOf('|');
+      return { collectionId: k.slice(0, i), name: k.slice(i + 1) };
+    });
+    busy = true; renderPost();
+    const res = await blm48CreateCoasterTrade(username, offer.inventoryId, want);
+    busy = false;
+    if (res && res.status === 'success') {
+      toast('Listing posted!');
+      post = { offerKey: null, mode: 'any', want: [], coll: '' };
+      await loadAll();
+      setTab('board');
+    } else {
+      toast((res && res.message) || 'Could not post the listing. Please try again.');
+      renderPost();
+    }
+  }
+
+  // ---------------- Mine ----------------
+  let mine = [];
+  async function loadMine() {
+    const res = await blm48GetMyCoasterTrades(username);
+    mine = Array.isArray(res) ? res : [];
+    renderMine();
+  }
+  function renderMine() {
+    const el = document.getElementById('mine-list');
+    if (!mine.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-clock-rotate-left"></i>No trade history yet</div>`; return; }
+    el.innerHTML = mine.map(t => {
+      if (t.status === 'open') return listingHtml(t);
+      const iTook = t.taker && t.taker.mine;
+      const gave = iTook ? t.received : t.offer;
+      const got = iTook ? t.offer : t.received;
+      const other = iTook ? t.owner : t.taker;
+      const tag = t.status === 'done' ? '<span class="status-tag done">Completed</span>' : '<span class="status-tag cancelled">Cancelled</span>';
+      const when = timeAgo(t.doneAt || t.createdAt);
+      if (t.status === 'cancelled') {
+        return `<div class="listing"><div class="l-head"><div class="l-owner">Your listing</div>${tag}</div>
+          <div class="l-body"><div><div class="l-side-label">Have ${rarBadge(t.rarity)}</div>${img(t.offer.imageUrl)}<div class="l-name">${escapeHtml(t.offer.name)}</div></div>
+          <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div><div><div class="l-side-label">Want</div>${wantHtml(t)}</div></div></div>`;
+      }
+      return `<div class="listing"><div class="l-head">
+          <img class="l-avatar" src="${escapeAttr((other && other.img) || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(other && other.username)} draggable="false">
+          <div class="l-owner">Traded with ${escapeHtml((other && other.name) || '')}</div>${tag}</div>
+        <div class="l-body">
+          <div><div class="l-side-label">Gave</div>${img(gave.imageUrl)}<div class="l-name">${escapeHtml(gave.name)}</div></div>
+          <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
+          <div><div class="l-side-label">Received ${rarBadge(t.rarity)}</div>${img(got.imageUrl)}<div class="l-name">${escapeHtml(got.name)}</div></div>
+        </div><div class="l-time" style="margin-top:8px;text-align:right">${when}</div></div>`;
+    }).join('');
+  }
+
+  // ---------------- load ----------------
+  async function loadAll() {
+    const [board, coasters] = await Promise.all([blm48GetCoasterTradeBoard(username), blm48GetMyTradableCoasters(username)]);
+    if (!board || board.networkError || !board.me) {
+      document.getElementById('board-list').innerHTML = `<div class="state">${escapeHtml((board && board.message) || 'Could not load data')}<br>
+        <button type="button" class="btn" style="flex:none;margin-top:14px;padding:8px 22px" onclick="location.reload()">Retry</button></div>`;
+      return;
+    }
+    me = board.me;
+    listings = board.listings || [];
+    myCoasters = Array.isArray(coasters) ? coasters : [];
+    if (post.offerKey && !myCoasters.some(c => keyOf(c) === post.offerKey)) post = { offerKey: null, mode: 'any', want: [], coll: '' };
+    renderQuota();
+    renderBoard();
+    if (tab === 'post') renderPost();
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    if (!username) { location.href = 'login'; return; }
+    setTab(tab);
+    await loadAll();
+  });
+</script>
+</body>
+</html>

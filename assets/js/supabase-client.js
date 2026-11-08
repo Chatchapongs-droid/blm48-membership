@@ -206,6 +206,18 @@ function blm48GetPostSupporters(postId) {
 function blm48GetPostMemberLikers(postIds) {
   return blm48Rpc('get_post_member_likers', { p_post_ids: postIds });
 }
+// 🔁 Coaster Trade board (coaster_trade.html)
+function blm48GetCoasterTradeBoard(username) { return blm48Rpc('get_coaster_trade_board', { p_username: username }); }
+function blm48GetMyTradableCoasters(username) { return blm48Rpc('get_my_tradable_coasters', { p_username: username }); }
+function blm48GetCoasterTradeCatalog() { return blm48Rpc('get_coaster_trade_catalog', {}); }
+function blm48GetMyCoasterTrades(username) { return blm48Rpc('get_my_coaster_trades', { p_username: username }); }
+function blm48CreateCoasterTrade(username, inventoryId, want) {
+  return blm48Rpc('create_coaster_trade', { p_username: username, p_inventory_id: inventoryId, p_want: want || [] });
+}
+function blm48CancelCoasterTrade(username, tradeId) { return blm48Rpc('cancel_coaster_trade', { p_username: username, p_trade_id: tradeId }); }
+function blm48AcceptCoasterTrade(username, tradeId, inventoryId) {
+  return blm48Rpc('accept_coaster_trade', { p_username: username, p_trade_id: tradeId, p_inventory_id: inventoryId });
+}
 function blm48GetGiftWallet(username) {
   return blm48Rpc('get_gift_wallet', { p_username: username });
 }
