@@ -447,8 +447,8 @@
         @keyframes ga-bb-bow { 0%,100% { transform: rotate(-5deg) translateY(0); } 50% { transform: rotate(5deg) translateY(-1.02%); } }
         @keyframes ga-bb-stk { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.04); } }`
     },
-    { // ไดโนร้องเพลง — Kuea (gift_047 จูราสสิคโฮก): ไดโนคอยาวโยกตัวร้องเพลง กุญแจทองแกว่ง โน้ต/ประกายลอยรอบตัว
-      gifts: ['gift_047'], match: [], ratio: 1, dur: 1.6, label: 'ไดโนเสาร์คอยาวร้องเพลง ห้อยกุญแจทอง มีโน้ตดนตรีและประกายลอยรอบตัว',
+    { // ไดโนคาบใบไม้ — Kuea (gift_047 จูราสสิคโฮก): ไดโนคอยาวหลับตายิ้มคาบใบไม้ โยกตัว ใบไม้แกว่ง โน้ตดนตรีลอย ประกายกะพริบ
+      gifts: ['gift_047'], match: [], ratio: 1, dur: 1.6, label: 'ไดโนเสาร์คอยาวคาบใบไม้ หลับตายิ้ม มีโน้ตดนตรีลอยรอบตัว',
       layers: [
         { viewBox: '34 34 832 832', svg: [
           ['star', 0, '<path d="M120 176 L126.7 193.3 L144 200 L126.7 206.7 L120 224 L113.3 206.7 L96 200 L113.3 193.3Z" fill="#F2D27A"'],
@@ -462,27 +462,25 @@
           ['heart', 0, '<path d="M730 290 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#F7B8C8"'],
           ['heart', -1.1, '<path d="M170 360 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#F2D27A"'],
           ['heart', -2.0, '<path d="M770 470 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#9FDCC0"']
-        ].map(([c, d, el]) => `${el} class="ga-dn-${c}" style="animation-delay:${d}s"></${el.slice(1, el.indexOf(' '))}>`).join('') },
-        { anim: 'ga-dn-sway', k: 1.5, origin: '50% 94%', layers: [
-          { src: GA + 'dino/back.png' },
-          { src: GA + 'dino/swirl.png', anim: 'ga-dn-swl', k: 1.5 },
-          { src: GA + 'dino/body.png' },
-          { src: GA + 'dino/key.png', anim: 'ga-dn-key', origin: '66.9% 55%' }] },
-        ...[['note-1', '33.5% 43.3%'], ['note-2', '77.3% 50%'], ['note-3', '74.5% 33.4%'], ['note-4', '25.2% 62.1%'], ['note-5', '33.8% 59.7%'],
-          ['note-6', '50% 43%'], ['note-7', '45.3% 18.3%'], ['note-8', '43.5% 32.2%'], ['spark-1', '76.9% 52%'], ['spark-2', '29.2% 68%'],
-          ['spark-3', '41.7% 49.3%'], ['spark-4', '51.7% 23.1%'], ['spark-5', '75.4% 63.8%'], ['note-9', '72.6% 44.8%'], ['spark-6', '33.4% 52.4%'],
-          ['spark-7', '69.5% 79.2%'], ['spark-8', '50.7% 53.7%']].map(([f, o], i) => f.startsWith('note')
-          ? { src: GA + 'dino/' + f + '.png', anim: 'ga-dn-bob', k: 1.5, origin: o, delay: -0.21 * i }
-          : { src: GA + 'dino/' + f + '.png', anim: 'ga-dn-spk', k: 0.75, origin: o, delay: -0.21 * i })],
-      css: `.gift-art .ga-dn-star { transform-box: fill-box; transform-origin: center; animation: ga-dn-twinkle 2.4s ease-in-out infinite; }
-        .gift-art .ga-dn-heart { transform-box: fill-box; transform-origin: center; animation: ga-dn-float 2.4s ease-out infinite; }
-        @keyframes ga-dn-twinkle { 0%,100% { transform: scale(.3) rotate(0deg); opacity: 0; } 40% { transform: scale(1) rotate(20deg); opacity: 1; } 70% { transform: scale(.85) rotate(35deg); opacity: .8; } }
-        @keyframes ga-dn-float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-90px); opacity: 0; } }
-        @keyframes ga-dn-sway { 0%,100% { transform: rotate(-1deg); } 50% { transform: rotate(1deg); } }
-        @keyframes ga-dn-key { 0%,100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
-        @keyframes ga-dn-swl { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-0.6%); } }
-        @keyframes ga-dn-bob { 0%,100% { transform: translateY(0) rotate(-8deg); } 50% { transform: translateY(-0.84%) rotate(8deg); } }
-        @keyframes ga-dn-spk { 0%,100% { transform: scale(.55) rotate(0deg); opacity: .5; } 50% { transform: scale(1.2) rotate(30deg); opacity: 1; } }`
+        ].map(([c, d, el]) => `${el} class="ga-dl-${c}" style="animation-delay:${d}s"></${el.slice(1, el.indexOf(' '))}>`).join('') },
+        { src: GA + 'dino-leaf/back.png' },
+        { anim: 'ga-dl-sway', origin: '50% 92%', layers: [
+          { src: GA + 'dino-leaf/body.png' },
+          { src: GA + 'dino-leaf/leaf.png', anim: 'ga-dl-leaf', k: 0.5, origin: '48.7% 30.3%' }] },
+        { src: GA + 'dino-leaf/note-1.png', anim: 'ga-dl-note', origin: '70.4% 40.4%' },
+        { src: GA + 'dino-leaf/note-2.png', anim: 'ga-dl-note', origin: '19.7% 53.6%', delay: -0.31 },
+        { src: GA + 'dino-leaf/note-3.png', anim: 'ga-dl-note', origin: '76.9% 56.2%', delay: -0.62 },
+        { src: GA + 'dino-leaf/tick-1.png', anim: 'ga-dl-tick', k: 0.5, origin: '67.7% 26.2%', delay: -0.93 },
+        { src: GA + 'dino-leaf/tick-2.png', anim: 'ga-dl-tick', k: 0.5, origin: '23.8% 62.5%', delay: -1.24 },
+        { src: GA + 'dino-leaf/tick-3.png', anim: 'ga-dl-tick', k: 0.5, origin: '60.8% 51.9%', delay: -1.55 }],
+      css: `.gift-art .ga-dl-star { transform-box: fill-box; transform-origin: center; animation: ga-dl-twinkle 2.4s ease-in-out infinite; }
+        .gift-art .ga-dl-heart { transform-box: fill-box; transform-origin: center; animation: ga-dl-float 2.4s ease-out infinite; }
+        @keyframes ga-dl-twinkle { 0%,100% { transform: scale(.3) rotate(0deg); opacity: 0; } 40% { transform: scale(1) rotate(20deg); opacity: 1; } 70% { transform: scale(.85) rotate(35deg); opacity: .8; } }
+        @keyframes ga-dl-float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-90px); opacity: 0; } }
+        @keyframes ga-dl-sway { 0%,100% { transform: rotate(-1deg) scale(1,1); } 50% { transform: rotate(1deg) scale(1.01,.99); } }
+        @keyframes ga-dl-leaf { 0%,100% { transform: rotate(-9deg); } 50% { transform: rotate(9deg); } }
+        @keyframes ga-dl-note { 0%,100% { transform: translateY(0) rotate(-10deg) scale(1); } 50% { transform: translateY(-1.44%) rotate(10deg) scale(1.08); } }
+        @keyframes ga-dl-tick { 0%,100% { transform: scale(.8); opacity: .55; } 50% { transform: scale(1.15); opacity: 1; } }`
     },
     { // สาวหูแมวประดับเพชร — Krystal (gift_046 คริสตี้จัง): หัวโยก หูกระดิก เพชร/ประกายบนผมวิบวับ กะพริบตา
       // match = รูปนิ่งที่อัปไว้ 2026-11-06 (ให้แอนิเมชันแทนรูปนั้น; อัปรูปใหม่เมื่อไหร่ก็ใช้รูปใหม่)
