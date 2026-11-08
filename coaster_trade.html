@@ -22,6 +22,9 @@
     <style>
         /* 🔁 Coaster Trade — บอร์ดเทรดสาธารณะ "มีใบนี้ อยากได้ใบนั้น" (แรร์เท่ากัน, ฟรี, 3 ครั้ง/วัน, บัญชี 14 วันขึ้นไป) */
         * { box-sizing: border-box; }
+        /* lock page horizontally — no side-to-side drag on phones */
+        html, body { overflow-x: hidden; overflow-x: clip; max-width: 100%; }
+        .l-body > *, .want-grid > * { min-width: 0; }
         body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #222; background: #ffffff; }
         .page { max-width: 640px; margin: 0 auto; padding-bottom: 48px; }
 
@@ -53,13 +56,13 @@
         .l-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: #f1f3f5; flex-shrink: 0; }
         .l-owner { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .l-time { font-size: 12px; color: #6b6b6b; flex-shrink: 0; }
-        .l-body { display: grid; grid-template-columns: 1fr 28px 1fr; gap: 6px; align-items: center; margin-top: 12px; }
+        .l-body { display: grid; grid-template-columns: minmax(0,1fr) 28px minmax(0,1fr); gap: 6px; align-items: center; margin-top: 12px; }
         .l-side-label { font-size: 11.5px; color: #6b6b6b; font-weight: 600; margin-bottom: 6px; }
         .l-arrow { text-align: center; color: #adb5bd; font-size: 16px; }
         .coaster-img { width: 100%; aspect-ratio: 1; object-fit: contain; background: #f8f9fa; border-radius: 14px; display: block; }
         .l-name { font-size: 12.5px; font-weight: 600; margin-top: 6px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         .l-coll { font-size: 11px; color: #6b6b6b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .want-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .want-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
         .want-grid.one { grid-template-columns: 1fr; }
         .want-any { aspect-ratio: 1; border: 1.5px dashed #ced4da; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 12.5px; color: #555; padding: 8px; gap: 6px; }
         .want-any i { font-size: 22px; color: #adb5bd; }
@@ -75,6 +78,7 @@
         .pick { position: relative; border: 2px solid transparent; border-radius: 14px; padding: 0; background: none; cursor: pointer; text-align: left; font-family: inherit; }
         .pick.sel { border-color: #fcc419; }
         .pick .coaster-img { border-radius: 12px; }
+        .coaster-img.shrink { padding: 8%; }
         .wm-wrap { position: relative; border-radius: 14px; overflow: hidden; }
         .pick .wm-wrap { border-radius: 12px; }
         .wm-wrap::after { content: ''; position: absolute; inset: 0; pointer-events: auto; -webkit-touch-callout: none; user-select: none;
@@ -199,7 +203,9 @@
   const keyOf = (c) => c.collectionId + '|' + c.name;
   const rarBadge = (r) => r === 'SSR' ? '<span class="rar ssr">SSR</span>' : '<span class="rar">Normal</span>';
   // ลายน้ำ "BLM48 TRADE" ทับรูปตัวอย่าง (กันเอารูปไปใช้ต่อ) — ชั้นบนรับการแตะแทนรูป
-  const img = (url) => `<div class="wm-wrap"><img class="coaster-img" src="${escapeAttr(url || '')}" alt="" draggable="false" loading="lazy"></div>`;
+  // 5th Generation coasters are a full-bleed octagon (others are circles/scallops) → shrink a bit so they look the same size
+  const SMALLER_COLLS = new Set(['gacha_gen5']);
+  const img = (it) => `<div class="wm-wrap"><img class="coaster-img${it && SMALLER_COLLS.has(it.collectionId) ? ' shrink' : ''}" src="${escapeAttr((it && it.imageUrl) || '')}" alt="" draggable="false" loading="lazy"></div>`;
 
   function toast(msg) {
     const t = document.getElementById('toast');
@@ -271,9 +277,9 @@
     }
     if (l.want.length === 1) {
       const w = l.want[0];
-      return `${img(w.imageUrl)}<div class="l-name">${escapeHtml(w.name)}</div><div class="l-coll">${escapeHtml(w.collectionName || '')}</div>`;
+      return `${img(w)}<div class="l-name">${escapeHtml(w.name)}</div><div class="l-coll">${escapeHtml(w.collectionName || '')}</div>`;
     }
-    return `<div class="want-grid" style="grid-template-columns:repeat(${l.want.length},1fr)">${l.want.map(w => `<div>${img(w.imageUrl)}</div>`).join('')}</div>
+    return `<div class="want-grid" style="grid-template-columns:repeat(${l.want.length},minmax(0,1fr))">${l.want.map(w => `<div>${img(w)}</div>`).join('')}</div>
       <div class="l-name">${l.want.map(w => escapeHtml(w.name)).join(', ')}</div>`;
   }
 
@@ -285,7 +291,7 @@
         <div class="l-time">${timeAgo(l.createdAt)}</div>
       </div>`;
     const body = `<div class="l-body">
-        <div><div class="l-side-label">Have ${rarBadge(l.rarity)}</div>${img(l.offer.imageUrl)}
+        <div><div class="l-side-label">Have ${rarBadge(l.rarity)}</div>${img(l.offer)}
           <div class="l-name">${escapeHtml(l.offer.name)}</div><div class="l-coll">${escapeHtml(l.offer.collectionName || '')}</div></div>
         <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
         <div><div class="l-side-label">Want</div>${wantHtml(l)}</div>
@@ -307,7 +313,7 @@
     } else if (l.myOffer) {
       const o = l.myOffer;
       actions = `<div class="sent-offer">
-          <div class="sent-thumb">${img(o.item.imageUrl)}</div>
+          <div class="sent-thumb">${img(o.item)}</div>
           <div class="sent-text"><span class="status-tag open">Offer sent</span><br>You offered <b>${escapeHtml(o.item.name)}</b>. Waiting for ${escapeHtml((l.owner && l.owner.name) || 'the owner')} to accept or decline.</div>
         </div>
         <div class="l-actions"><button type="button" class="btn ghost" onclick="doWithdraw(${o.id})"${busy ? ' disabled' : ''}>Withdraw offer</button></div>`;
@@ -336,7 +342,7 @@
               <div class="offer-pager" onscroll="clearTimeout(this._t);this._t=setTimeout(updateOfferDots,60)">${pages.map(page => `
                 <div class="offer-page">${page.map(([c, i]) => `
                   <button type="button" class="pick${keyOf(c) === pickedForListing ? ' sel' : ''}" onclick="pickMatch(${l.id}, ${i})">
-                    ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
+                    ${img(c)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
                     ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
                     <div class="pick-name">${escapeHtml(c.name)}</div>
                   </button>`).join('')}</div>`).join('')}</div>
@@ -359,7 +365,7 @@
     const confirming = confirmOffer === o.id;
     return `<div class="offer-row">
         <div class="offer-main">
-          <div class="offer-thumb">${img(o.item.imageUrl)}</div>
+          <div class="offer-thumb">${img(o.item)}</div>
           <div class="offer-info">
             <div class="offer-who"><img class="l-avatar" style="width:22px;height:22px" src="${escapeAttr(who.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(who.username)} draggable="false">
               <span${profileLinkAttr(who.username)}>${escapeHtml(who.name || '')}</span></div>
@@ -473,7 +479,7 @@
       <div class="step-title"><span class="step-num">1</span>Your Coaster</div>
       <div class="pick-grid">${myCoasters.map((c, i) => `
         <button type="button" class="pick${keyOf(c) === post.offerKey ? ' sel' : ''}" onclick="selectOffer(${i})">
-          ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
+          ${img(c)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
           ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
           <div class="pick-name">${c.rarity === 'SSR' ? '<span class="rar ssr">SSR</span> ' : ''}${escapeHtml(c.name)}</div>
         </button>`).join('')}</div>
@@ -498,7 +504,7 @@
           <div class="pick-grid">${shown.map(c => {
             const on = post.want.includes(keyOf(c));
             return `<button type="button" class="pick${on ? ' sel' : ''}" onclick="toggleWant(${catalog.indexOf(c)})">
-              ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span><div class="pick-name">${escapeHtml(c.name)}</div></button>`;
+              ${img(c)}<span class="pick-check"><i class="fa-solid fa-check"></i></span><div class="pick-name">${escapeHtml(c.name)}</div></button>`;
           }).join('')}</div>`;
       }
       html += `</div>`;
@@ -581,9 +587,9 @@
         <img class="l-avatar" src="${escapeAttr(owner.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(owner.username)} draggable="false">
         <div class="l-owner">Offer to ${escapeHtml(owner.name || '')}</div>${OFFER_TAG[o.status] || ''}</div>
       <div class="l-body">
-        <div><div class="l-side-label">You offer</div>${img(o.item.imageUrl)}<div class="l-name">${escapeHtml(o.item.name)}</div></div>
+        <div><div class="l-side-label">You offer</div>${img(o.item)}<div class="l-name">${escapeHtml(o.item.name)}</div></div>
         <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
-        <div><div class="l-side-label">For ${rarBadge(l.rarity)}</div>${img(l.offer && l.offer.imageUrl)}<div class="l-name">${escapeHtml((l.offer && l.offer.name) || '')}</div></div>
+        <div><div class="l-side-label">For ${rarBadge(l.rarity)}</div>${img(l.offer)}<div class="l-name">${escapeHtml((l.offer && l.offer.name) || '')}</div></div>
       </div>
       <div class="l-time" style="margin-top:8px">${escapeHtml(note)}</div>
       ${o.status === 'pending' ? `<div class="l-actions"><button type="button" class="btn ghost" onclick="doWithdraw(${o.id})"${busy ? ' disabled' : ''}>Withdraw offer</button></div>` : ''}
@@ -604,16 +610,16 @@
       const when = timeAgo(t.doneAt || t.createdAt);
       if (t.status === 'cancelled') {
         return `<div class="listing"><div class="l-head"><div class="l-owner">Your listing</div>${tag}</div>
-          <div class="l-body"><div><div class="l-side-label">Have ${rarBadge(t.rarity)}</div>${img(t.offer.imageUrl)}<div class="l-name">${escapeHtml(t.offer.name)}</div></div>
+          <div class="l-body"><div><div class="l-side-label">Have ${rarBadge(t.rarity)}</div>${img(t.offer)}<div class="l-name">${escapeHtml(t.offer.name)}</div></div>
           <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div><div><div class="l-side-label">Want</div>${wantHtml(t)}</div></div></div>`;
       }
       return `<div class="listing"><div class="l-head">
           <img class="l-avatar" src="${escapeAttr((other && other.img) || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(other && other.username)} draggable="false">
           <div class="l-owner">Traded with ${escapeHtml((other && other.name) || '')}</div>${tag}</div>
         <div class="l-body">
-          <div><div class="l-side-label">Gave</div>${img(gave.imageUrl)}<div class="l-name">${escapeHtml(gave.name)}</div></div>
+          <div><div class="l-side-label">Gave</div>${img(gave)}<div class="l-name">${escapeHtml(gave.name)}</div></div>
           <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
-          <div><div class="l-side-label">Received ${rarBadge(t.rarity)}</div>${img(got.imageUrl)}<div class="l-name">${escapeHtml(got.name)}</div></div>
+          <div><div class="l-side-label">Received ${rarBadge(t.rarity)}</div>${img(got)}<div class="l-name">${escapeHtml(got.name)}</div></div>
         </div><div class="l-time" style="margin-top:8px;text-align:right">${when}</div></div>`;
     }).join('') + offersSection;
   }

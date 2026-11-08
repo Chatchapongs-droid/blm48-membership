@@ -30,6 +30,8 @@
             --text-dark: #444;
         }
         * { box-sizing: border-box; }
+        /* lock page horizontally — no side-to-side drag on phones */
+        html, body { overflow-x: hidden; overflow-x: clip; max-width: 100%; }
         body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; padding-bottom: 110px !important; min-height: 100vh; color: var(--text-dark); }
         body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
 
