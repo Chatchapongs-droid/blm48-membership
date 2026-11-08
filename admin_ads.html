@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | In-app Ads</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/app-ads.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 760px; margin: 0 auto; padding: 14px 12px 100px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
+
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #eee; border-bottom: 1px solid #eee; margin-bottom: 14px; }
+        .stat { padding: 12px 6px; text-align: center; }
+        .stat + .stat { border-left: 1px solid #eee; }
+        .stat b { display: block; font-size: 18px; font-weight: 700; color: #222; }
+        .stat span { font-size: 11.5px; color: #767676; }
+
+        .bar { display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; }
+        .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tab { border: 1px solid #e5e5e5; background: #fff; border-radius: 20px; padding: 6px 14px; font-family: inherit; font-size: 13px; font-weight: 600; color: #555; cursor: pointer; }
+        .tab.on { background: #222; border-color: #222; color: #fff; }
+        .btn { border: none; border-radius: 10px; padding: 9px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: #ffd43b; color: #222; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .hint { font-size: 12px; color: #767676; margin: 2px 0 10px; line-height: 1.6; }
+
+        .ad-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; align-items: center; }
+        .ad-thumb { width: 120px; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid #eee; display: block; }
+        .ad-info { flex: 1; min-width: 0; text-decoration: none; color: inherit; display: block; }
+        .ad-name { font-weight: 700; font-size: 14.5px; color: #333; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+        .b-live { background: #e6f7ec; color: #1f7a45; }
+        .b-sched { background: #e7f1ff; color: #1d5fb8; }
+        .b-ended { background: #f1f1f1; color: #555; }
+        .b-off { background: #fff0f0; color: #c92a2a; }
+        .b-place { background: #fff6d6; color: #7a5c00; }
+        .ad-sub { font-size: 12px; color: #767676; margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .ad-ctl { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; }
+        .icon-btn { width: 32px; height: 28px; border: 1px solid #e5e5e5; background: #fff; border-radius: 8px; color: #555; cursor: pointer; font-size: 12px; }
+        .icon-btn:disabled { opacity: .35; cursor: default; }
+        .toast-msg { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #222; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300; display: none; max-width: 90vw; }
+        @media (max-width: 420px) { .stat b { font-size: 15px; } .ad-thumb { width: 96px; } }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title">In-app Ads</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div class="stats" id="stats"></div>
+        <div class="bar">
+            <div class="tabs" id="tabs">
+                <button type="button" class="tab on" data-v="all" onclick="setTab('all')">All</button>
+                <button type="button" class="tab" data-v="live" onclick="setTab('live')">Live</button>
+                <button type="button" class="tab" data-v="sched" onclick="setTab('sched')">Scheduled</button>
+                <button type="button" class="tab" data-v="ended" onclick="setTab('ended')">Ended / Off</button>
+            </div>
+            <a class="btn" href="admin_ad"><i class="fa-solid fa-plus"></i> New Ad</a>
+        </div>
+        <div class="hint">โฆษณาโปรโมทกิจกรรมในแอป แสดงที่แบนเนอร์หน้า Home และการ์ดถัดจากโพสต์แรกของ Timeline · เรียงลำดับด้วยปุ่มลูกศร (บนสุดขึ้นก่อน)</div>
+        <div id="ad-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
+    </div>
+</div>
+<div class="toast-msg" id="toast"></div>
+
+<script>
+  let user = null;
+  let ads = [];
+  let tab = 'all';
+  const PLACE = { banner: 'Banner', timeline: 'Timeline', both: 'Banner + Timeline' };
+  const n = v => Number(v || 0).toLocaleString();
+
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 2600);
+  }
+  function statusOf(a) {
+    const now = Date.now();
+    if (!a.isActive) return 'off';
+    if (a.endsAt && Date.parse(a.endsAt) <= now) return 'ended';
+    if (a.startsAt && Date.parse(a.startsAt) > now) return 'sched';
+    return 'live';
+  }
+  function dt(s) {
+    return s ? new Date(s).toLocaleString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+  }
+  function setTab(v) {
+    tab = v;
+    document.querySelectorAll('#tabs .tab').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+    renderList();
+  }
+  function ctr(a) { return a.views ? (a.clicks / a.views * 100).toFixed(1) + '%' : '-'; }
+
+  function renderStats() {
+    const live = ads.filter(a => statusOf(a) === 'live').length;
+    const v = ads.reduce((s, a) => s + Number(a.views || 0), 0);
+    const c = ads.reduce((s, a) => s + Number(a.clicks || 0), 0);
+    document.getElementById('stats').innerHTML = `
+      <div class="stat"><b>${live}</b><span>Live now</span></div>
+      <div class="stat"><b>${ads.length}</b><span>All ads</span></div>
+      <div class="stat"><b>${n(v)}</b><span>Views</span></div>
+      <div class="stat"><b>${n(c)}</b><span>Clicks</span></div>`;
+  }
+
+  function renderList() {
+    renderStats();
+    const list = ads.filter(a => {
+      const st = statusOf(a);
+      if (tab === 'live') return st === 'live';
+      if (tab === 'sched') return st === 'sched';
+      if (tab === 'ended') return st === 'ended' || st === 'off';
+      return true;
+    });
+    const box = document.getElementById('ad-list');
+    if (!list.length) { box.innerHTML = '<div class="empty-state">ยังไม่มีโฆษณา</div>'; return; }
+    box.innerHTML = list.map(a => {
+      const st = statusOf(a);
+      const idx = ads.indexOf(a);
+      const badge = { live: '<span class="badge b-live">Live</span>', sched: '<span class="badge b-sched">Scheduled</span>', ended: '<span class="badge b-ended">Ended</span>', off: '<span class="badge b-off">Off</span>' }[st];
+      const when = a.startsAt || a.endsAt
+        ? `<span><i class="fa-regular fa-calendar"></i> ${escapeHtml(dt(a.startsAt) || 'now')} → ${escapeHtml(dt(a.endsAt) || 'no end')}</span>` : '<span><i class="fa-regular fa-calendar"></i> Always</span>';
+      return `
+        <div class="ad-row">
+          <a class="ad-thumb" href="admin_ad?id=${a.id}">${BLM48Ads.renderArt(a)}</a>
+          <a class="ad-info" href="admin_ad?id=${a.id}">
+            <div class="ad-name">${escapeHtml(a.title)} ${badge}<span class="badge b-place">${PLACE[a.placement] || a.placement}</span></div>
+            <div class="ad-sub">
+              ${when}
+              <span><i class="fa-regular fa-eye"></i> ${n(a.views)}${a.todayViews ? ` (+${n(a.todayViews)} today)` : ''}</span>
+              <span><i class="fa-solid fa-hand-pointer"></i> ${n(a.clicks)} · CTR ${ctr(a)}</span>
+            </div>
+          </a>
+          <div class="ad-ctl">
+            <button type="button" class="icon-btn" aria-label="Move up" ${idx === 0 ? 'disabled' : ''} onclick="move(${a.id}, -1, this)"><i class="fa-solid fa-chevron-up"></i></button>
+            <button type="button" class="icon-btn" aria-label="Move down" ${idx === ads.length - 1 ? 'disabled' : ''} onclick="move(${a.id}, 1, this)"><i class="fa-solid fa-chevron-down"></i></button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  async function move(id, dir, btn) {
+    btn.disabled = true;
+    const res = await blm48Rpc('admin_move_ad', { p_admin_username: user.username, p_ad_id: id, p_dir: dir });
+    if (!res || res.status !== 'success') { toast((res && res.message) || 'เลื่อนไม่สำเร็จ'); btn.disabled = false; return; }
+    load();
+  }
+
+  async function load() {
+    const res = await blm48Rpc('admin_list_ads', { p_admin_username: user.username });
+    const box = document.getElementById('ad-list');
+    if (!res || res.status !== 'success') { box.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'โหลดไม่สำเร็จ')}</div>`; return; }
+    ads = res.ads || [];
+    renderList();
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && ['admin','ceo'].includes(user.role.toLowerCase())))) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+    document.getElementById('page-content').style.display = 'block';
+    load();
+  });
+  window.addEventListener('pageshow', e => { if (e.persisted && user) load(); });
+</script>
+</body>
+</html>

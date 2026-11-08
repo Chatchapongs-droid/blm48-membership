@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | Ad</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <script src="assets/js/app-ads.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 760px; margin: 0 auto; padding: 14px 12px 120px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 30px 20px; }
+
+        .pv-label { font-size: 12px; font-weight: 700; color: #767676; text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 6px; }
+        .pv-banner { border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
+        .pv-timeline { border: 1px solid #eee; border-radius: 12px; overflow: hidden; margin-top: 12px; }
+        .pv-timeline #timeline-promo { margin: 0; border-bottom: none; }
+
+        .sec { font-size: 15px; font-weight: 700; color: #222; margin: 22px 0 8px; }
+        .field { margin-bottom: 12px; }
+        .field label { display: block; font-size: 13px; font-weight: 600; color: #444; margin-bottom: 5px; }
+        .field small { display: block; font-size: 11.5px; color: #767676; margin-top: 4px; line-height: 1.5; }
+        .inp, select.inp { width: 100%; padding: 10px 12px; border: 1px solid #e5e5e5; border-radius: 10px; font-family: inherit; font-size: 14px; background: #fff; color: #333; }
+        .inp:focus { outline: none; border-color: #ffd43b; box-shadow: 0 0 0 3px rgba(255,212,59,.25); }
+        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .seg { display: flex; border: 1px solid #e5e5e5; border-radius: 10px; overflow: hidden; }
+        .seg button { flex: 1; border: none; background: #fff; padding: 9px 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: #555; cursor: pointer; }
+        .seg button + button { border-left: 1px solid #e5e5e5; }
+        .seg button.on { background: #222; color: #fff; }
+        .themes { display: flex; gap: 10px; }
+        .theme-dot { width: 40px; height: 40px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px #ddd; cursor: pointer; }
+        .theme-dot.on { box-shadow: 0 0 0 2px #222; }
+        .up-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .up-thumb { width: 54px; height: 54px; border-radius: 10px; object-fit: cover; border: 1px solid #eee; }
+        .switch { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border: 1px solid #eee; border-radius: 10px; }
+        .switch input { width: 20px; height: 20px; accent-color: #222; }
+
+        .btn { border: none; border-radius: 10px; padding: 9px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: #ffd43b; color: #222; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn.ghost { background: #f3f3f3; color: #444; }
+        .btn.danger { background: #fff0f0; color: #c92a2a; }
+        .btn.danger.confirm { background: #e03131; color: #fff; }
+        .btn:disabled { opacity: .55; cursor: default; }
+        .save-bar { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid #eee; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); z-index: 120; }
+        .save-bar .inner { max-width: 760px; margin: 0 auto; display: flex; gap: 8px; }
+        .save-bar .btn { flex: 1; justify-content: center; padding: 12px; font-size: 14px; }
+
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
+        .stat { padding: 12px 8px; text-align: center; }
+        .stat + .stat { border-left: 1px solid #eee; }
+        .stat b { display: block; font-size: 17px; font-weight: 700; color: #222; }
+        .stat span { font-size: 11.5px; color: #767676; }
+        .daily { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        .daily th, .daily td { padding: 7px 6px; border-bottom: 1px solid #f3f3f3; text-align: right; }
+        .daily th:first-child, .daily td:first-child { text-align: left; }
+        .daily th { font-size: 11.5px; color: #767676; font-weight: 600; }
+        .danger-zone { margin-top: 28px; padding-top: 16px; border-top: 1px solid #eee; }
+        .danger-zone p { font-size: 12.5px; color: #767676; line-height: 1.7; margin: 0 0 10px; }
+        .toast-msg { position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #222; color: #fff; padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 300; display: none; max-width: 90vw; }
+        [hidden] { display: none !important; }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin_ads')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title" id="page-title">New Ad</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div id="loading" class="loading-state" hidden><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+        <div id="editor">
+            <div class="pv-label" id="pv-banner-label">Preview · Home banner</div>
+            <div class="pv-banner" id="pv-banner"></div>
+            <div id="pv-timeline-wrap">
+                <div class="pv-label" style="margin-top:14px">Preview · Timeline card</div>
+                <div class="pv-timeline" id="pv-timeline"></div>
+            </div>
+
+            <div class="sec">รูปแบนเนอร์</div>
+            <div class="field">
+                <div class="seg" id="mode-seg">
+                    <button type="button" data-v="design" onclick="setMode('design')"><i class="fa-solid fa-wand-magic-sparkles"></i> ให้ระบบออกแบบ</button>
+                    <button type="button" data-v="image" onclick="setMode('image')"><i class="fa-solid fa-image"></i> อัปโหลดรูปเอง</button>
+                </div>
+            </div>
+            <div id="mode-image" hidden>
+                <div class="field">
+                    <div class="up-row">
+                        <button type="button" class="btn" id="btn-img" onclick="pick('image')"><i class="fa-solid fa-upload"></i> Upload banner</button>
+                        <button type="button" class="btn ghost" id="btn-img-rm" onclick="setImg('imageUrl', null)" hidden><i class="fa-solid fa-trash"></i> Remove</button>
+                    </div>
+                    <small>แนะนำรูปแนวนอน 3:1 (เช่น 1500 × 500 px) ใช้รูปเดียวกันทั้งแบนเนอร์และการ์ด Timeline</small>
+                </div>
+            </div>
+            <div id="mode-design">
+                <div class="field">
+                    <label>ธีมสี</label>
+                    <div class="themes" id="themes"></div>
+                </div>
+                <div class="field">
+                    <label>รูปประกอบ (ไม่ใส่ก็ได้)</label>
+                    <div class="up-row">
+                        <span id="photo-thumb" hidden></span>
+                        <button type="button" class="btn ghost" id="btn-photo" onclick="pick('photo')"><i class="fa-solid fa-upload"></i> Upload photo</button>
+                        <button type="button" class="btn ghost" id="btn-photo-rm" onclick="setImg('photoUrl', null)" hidden><i class="fa-solid fa-trash"></i> Remove</button>
+                    </div>
+                    <small>รูปเมมเบอร์ / สินค้า / โปสเตอร์ จะแสดงเป็นกรอบรูปด้านขวา (ครอปเป็นสี่เหลี่ยมจัตุรัส)</small>
+                </div>
+                <div class="field">
+                    <label for="f-kicker">ป้ายเล็กด้านบน</label>
+                    <input class="inp" id="f-kicker" maxlength="24" placeholder="อัตโนมัติตามปลายทาง เช่น THEATER">
+                </div>
+            </div>
+
+            <div class="sec">ข้อความ</div>
+            <div class="field">
+                <label for="f-title">หัวข้อ *</label>
+                <input class="inp" id="f-title" maxlength="60" placeholder="เช่น BLM48 Fanmeet เปิดจองแล้ว!">
+            </div>
+            <div class="field">
+                <label for="f-sub">รายละเอียดสั้นๆ</label>
+                <input class="inp" id="f-sub" maxlength="90" placeholder="เช่น จองที่นั่งด้วย Token รับของที่ระลึกหลังโชว์">
+            </div>
+            <div class="field">
+                <label for="f-cta">ข้อความปุ่ม</label>
+                <input class="inp" id="f-cta" maxlength="20" placeholder="ดูเลย">
+            </div>
+
+            <div class="sec">ปลายทางและตำแหน่ง</div>
+            <div class="field">
+                <label for="f-dest">กดแล้วไปที่</label>
+                <select class="inp" id="f-dest"></select>
+            </div>
+            <div class="field" id="custom-wrap" hidden>
+                <label for="f-link">ลิงก์</label>
+                <input class="inp" id="f-link" placeholder="เช่น theater_event?id=4 หรือ https://...">
+                <small>หน้าในแอป (เช่น <b>theater_event?id=4</b>, <b>product?id=...</b>) หรือเว็บภายนอกที่ขึ้นต้นด้วย https://</small>
+            </div>
+            <div class="field">
+                <label>แสดงที่</label>
+                <div class="seg" id="place-seg">
+                    <button type="button" data-v="both" onclick="setPlace('both')">ทั้งสองที่</button>
+                    <button type="button" data-v="banner" onclick="setPlace('banner')">แบนเนอร์ Home</button>
+                    <button type="button" data-v="timeline" onclick="setPlace('timeline')">Timeline</button>
+                </div>
+            </div>
+
+            <div class="sec">ช่วงเวลา</div>
+            <div class="row2">
+                <div class="field">
+                    <label for="f-start">เริ่ม</label>
+                    <input class="inp" type="datetime-local" id="f-start">
+                </div>
+                <div class="field">
+                    <label for="f-end">จบ</label>
+                    <input class="inp" type="datetime-local" id="f-end">
+                </div>
+            </div>
+            <div class="field"><small style="margin-top:-6px">เวลาประเทศไทย · เว้นว่าง = เริ่มทันที / ไม่มีวันจบ</small></div>
+            <div class="switch">
+                <div><b style="font-size:14px;color:#333">เปิดใช้งาน</b><br><small style="color:#767676;font-size:11.5px">ปิดไว้ = ซ่อนทันที (ไม่ต้องลบ)</small></div>
+                <input type="checkbox" id="f-active" checked aria-label="Active">
+            </div>
+
+            <div id="stats-wrap" hidden>
+                <div class="sec">ยอดดู / ยอดกด</div>
+                <div class="stats" id="stats"></div>
+                <table class="daily" id="daily"></table>
+            </div>
+
+            <div class="danger-zone" id="danger" hidden>
+                <div class="sec" style="margin-top:0">Delete ad</div>
+                <p>ลบโฆษณาและสถิติทั้งหมดของโฆษณานี้ ถ้าแค่อยากหยุดแสดงชั่วคราวให้ปิด "เปิดใช้งาน" แทน</p>
+                <button type="button" class="btn danger" onclick="askDelete(this)"><i class="fa-solid fa-trash"></i> Delete ad</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="save-bar" id="save-bar" hidden>
+    <div class="inner"><button type="button" class="btn" id="btn-save" onclick="save()"><i class="fa-solid fa-check"></i> Save</button></div>
+</div>
+<input type="file" id="file-input" accept="image/*" style="display:none">
+<div class="toast-msg" id="toast"></div>
+
+<script>
+  let user = null;
+  const adId = parseInt(new URLSearchParams(location.search).get('id') || '0', 10) || null;
+  const THEME_SWATCH = { yellow: 'linear-gradient(135deg,#ffd43b,#fff3bf)', pink: 'linear-gradient(135deg,#ff8fab,#ffe3ec)', blue: 'linear-gradient(135deg,#74b4ff,#e3f0ff)', dark: 'linear-gradient(135deg,#17171c,#3a3a45)' };
+  let ad = { title: '', subtitle: '', kicker: '', ctaLabel: '', linkUrl: 'theaters', imageUrl: null, photoUrl: null, theme: 'yellow', placement: 'both', isActive: true, startsAt: null, endsAt: null };
+  let mode = 'design';
+  let uploadTarget = null;
+  const $ = id => document.getElementById(id);
+  const n = v => Number(v || 0).toLocaleString();
+
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, 2600);
+  }
+
+  // datetime-local <-> ISO (ยึดเวลาไทย +07:00 เสมอ ไม่ขึ้นกับโซนเวลาเครื่อง)
+  function toLocalInput(iso) {
+    if (!iso) return '';
+    const d = new Date(Date.parse(iso) + 7 * 3600 * 1000);
+    return d.toISOString().slice(0, 16);
+  }
+  function fromLocalInput(v) { return v ? new Date(v + ':00+07:00').toISOString() : null; }
+
+  function setMode(m) {
+    mode = m;
+    document.querySelectorAll('#mode-seg button').forEach(b => b.classList.toggle('on', b.dataset.v === m));
+    $('mode-image').hidden = m !== 'image';
+    $('mode-design').hidden = m !== 'design';
+    renderPreview();
+  }
+  function setPlace(p) {
+    ad.placement = p;
+    document.querySelectorAll('#place-seg button').forEach(b => b.classList.toggle('on', b.dataset.v === p));
+    renderPreview();
+  }
+  function setTheme(t) {
+    ad.theme = t;
+    document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('on', d.dataset.v === t));
+    renderPreview();
+  }
+  function setImg(key, url) {
+    ad[key] = url;
+    syncUploadUi();
+    renderPreview();
+  }
+  function syncUploadUi() {
+    $('btn-img-rm').hidden = !ad.imageUrl;
+    $('btn-img').innerHTML = `<i class="fa-solid fa-upload"></i> ${ad.imageUrl ? 'Change banner' : 'Upload banner'}`;
+    $('btn-photo-rm').hidden = !ad.photoUrl;
+    $('photo-thumb').hidden = !ad.photoUrl;
+    $('photo-thumb').innerHTML = ad.photoUrl ? `<img class="up-thumb" src="${escapeAttr(ad.photoUrl)}" alt="">` : '';
+  }
+
+  function readForm() {
+    ad.title = $('f-title').value.trim();
+    ad.subtitle = $('f-sub').value.trim();
+    ad.kicker = $('f-kicker').value.trim();
+    ad.ctaLabel = $('f-cta').value.trim();
+    const dest = $('f-dest').value;
+    $('custom-wrap').hidden = dest !== '__custom';
+    ad.linkUrl = dest === '__custom' ? $('f-link').value.trim() : dest;
+    ad.startsAt = fromLocalInput($('f-start').value);
+    ad.endsAt = fromLocalInput($('f-end').value);
+    ad.isActive = $('f-active').checked;
+  }
+  // สิ่งที่แสดงจริง: โหมดออกแบบ = ไม่ใช้รูปแบนเนอร์ (เก็บรูปไว้ไม่ลบ แต่ตอนบันทึกจะล้างทิ้ง)
+  function effective() {
+    const e = Object.assign({}, ad);
+    if (mode === 'design') e.imageUrl = null;
+    if (!e.title) e.title = 'หัวข้อโฆษณา';
+    return e;
+  }
+  function renderPreview() {
+    readForm();
+    const e = effective();
+    const showBanner = e.placement !== 'timeline';
+    const showTl = e.placement !== 'banner';
+    $('pv-banner-label').hidden = $('pv-banner').hidden = !showBanner;
+    $('pv-banner').innerHTML = showBanner ? BLM48Ads.renderArt(e) : '';
+    $('pv-timeline-wrap').hidden = !showTl;
+    if (showTl) {
+      $('pv-timeline').innerHTML = `
+        <section id="timeline-promo">
+          <div class="tp-head"><div class="tp-title"><i class="fa-solid fa-bullhorn"></i> กิจกรรมแนะนำ</div><span class="tp-tag">BLM48 Membership</span></div>
+          <div class="tp-row single"><div class="tp-card">${BLM48Ads.renderArt(e)}
+            <div class="tp-foot"><div class="tp-info"><div class="tp-name">${escapeHtml(e.title)}</div>${e.subtitle ? `<div class="tp-desc">${escapeHtml(e.subtitle)}</div>` : ''}</div>
+            <span class="tp-btn">${escapeHtml(e.ctaLabel || 'ดูเลย')}</span></div></div></div>
+        </section>`;
+    }
+  }
+
+  // ===== อัปโหลดรูป =====
+  function pick(target) {
+    uploadTarget = target;
+    const inp = $('file-input'); inp.value = ''; inp.click();
+  }
+  function shrinkPhoto(file, maxSide) {
+    return new Promise(resolve => {
+      if (!/jpe?g|webp|heic|png/i.test(file.type)) return resolve(file);
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+        if (scale >= 1 && file.size < 1200 * 1024) return resolve(file);
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(img.naturalWidth * scale); cv.height = Math.round(img.naturalHeight * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        cv.toBlob(b => resolve(b || file), 'image/jpeg', 0.9);
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  $('file-input').addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast('กรุณาเลือกไฟล์รูปภาพ'); return; }
+    if (file.size > 10 * 1024 * 1024) { toast('ไฟล์ใหญ่เกิน 10MB'); return; }
+    const isBanner = uploadTarget === 'image';
+    const btn = $(isBanner ? 'btn-img' : 'btn-photo');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+    try {
+      const blob = await shrinkPhoto(file, isBanner ? 1800 : 900);
+      const url = await blm48UploadImageToBucket('app-assets', `ad-${isBanner ? 'banner' : 'photo'}`, blob);
+      setImg(isBanner ? 'imageUrl' : 'photoUrl', url);
+      toast('อัปโหลดแล้ว อย่าลืมกด Save');
+    } catch (err) {
+      console.error('upload error', err);
+      toast('อัปโหลดไม่สำเร็จ ลองใหม่อีกครั้ง');
+    } finally {
+      btn.disabled = false; syncUploadUi();
+    }
+  });
+
+  // ===== บันทึก / ลบ =====
+  async function save() {
+    readForm();
+    if (!ad.title) { toast('กรุณาใส่หัวข้อโฆษณา'); $('f-title').focus(); return; }
+    if (!ad.linkUrl || BLM48Ads.safeHref(ad.linkUrl) === '#') { toast('ลิงก์ปลายทางไม่ถูกต้อง'); return; }
+    if (mode === 'image' && !ad.imageUrl) { toast('กรุณาอัปโหลดรูปแบนเนอร์ หรือเลือก "ให้ระบบออกแบบ"'); return; }
+    const payload = Object.assign({}, ad, { id: adId, imageUrl: mode === 'image' ? ad.imageUrl : null });
+    const btn = $('btn-save');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+    const res = await blm48Rpc('admin_save_ad', { p_admin_username: user.username, p_ad: payload });
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Save';
+    if (!res || res.status !== 'success') { toast((res && res.message) || 'บันทึกไม่สำเร็จ'); return; }
+    try { localStorage.removeItem('blm48_app_ads_cache'); } catch (e) {}
+    toast('บันทึกแล้ว');
+    if (!adId) setTimeout(() => blm48Replace('admin_ad?id=' + res.id), 700);
+    else load();
+  }
+  function armConfirm(btn, label) {
+    if (btn.classList.contains('confirm')) return true;
+    const old = btn.innerHTML;
+    btn.classList.add('confirm');
+    btn.innerHTML = label;
+    setTimeout(() => { if (btn.isConnected && !btn.disabled) { btn.classList.remove('confirm'); btn.innerHTML = old; } }, 4000);
+    return false;
+  }
+  async function askDelete(btn) {
+    if (!armConfirm(btn, '<i class="fa-solid fa-triangle-exclamation"></i> Tap again to delete')) return;
+    btn.disabled = true;
+    const res = await blm48Rpc('admin_delete_ad', { p_admin_username: user.username, p_ad_id: adId });
+    if (!res || res.status !== 'success') { btn.disabled = false; btn.classList.remove('confirm'); toast((res && res.message) || 'ลบไม่สำเร็จ'); return; }
+    try { localStorage.removeItem('blm48_app_ads_cache'); } catch (e) {}
+    toast('ลบโฆษณาแล้ว');
+    setTimeout(() => blm48Replace('admin_ads'), 800);
+  }
+
+  // ===== โหลด / เติมฟอร์ม =====
+  function fillForm() {
+    $('f-title').value = ad.title || '';
+    $('f-sub').value = ad.subtitle || '';
+    $('f-kicker').value = ad.kicker || '';
+    $('f-cta').value = ad.ctaLabel || '';
+    const preset = BLM48Ads.DESTINATIONS.find(d => d.value === ad.linkUrl);
+    $('f-dest').value = preset ? preset.value : '__custom';
+    $('f-link').value = preset ? '' : (ad.linkUrl || '');
+    $('f-start').value = toLocalInput(ad.startsAt);
+    $('f-end').value = toLocalInput(ad.endsAt);
+    $('f-active').checked = ad.isActive !== false;
+    setTheme(ad.theme || 'yellow');
+    setPlace(ad.placement || 'both');
+    syncUploadUi();
+    setMode(ad.imageUrl ? 'image' : 'design');
+  }
+  function renderStats(a, daily) {
+    $('stats-wrap').hidden = false;
+    $('stats').innerHTML = `
+      <div class="stat"><b>${n(a.views)}</b><span>Views</span></div>
+      <div class="stat"><b>${n(a.clicks)}</b><span>Clicks</span></div>
+      <div class="stat"><b>${a.views ? (a.clicks / a.views * 100).toFixed(1) + '%' : '-'}</b><span>CTR</span></div>`;
+    $('daily').innerHTML = daily.length
+      ? '<tr><th>Day</th><th>Views</th><th>Clicks</th></tr>' + daily.map(d => `<tr><td>${escapeHtml(new Date(d.day + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }))}</td><td>${n(d.views)}</td><td>${n(d.clicks)}</td></tr>`).join('')
+      : '<tr><td style="color:#767676;text-align:center;padding:14px">ยังไม่มีคนเห็นโฆษณานี้</td></tr>';
+  }
+  async function load() {
+    $('loading').hidden = false; $('editor').hidden = true;
+    const res = await blm48Rpc('admin_get_ad', { p_admin_username: user.username, p_ad_id: adId });
+    $('loading').hidden = true;
+    if (!res || res.status !== 'success') { $('loading').hidden = false; $('loading').textContent = (res && res.message) || 'โหลดไม่สำเร็จ'; return; }
+    ad = res.ad;
+    $('page-title').textContent = ad.title || 'Ad';
+    $('editor').hidden = false;
+    $('danger').hidden = false;
+    fillForm();
+    renderStats(res.ad, res.daily || []);
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && ['admin','ceo'].includes(user.role.toLowerCase())))) {
+      $('access-denied').style.display = 'block';
+      return;
+    }
+    $('page-content').style.display = 'block';
+    $('save-bar').hidden = false;
+    BLM48Ads.injectCss();
+    $('f-dest').innerHTML = BLM48Ads.DESTINATIONS.map(d => `<option value="${d.value}">${escapeHtml(d.label)}</option>`).join('') + '<option value="__custom">ลิงก์อื่นๆ (กำหนดเอง)</option>';
+    $('themes').innerHTML = BLM48Ads.THEMES.map(t => `<button type="button" class="theme-dot" data-v="${t}" aria-label="${t}" style="background:${THEME_SWATCH[t]}" onclick="setTheme('${t}')"></button>`).join('');
+    ['f-title', 'f-sub', 'f-kicker', 'f-cta', 'f-link', 'f-start', 'f-end'].forEach(id => $(id).addEventListener('input', renderPreview));
+    $('f-dest').addEventListener('change', renderPreview);
+    $('f-active').addEventListener('change', readForm);
+    if (adId) load();
+    else fillForm();
+  });
+</script>
+</body>
+</html>
