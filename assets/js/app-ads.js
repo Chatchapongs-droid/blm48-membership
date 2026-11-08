@@ -1,8 +1,8 @@
 /* =========================================================
    📣 BLM48 In-app Ads (โฆษณาโปรโมทกิจกรรมในแอป)
    - Admin จัดการที่ admin_ads / admin_ad?id= (ตาราง app_ads)
-   - แสดง 2 ที่: แบนเนอร์เลื่อนหน้า Home (placement banner/both)
-     และการ์ดโปรโมทถัดจากโพสต์แรกของ Timeline (placement timeline/both)
+   - แยก 2 ส่วน: แบนเนอร์เลื่อนหน้า Home (placement banner, 3:1)
+     และส่วน Promotion ถัดจากโพสต์แรกของ Timeline (placement timeline, การ์ด 2:1)
    - มีรูปอัปโหลด (image_url) -> โชว์รูปนั้น / ไม่มี -> ระบบวาดแบนเนอร์ธีม BLM48 ให้จากหัวข้อ + รูปประกอบ
    - นับยอดดู (เห็นบนจอ >= 60%, นับ 1 ครั้งต่อโฆษณาต่อการเปิดแอป) และยอดกด
    ========================================================= */
@@ -67,37 +67,50 @@
       .ad-art.has-image { background: #f4f4f4; aspect-ratio: auto; min-height: 20px; }
       .ad-art.has-image img.ad-img { width: 100%; height: auto; display: block; }
 
-      /* การ์ดโปรโมทใน Timeline (ถัดจากโพสต์แรก) - เต็มขอบเหมือน .post-card */
-      #timeline-promo { margin: 0 -12px; padding: 14px 0 16px; border-bottom: 8px solid #f2f2f4; background: #fff; }
-      #timeline-promo .tp-head { display: flex; align-items: center; justify-content: space-between; padding: 0 12px 10px; }
-      #timeline-promo .tp-title { font-size: 15px; font-weight: 700; color: #222; display: flex; align-items: center; gap: 7px; }
-      #timeline-promo .tp-title i { color: #f0a500; }
-      #timeline-promo .tp-tag { font-size: 11px; color: #767676; }
-      #timeline-promo .tp-row { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 12px; scrollbar-width: none; }
+      /* การ์ด Promotion 2:1 (ปุ่มอยู่ใต้รูปแล้ว ไม่ต้องมีปุ่มในรูป) */
+      .ad-art.promo { aspect-ratio: 2 / 1; }
+      .ad-art.promo .ad-text { left: 6cqw; width: 52cqw; gap: 1.8cqw; }
+      .ad-art.promo.no-photo .ad-text { width: 80cqw; }
+      .ad-art.promo .ad-kicker { font-size: 3.2cqw; padding: .7cqw 2.4cqw; }
+      .ad-art.promo .ad-title { font-size: 8cqw; -webkit-line-clamp: 3; }
+      .ad-art.promo .ad-sub { font-size: 4cqw; }
+      .ad-art.promo .ad-cta { display: none; }
+      .ad-art.promo .ad-photo { width: 34cqw; height: 34cqw; right: 6cqw; border-radius: 5cqw; }
+      .ad-art.promo .ad-blob.b1 { width: 64cqw; height: 64cqw; top: -26cqw; }
+      .ad-art.promo .ad-spark { width: 3.4cqw; height: 3.4cqw; }
+      .ad-art.promo.has-image { aspect-ratio: 2 / 1; }
+      .ad-art.promo.has-image img.ad-img { height: 100%; object-fit: cover; }
+
+      /* ส่วน Promotion ถัดจากโพสต์แรกของ Timeline - เต็มขอบเหมือน .post-card */
+      #timeline-promo { margin: 0 -12px; padding: 16px 0 18px; border-bottom: 8px solid #f2f2f4; background: #fff; }
+      #timeline-promo .tp-title { font-size: 19px; font-weight: 700; color: #222; padding: 0 12px 12px; }
+      #timeline-promo .tp-row { display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 12px; padding: 0 12px; scrollbar-width: none; }
       #timeline-promo .tp-row::-webkit-scrollbar { display: none; }
-      #timeline-promo .tp-card { flex: 0 0 86%; scroll-snap-align: center; border: 1px solid #eee; border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit; background: #fff; }
+      #timeline-promo .tp-card { flex: 0 0 calc(100% - 6px); scroll-snap-align: start; text-decoration: none; color: inherit; min-width: 0; }
       #timeline-promo .tp-row.single .tp-card { flex-basis: 100%; }
-      #timeline-promo .tp-foot { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+      #timeline-promo .tp-img { border-radius: 8px; overflow: hidden; background: #f4f4f4; }
+      #timeline-promo .tp-foot { display: flex; align-items: center; gap: 12px; padding-top: 10px; }
       #timeline-promo .tp-info { flex: 1; min-width: 0; }
-      #timeline-promo .tp-name { font-size: 14px; font-weight: 700; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-      #timeline-promo .tp-desc { font-size: 12px; color: #767676; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
-      #timeline-promo .tp-btn { flex-shrink: 0; background: #ffd43b; color: #222; font-size: 12.5px; font-weight: 700; border-radius: 20px; padding: 7px 14px; white-space: nowrap; }
+      #timeline-promo .tp-name { font-size: 16px; font-weight: 500; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #timeline-promo .tp-desc { font-size: 13.5px; color: #767676; line-height: 1.35; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+      #timeline-promo .tp-btn { flex-shrink: 0; background: #ffd43b; color: #222; font-size: 14px; font-weight: 700; border-radius: 20px; padding: 8px 18px; white-space: nowrap; }
     `;
     document.head.appendChild(st);
   }
 
-  // 🎨 ศิลป์แบนเนอร์ 3:1 (รูปอัปโหลด หรือวาดให้อัตโนมัติ)
+  // 🎨 ศิลป์โฆษณา (รูปอัปโหลด หรือวาดให้อัตโนมัติ): Banner = 3:1, Promotion (placement timeline) = 2:1
   function renderArt(ad) {
     injectCss();
+    const ratio = ad.placement === 'timeline' ? 'promo' : '';
     if (ad.imageUrl) {
-      return `<div class="ad-art has-image"><img class="ad-img" src="${esc(ad.imageUrl)}" alt="${esc(ad.title)}" draggable="false" loading="lazy"></div>`;
+      return `<div class="ad-art has-image ${ratio}"><img class="ad-img" src="${esc(ad.imageUrl)}" alt="${esc(ad.title)}" draggable="false" loading="lazy"></div>`;
     }
     const theme = THEMES.includes(ad.theme) ? ad.theme : 'yellow';
     const d = destOf(ad.linkUrl);
     const kicker = ad.kicker || (d ? d.kicker : '');
     const cta = ad.ctaLabel || 'ดูเลย';
     return `
-      <div class="ad-art t-${theme} ${ad.photoUrl ? '' : 'no-photo'}">
+      <div class="ad-art ${ratio} t-${theme} ${ad.photoUrl ? '' : 'no-photo'}">
         <span class="ad-blob b1"></span><span class="ad-blob b2"></span>
         <span class="ad-spark" style="right:${ad.photoUrl ? 36 : 12}cqw; top:14%"></span>
         <span class="ad-spark" style="right:${ad.photoUrl ? 3 : 22}cqw; bottom:12%; transform:scale(.7)"></span>
@@ -130,7 +143,7 @@
     } catch (e) { console.warn('ads fetch failed', e); }
     return null;
   }
-  const forPlacement = (list, p) => liveNow(list).filter(a => a.placement === p || a.placement === 'both');
+  const forPlacement = (list, p) => liveNow(list).filter(a => a.placement === p);
 
   // ===== นับยอดดู / ยอดกด =====
   // ส่งแบบ keepalive ตรงไปที่ REST เพื่อให้ยอดกดไม่หายตอนเปลี่ยนหน้า
@@ -210,18 +223,7 @@
     const ads = forPlacement(list, 'timeline');
     if (!ads.length) { if (promoEl) promoEl.remove(); promoEl = null; return; }
     if (!promoEl) { promoEl = document.createElement('section'); promoEl.id = 'timeline-promo'; }
-    promoEl.innerHTML = `
-      <div class="tp-head"><div class="tp-title"><i class="fa-solid fa-bullhorn"></i> กิจกรรมแนะนำ</div><span class="tp-tag">BLM48 Membership</span></div>
-      <div class="tp-row ${ads.length === 1 ? 'single' : ''}">
-        ${ads.map(a => `
-          <a class="tp-card" href="${esc(safeHref(a.linkUrl))}" data-ad-id="${a.id}">
-            ${renderArt(a)}
-            <div class="tp-foot">
-              <div class="tp-info"><div class="tp-name">${esc(a.title)}</div>${a.subtitle ? `<div class="tp-desc">${esc(a.subtitle)}</div>` : ''}</div>
-              <span class="tp-btn">${esc(a.ctaLabel || 'ดูเลย')}</span>
-            </div>
-          </a>`).join('')}
-      </div>`;
+    promoEl.innerHTML = promoSectionHtml(ads);
     placePromo();
     bindClicks(promoEl);
     observeViews(promoEl);
@@ -230,6 +232,23 @@
       feedObs = new MutationObserver(() => placePromo());
       feedObs.observe(feed, { childList: true });
     }
+  }
+
+  // ส่วน Promotion (ใช้ทั้งหน้า Home และพรีวิวในหน้า Admin)
+  function promoSectionHtml(ads, opts) {
+    const tag = opts && opts.preview ? 'div' : 'a';
+    return `
+      <div class="tp-title">Promotion</div>
+      <div class="tp-row ${ads.length === 1 ? 'single' : ''}">
+        ${ads.map(a => `
+          <${tag} class="tp-card" ${tag === 'a' ? `href="${esc(safeHref(a.linkUrl))}" data-ad-id="${a.id}"` : ''}>
+            <div class="tp-img">${renderArt(Object.assign({}, a, { placement: 'timeline' }))}</div>
+            <div class="tp-foot">
+              <div class="tp-info"><div class="tp-name">${esc(a.title)}</div>${a.subtitle ? `<div class="tp-desc">${esc(a.subtitle)}</div>` : ''}</div>
+              <span class="tp-btn">${esc(a.ctaLabel || 'ดูเลย')}</span>
+            </div>
+          </${tag}>`).join('')}
+      </div>`;
   }
 
   async function initHome() {
@@ -241,5 +260,5 @@
     else if (!cached) { renderBanners([]); }
   }
 
-  window.BLM48Ads = { DESTINATIONS, THEMES, renderArt, safeHref, destOf, initHome, injectCss };
+  window.BLM48Ads = { DESTINATIONS, THEMES, renderArt, promoSectionHtml, safeHref, destOf, initHome, injectCss };
 })();

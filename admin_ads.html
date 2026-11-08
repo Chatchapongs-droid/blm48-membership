@@ -41,6 +41,10 @@
         .btn { border: none; border-radius: 10px; padding: 9px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: #ffd43b; color: #222; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
         .hint { font-size: 12px; color: #767676; margin: 2px 0 10px; line-height: 1.6; }
 
+        .sec-seg { display: flex; border: 1px solid #e5e5e5; border-radius: 12px; overflow: hidden; margin-bottom: 12px; }
+        .sec-seg button { flex: 1; border: none; background: #fff; padding: 11px 6px; font-family: inherit; font-size: 14px; font-weight: 700; color: #555; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+        .sec-seg button + button { border-left: 1px solid #e5e5e5; }
+        .sec-seg button.on { background: #222; color: #fff; }
         .ad-row { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; align-items: center; }
         .ad-thumb { width: 120px; flex-shrink: 0; border-radius: 8px; overflow: hidden; border: 1px solid #eee; display: block; }
         .ad-info { flex: 1; min-width: 0; text-decoration: none; color: inherit; display: block; }
@@ -70,6 +74,10 @@
 <div class="page-wrapper">
     <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
     <div id="page-content">
+        <div class="sec-seg" id="sec-seg">
+            <button type="button" data-v="timeline" onclick="setSection('timeline')"><i class="fa-solid fa-bullhorn"></i> Promotion</button>
+            <button type="button" data-v="banner" onclick="setSection('banner')"><i class="fa-regular fa-images"></i> Home Banner</button>
+        </div>
         <div class="stats" id="stats"></div>
         <div class="bar">
             <div class="tabs" id="tabs">
@@ -78,9 +86,9 @@
                 <button type="button" class="tab" data-v="sched" onclick="setTab('sched')">Scheduled</button>
                 <button type="button" class="tab" data-v="ended" onclick="setTab('ended')">Ended / Off</button>
             </div>
-            <a class="btn" href="admin_ad"><i class="fa-solid fa-plus"></i> New Ad</a>
+            <a class="btn" id="btn-new" href="admin_ad?type=timeline"><i class="fa-solid fa-plus"></i> New</a>
         </div>
-        <div class="hint">โฆษณาโปรโมทกิจกรรมในแอป แสดงที่แบนเนอร์หน้า Home และการ์ดถัดจากโพสต์แรกของ Timeline · เรียงลำดับด้วยปุ่มลูกศร (บนสุดขึ้นก่อน)</div>
+        <div class="hint" id="sec-hint"></div>
         <div id="ad-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
     </div>
 </div>
@@ -90,7 +98,21 @@
   let user = null;
   let ads = [];
   let tab = 'all';
-  const PLACE = { banner: 'Banner', timeline: 'Timeline', both: 'Banner + Timeline' };
+  // แต่ละส่วนแยกกันเด็ดขาด: หน้านี้โชว์ทีละส่วน (Promotion / Home Banner) ตาม ?type=
+  let section = new URLSearchParams(location.search).get('type') === 'banner' ? 'banner' : 'timeline';
+  const SECTION_HINT = {
+    timeline: 'Promotion แสดงเฉพาะในส่วน Promotion หน้า Home (ถัดจากโพสต์แรกของ Timeline) · รูป 2:1 · เรียงด้วยปุ่มลูกศร บนสุดขึ้นก่อน',
+    banner: 'Home Banner แสดงเฉพาะในแบนเนอร์เลื่อนด้านบนหน้า Home · รูป 3:1 · เรียงด้วยปุ่มลูกศร บนสุดขึ้นก่อน'
+  };
+  function setSection(v) {
+    section = v;
+    document.querySelectorAll('#sec-seg button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+    document.getElementById('btn-new').href = 'admin_ad?type=' + v;
+    document.getElementById('sec-hint').textContent = SECTION_HINT[v];
+    try { history.replaceState(null, '', 'admin_ads?type=' + v); } catch (e) {}
+    renderList();
+  }
+  const mine = () => ads.filter(a => a.placement === section);
   const n = v => Number(v || 0).toLocaleString();
 
   function toast(msg) {
@@ -116,6 +138,7 @@
   function ctr(a) { return a.views ? (a.clicks / a.views * 100).toFixed(1) + '%' : '-'; }
 
   function renderStats() {
+    const ads = mine();
     const live = ads.filter(a => statusOf(a) === 'live').length;
     const v = ads.reduce((s, a) => s + Number(a.views || 0), 0);
     const c = ads.reduce((s, a) => s + Number(a.clicks || 0), 0);
@@ -128,7 +151,8 @@
 
   function renderList() {
     renderStats();
-    const list = ads.filter(a => {
+    const all = mine();
+    const list = all.filter(a => {
       const st = statusOf(a);
       if (tab === 'live') return st === 'live';
       if (tab === 'sched') return st === 'sched';
@@ -136,10 +160,14 @@
       return true;
     });
     const box = document.getElementById('ad-list');
-    if (!list.length) { box.innerHTML = '<div class="empty-state">ยังไม่มีโฆษณา</div>'; return; }
-    box.innerHTML = list.map(a => {
+    box.innerHTML = list.length ? list.map(a => rowHtml(a, all)).join('')
+      : `<div class="empty-state">ยังไม่มี${section === 'banner' ? ' Home Banner' : ' Promotion'}</div>`;
+  }
+
+  function rowHtml(a, all) {
+    { // แถวโฆษณา 1 อัน (ลูกศรเลื่อนลำดับภายในส่วนเดียวกัน)
       const st = statusOf(a);
-      const idx = ads.indexOf(a);
+      const idx = all.indexOf(a);
       const badge = { live: '<span class="badge b-live">Live</span>', sched: '<span class="badge b-sched">Scheduled</span>', ended: '<span class="badge b-ended">Ended</span>', off: '<span class="badge b-off">Off</span>' }[st];
       const when = a.startsAt || a.endsAt
         ? `<span><i class="fa-regular fa-calendar"></i> ${escapeHtml(dt(a.startsAt) || 'now')} → ${escapeHtml(dt(a.endsAt) || 'no end')}</span>` : '<span><i class="fa-regular fa-calendar"></i> Always</span>';
@@ -147,7 +175,7 @@
         <div class="ad-row">
           <a class="ad-thumb" href="admin_ad?id=${a.id}">${BLM48Ads.renderArt(a)}</a>
           <a class="ad-info" href="admin_ad?id=${a.id}">
-            <div class="ad-name">${escapeHtml(a.title)} ${badge}<span class="badge b-place">${PLACE[a.placement] || a.placement}</span></div>
+            <div class="ad-name">${escapeHtml(a.title)} ${badge}</div>
             <div class="ad-sub">
               ${when}
               <span><i class="fa-regular fa-eye"></i> ${n(a.views)}${a.todayViews ? ` (+${n(a.todayViews)} today)` : ''}</span>
@@ -156,10 +184,10 @@
           </a>
           <div class="ad-ctl">
             <button type="button" class="icon-btn" aria-label="Move up" ${idx === 0 ? 'disabled' : ''} onclick="move(${a.id}, -1, this)"><i class="fa-solid fa-chevron-up"></i></button>
-            <button type="button" class="icon-btn" aria-label="Move down" ${idx === ads.length - 1 ? 'disabled' : ''} onclick="move(${a.id}, 1, this)"><i class="fa-solid fa-chevron-down"></i></button>
+            <button type="button" class="icon-btn" aria-label="Move down" ${idx === all.length - 1 ? 'disabled' : ''} onclick="move(${a.id}, 1, this)"><i class="fa-solid fa-chevron-down"></i></button>
           </div>
         </div>`;
-    }).join('');
+    }
   }
 
   async function move(id, dir, btn) {
@@ -185,6 +213,7 @@
       return;
     }
     document.getElementById('page-content').style.display = 'block';
+    setSection(section);
     load();
   });
   window.addEventListener('pageshow', e => { if (e.persisted && user) load(); });

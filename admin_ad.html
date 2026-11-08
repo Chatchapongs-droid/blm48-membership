@@ -28,9 +28,11 @@
         #page-content { display: none; }
         .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 30px 20px; }
 
+        .sec-chip { display: inline-flex; align-items: center; gap: 7px; background: #222; color: #fff; font-size: 13px; font-weight: 700; padding: 6px 13px; border-radius: 20px; }
+        .hint { font-size: 12px; color: #767676; margin: 6px 0 12px; line-height: 1.5; }
         .pv-label { font-size: 12px; font-weight: 700; color: #767676; text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 6px; }
         .pv-banner { border-radius: 12px; overflow: hidden; border: 1px solid #eee; }
-        .pv-timeline { border: 1px solid #eee; border-radius: 12px; overflow: hidden; margin-top: 12px; }
+        .pv-timeline { border: 1px solid #eee; border-radius: 12px; overflow: hidden; }
         .pv-timeline #timeline-promo { margin: 0; border-bottom: none; }
 
         .sec { font-size: 15px; font-weight: 700; color: #222; margin: 22px 0 8px; }
@@ -80,7 +82,7 @@
 <body>
 
 <div class="top-navigation-bar">
-    <button type="button" class="back-circle-btn" onclick="blm48Back('admin_ads')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin_ads?type=' + ad.placement)" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
     <div class="top-bar-title" id="page-title">New Ad</div>
 </div>
 
@@ -89,10 +91,12 @@
     <div id="page-content">
         <div id="loading" class="loading-state" hidden><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
         <div id="editor">
+            <div class="sec-chip" id="sec-chip"></div>
+            <div class="hint" id="place-hint"></div>
             <div class="pv-label" id="pv-banner-label">Preview · Home banner</div>
             <div class="pv-banner" id="pv-banner"></div>
             <div id="pv-timeline-wrap">
-                <div class="pv-label" style="margin-top:14px">Preview · Timeline card</div>
+                <div class="pv-label">Preview · Promotion</div>
                 <div class="pv-timeline" id="pv-timeline"></div>
             </div>
 
@@ -109,7 +113,7 @@
                         <button type="button" class="btn" id="btn-img" onclick="pick('image')"><i class="fa-solid fa-upload"></i> Upload banner</button>
                         <button type="button" class="btn ghost" id="btn-img-rm" onclick="setImg('imageUrl', null)" hidden><i class="fa-solid fa-trash"></i> Remove</button>
                     </div>
-                    <small>แนะนำรูปแนวนอน 3:1 (เช่น 1500 × 500 px) ใช้รูปเดียวกันทั้งแบนเนอร์และการ์ด Timeline</small>
+                    <small id="img-hint"></small>
                 </div>
             </div>
             <div id="mode-design">
@@ -146,7 +150,7 @@
                 <input class="inp" id="f-cta" maxlength="20" placeholder="ดูเลย">
             </div>
 
-            <div class="sec">ปลายทางและตำแหน่ง</div>
+            <div class="sec">ปลายทาง</div>
             <div class="field">
                 <label for="f-dest">กดแล้วไปที่</label>
                 <select class="inp" id="f-dest"></select>
@@ -155,14 +159,6 @@
                 <label for="f-link">ลิงก์</label>
                 <input class="inp" id="f-link" placeholder="เช่น theater_event?id=4 หรือ https://...">
                 <small>หน้าในแอป (เช่น <b>theater_event?id=4</b>, <b>product?id=...</b>) หรือเว็บภายนอกที่ขึ้นต้นด้วย https://</small>
-            </div>
-            <div class="field">
-                <label>แสดงที่</label>
-                <div class="seg" id="place-seg">
-                    <button type="button" data-v="both" onclick="setPlace('both')">ทั้งสองที่</button>
-                    <button type="button" data-v="banner" onclick="setPlace('banner')">แบนเนอร์ Home</button>
-                    <button type="button" data-v="timeline" onclick="setPlace('timeline')">Timeline</button>
-                </div>
             </div>
 
             <div class="sec">ช่วงเวลา</div>
@@ -207,7 +203,7 @@
   let user = null;
   const adId = parseInt(new URLSearchParams(location.search).get('id') || '0', 10) || null;
   const THEME_SWATCH = { yellow: 'linear-gradient(135deg,#ffd43b,#fff3bf)', pink: 'linear-gradient(135deg,#ff8fab,#ffe3ec)', blue: 'linear-gradient(135deg,#74b4ff,#e3f0ff)', dark: 'linear-gradient(135deg,#17171c,#3a3a45)' };
-  let ad = { title: '', subtitle: '', kicker: '', ctaLabel: '', linkUrl: 'theaters', imageUrl: null, photoUrl: null, theme: 'yellow', placement: 'both', isActive: true, startsAt: null, endsAt: null };
+  let ad = { title: '', subtitle: '', kicker: '', ctaLabel: '', linkUrl: 'theaters', imageUrl: null, photoUrl: null, theme: 'yellow', placement: new URLSearchParams(location.search).get('type') === 'banner' ? 'banner' : 'timeline', isActive: true, startsAt: null, endsAt: null };
   let mode = 'design';
   let uploadTarget = null;
   const $ = id => document.getElementById(id);
@@ -236,7 +232,15 @@
   }
   function setPlace(p) {
     ad.placement = p;
-    document.querySelectorAll('#place-seg button').forEach(b => b.classList.toggle('on', b.dataset.v === p));
+    // โฆษณาอยู่ส่วนเดียวตลอด (เลือกตอนกด New จากหน้ารายการ) ย้ายข้ามส่วนไม่ได้
+    $('sec-chip').innerHTML = p === 'banner' ? '<i class="fa-regular fa-images"></i> Home Banner' : '<i class="fa-solid fa-bullhorn"></i> Promotion';
+    if (!adId) $('page-title').textContent = p === 'banner' ? 'New Home Banner' : 'New Promotion';
+    $('place-hint').textContent = p === 'banner'
+      ? 'แบนเนอร์เลื่อนด้านบนหน้า Home (รูป 3:1)'
+      : 'ส่วน Promotion ในหน้า Home ถัดจากโพสต์แรกของ Timeline (รูป 2:1 + หัวข้อ + ปุ่ม)';
+    $('img-hint').textContent = p === 'banner'
+      ? 'แนะนำรูปแนวนอน 3:1 เช่น 1500 × 500 px'
+      : 'แนะนำรูปแนวนอน 2:1 เช่น 1200 × 600 px (รูปจะถูกครอปให้เป็น 2:1)';
     renderPreview();
   }
   function setTheme(t) {
@@ -279,20 +283,11 @@
   function renderPreview() {
     readForm();
     const e = effective();
-    const showBanner = e.placement !== 'timeline';
-    const showTl = e.placement !== 'banner';
+    const showBanner = e.placement === 'banner';
     $('pv-banner-label').hidden = $('pv-banner').hidden = !showBanner;
     $('pv-banner').innerHTML = showBanner ? BLM48Ads.renderArt(e) : '';
-    $('pv-timeline-wrap').hidden = !showTl;
-    if (showTl) {
-      $('pv-timeline').innerHTML = `
-        <section id="timeline-promo">
-          <div class="tp-head"><div class="tp-title"><i class="fa-solid fa-bullhorn"></i> กิจกรรมแนะนำ</div><span class="tp-tag">BLM48 Membership</span></div>
-          <div class="tp-row single"><div class="tp-card">${BLM48Ads.renderArt(e)}
-            <div class="tp-foot"><div class="tp-info"><div class="tp-name">${escapeHtml(e.title)}</div>${e.subtitle ? `<div class="tp-desc">${escapeHtml(e.subtitle)}</div>` : ''}</div>
-            <span class="tp-btn">${escapeHtml(e.ctaLabel || 'ดูเลย')}</span></div></div></div>
-        </section>`;
-    }
+    $('pv-timeline-wrap').hidden = showBanner;
+    $('pv-timeline').innerHTML = showBanner ? '' : `<section id="timeline-promo">${BLM48Ads.promoSectionHtml([e], { preview: true })}</section>`;
   }
 
   // ===== อัปโหลดรูป =====
@@ -369,7 +364,7 @@
     if (!res || res.status !== 'success') { btn.disabled = false; btn.classList.remove('confirm'); toast((res && res.message) || 'ลบไม่สำเร็จ'); return; }
     try { localStorage.removeItem('blm48_app_ads_cache'); } catch (e) {}
     toast('ลบโฆษณาแล้ว');
-    setTimeout(() => blm48Replace('admin_ads'), 800);
+    setTimeout(() => blm48Replace('admin_ads?type=' + ad.placement), 800);
   }
 
   // ===== โหลด / เติมฟอร์ม =====
@@ -385,7 +380,7 @@
     $('f-end').value = toLocalInput(ad.endsAt);
     $('f-active').checked = ad.isActive !== false;
     setTheme(ad.theme || 'yellow');
-    setPlace(ad.placement || 'both');
+    setPlace(ad.placement === 'banner' ? 'banner' : 'timeline');
     syncUploadUi();
     setMode(ad.imageUrl ? 'image' : 'design');
   }
