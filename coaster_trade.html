@@ -102,6 +102,38 @@
         .status-tag.done { background: #ebfbee; color: #2b8a3e; }
         .status-tag.cancelled { background: #f1f3f5; color: #6b6b6b; }
 
+        /* offers */
+        .l-offers { margin-top: 10px; font-size: 12.5px; color: #555; font-weight: 600; }
+        .offer-row { border: 1px solid #f1f3f5; border-radius: 14px; padding: 10px; margin-top: 8px; }
+        .offer-main { display: flex; gap: 10px; align-items: center; }
+        .offer-thumb { width: 64px; flex-shrink: 0; }
+        .offer-info { flex: 1; min-width: 0; }
+        .offer-who { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+        .offer-row .l-actions { margin-top: 10px; }
+        .offer-row .confirm-row { margin-top: 10px; }
+        .sent-offer { display: flex; gap: 10px; align-items: center; margin-top: 12px; background: #f8f9fa; border-radius: 14px; padding: 10px; }
+        .sent-thumb { width: 56px; flex-shrink: 0; }
+        .sent-text { font-size: 13px; line-height: 1.5; color: #444; }
+        .sec-title { margin: 18px 12px 0; font-size: 15px; font-weight: 700; }
+
+        /* offer picker: collection chips + 2x5 pages, swipe left/right (Gift sheet style) */
+        .offer-chips { padding: 0 0 10px; }
+        .offer-chips .chip { padding: 5px 12px; font-size: 12.5px; }
+        .offer-pager-wrap { position: relative; }
+        .offer-pager { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+        .offer-pager::-webkit-scrollbar { display: none; }
+        .offer-page { flex: 0 0 100%; scroll-snap-align: start; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, auto); gap: 8px 6px; align-content: start; padding: 2px; }
+        .offer-page .pick-name { font-size: 10.5px; }
+        .offer-page .pick-count { font-size: 9.5px; padding: 0 5px; }
+        .offer-page .pick-check { width: 17px; height: 17px; font-size: 9px; }
+        .pager-dots { display: flex; justify-content: center; gap: 10px; padding: 10px 0 2px; min-height: 18px; }
+        .pager-dot { width: 8px; height: 8px; border-radius: 50%; background: #e3e3e3; border: none; padding: 0; cursor: pointer; transition: background .2s; }
+        .pager-dot.active { background: #9a9a9a; }
+        .pager-arrow { display: none; position: absolute; top: 40%; transform: translateY(-50%); width: 30px; height: 30px; border-radius: 50%; border: none; background: rgba(255,255,255,.95); box-shadow: 0 2px 8px rgba(0,0,0,.15); color: #555; font-size: 13px; cursor: pointer; z-index: 2; align-items: center; justify-content: center; }
+        .pager-arrow.prev { left: -6px; }
+        .pager-arrow.next { right: -6px; }
+        @media (hover: hover) and (pointer: fine) { .pager-arrow:not([hidden]) { display: flex; } }
+
         .state { text-align: center; color: #6b6b6b; padding: 40px 20px; font-size: 14px; line-height: 1.6; }
         .state i { display: block; font-size: 30px; margin-bottom: 10px; color: #fcc419; }
         .hidden { display: none !important; }
@@ -159,6 +191,7 @@
   let openListing = null;   // listing id ที่กางแผงแลกอยู่
   let pickedForListing = null;
   let confirmCancel = null;
+  let confirmOffer = null;  // offer id ที่กำลังยืนยันรับ
   let busy = false;
   // ฟอร์มลงประกาศ
   let post = { offerKey: null, mode: 'any', want: [], coll: '' };
@@ -200,7 +233,7 @@
     const notice = document.getElementById('notice');
     let msg = '';
     if (!me.eligible) msg = me.reason;
-    else if (me.usedToday >= me.dailyLimit) msg = 'You have used all your trades for today. Come back tomorrow (cancelling a listing gives the trade back).';
+    else if (me.usedToday >= me.dailyLimit) msg = 'You have used all your trades for today. Come back tomorrow (a cancelled listing or a withdrawn/declined offer gives the trade back).';
     notice.classList.toggle('hidden', !msg);
     document.getElementById('notice-text').textContent = msg;
   }
@@ -260,63 +293,168 @@
 
     let actions = '';
     if (l.mine) {
-      actions = confirmCancel === l.id
-        ? `<div class="confirm-row">Cancel this listing? The Coaster goes back to your Inventory, and you get today's trade back (if it was posted today).</div>
+      // ผู้โพสเลือกเองว่าจะรับข้อเสนอไหน (Accept / Decline) — ไม่มีการแลกทันที
+      const offers = l.offers || [];
+      const offersHtml = offers.length ? `<div class="expand">
+          <div class="expand-title">Offers (${offers.length}) · choose one to accept</div>
+          ${offers.map(o => offerRowHtml(l, o)).join('')}
+        </div>` : `<div class="hint" style="margin:12px 0 0">No offers yet. You'll get a notification when someone sends one.</div>`;
+      actions = offersHtml + (confirmCancel === l.id
+        ? `<div class="confirm-row">Cancel this listing? The Coaster goes back to your Inventory${offers.length ? ' and every offer is returned' : ''}. You get today's trade back if it was posted today.</div>
            <div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=null;rerender()">Keep</button>
            <button type="button" class="btn danger" onclick="doCancel(${l.id})"${busy ? ' disabled' : ''}>Cancel listing</button></div>`
-        : `<div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=${l.id};rerender()">Cancel listing</button></div>`;
+        : `<div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=${l.id};confirmOffer=null;rerender()">Cancel listing</button></div>`);
+    } else if (l.myOffer) {
+      const o = l.myOffer;
+      actions = `<div class="sent-offer">
+          <div class="sent-thumb">${img(o.item.imageUrl)}</div>
+          <div class="sent-text"><span class="status-tag open">Offer sent</span><br>You offered <b>${escapeHtml(o.item.name)}</b>. Waiting for ${escapeHtml((l.owner && l.owner.name) || 'the owner')} to accept or decline.</div>
+        </div>
+        <div class="l-actions"><button type="button" class="btn ghost" onclick="doWithdraw(${o.id})"${busy ? ' disabled' : ''}>Withdraw offer</button></div>`;
     } else {
       const matches = matchesFor(l);
+      const offerBlocked = !canAct() || me.pendingOffers >= me.maxOffers;
       if (openListing !== l.id) {
-        actions = `<div class="l-actions"><button type="button" class="btn" onclick="openTrade(${l.id})"${matches.length && canAct() ? '' : ' disabled'}>
-          ${matches.length ? 'Trade' : 'No matching Coaster'}</button></div>`;
+        actions = `<div class="l-actions"><button type="button" class="btn" onclick="openTrade(${l.id})"${matches.length && !offerBlocked ? '' : ' disabled'}>
+          ${!matches.length ? 'No matching Coaster' : me && me.pendingOffers >= me.maxOffers ? '5 pending offers reached' : 'Make offer'}</button></div>`;
       } else {
         const sel = matches.find(c => keyOf(c) === pickedForListing);
+        // ตัวกรองคอลเลกชัน + หน้า 2 แถว x 5 ปัดซ้าย/ขวา (แบบชีต Gift)
+        const colls = [...new Map(matches.map(c => [c.collectionId, c.collectionName])).entries()];
+        if (offerColl !== 'all' && !colls.some(([id]) => id === offerColl)) offerColl = 'all';
+        const shown = matches.map((c, i) => [c, i]).filter(([c]) => offerColl === 'all' || c.collectionId === offerColl);
+        const pages = [];
+        for (let p = 0; p < shown.length; p += OFFER_PER_PAGE) pages.push(shown.slice(p, p + OFFER_PER_PAGE));
         actions = `<div class="expand">
-            <div class="expand-title">Choose a Coaster to give (${matches.length})</div>
-            <div class="pick-grid">${matches.map((c, i) => `
-              <button type="button" class="pick${keyOf(c) === pickedForListing ? ' sel' : ''}" onclick="pickMatch(${l.id}, ${i})">
-                ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
-                ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
-                <div class="pick-name">${escapeHtml(c.name)}</div>
-              </button>`).join('')}</div>
-            ${sel ? `<div class="confirm-row">Give <b>${escapeHtml(sel.name)}</b><br>Get <b>${escapeHtml(l.offer.name)}</b> · Trades cannot be undone</div>` : ''}
+            <div class="expand-title">Choose a Coaster to offer (${matches.length})</div>
+            ${colls.length > 1 ? `<div class="chips offer-chips">
+              <button type="button" class="chip${offerColl === 'all' ? ' active' : ''}" onclick="setOfferColl('all')">All</button>
+              ${colls.map(([id, name]) => `<button type="button" class="chip${offerColl === id ? ' active' : ''}" onclick="setOfferColl('${escapeAttr(id)}')">${escapeHtml(shortColl(name))}</button>`).join('')}
+            </div>` : ''}
+            <div class="offer-pager-wrap">
+              <button type="button" class="pager-arrow prev" onclick="stepOfferPage(-1)" aria-label="Previous page" hidden><i class="fa-solid fa-chevron-left"></i></button>
+              <div class="offer-pager" onscroll="clearTimeout(this._t);this._t=setTimeout(updateOfferDots,60)">${pages.map(page => `
+                <div class="offer-page">${page.map(([c, i]) => `
+                  <button type="button" class="pick${keyOf(c) === pickedForListing ? ' sel' : ''}" onclick="pickMatch(${l.id}, ${i})">
+                    ${img(c.imageUrl)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
+                    ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
+                    <div class="pick-name">${escapeHtml(c.name)}</div>
+                  </button>`).join('')}</div>`).join('')}</div>
+              <button type="button" class="pager-arrow next" onclick="stepOfferPage(1)" aria-label="Next page" hidden><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="pager-dots">${pages.length > 1 ? pages.map((_, i) => `<button type="button" class="pager-dot" onclick="goOfferPage(${i})" aria-label="Page ${i + 1}"></button>`).join('') : ''}</div>
+            ${sel ? `<div class="confirm-row">Offer <b>${escapeHtml(sel.name)}</b> for <b>${escapeHtml(l.offer.name)}</b>.<br>Your Coaster is held until ${escapeHtml((l.owner && l.owner.name) || 'the owner')} accepts or declines. You can withdraw anytime.</div>` : ''}
             <div class="l-actions"><button type="button" class="btn ghost" onclick="openListing=null;pickedForListing=null;rerender()">Close</button>
-              <button type="button" class="btn" onclick="doAccept(${l.id})"${sel && !busy ? '' : ' disabled'}>Confirm trade</button></div>
+              <button type="button" class="btn" onclick="doOffer(${l.id})"${sel && !busy ? '' : ' disabled'}>Send offer</button></div>
           </div>`;
       }
     }
-    return `<div class="listing" id="listing-${l.id}">${head}${body}${actions}</div>`;
+    const count = !l.mine && l.offerCount ? `<div class="l-offers"><i class="fa-regular fa-hand"></i> ${l.offerCount} offer${l.offerCount > 1 ? 's' : ''}</div>` : '';
+    return `<div class="listing" id="listing-${l.id}">${head}${body}${count}${actions}</div>`;
   }
 
-  function openTrade(id) { openListing = id; pickedForListing = null; rerender(); }
-  function rerender() { if (tab === 'board') renderBoard(); else if (tab === 'mine') renderMine(); }
+  // แถวข้อเสนอในประกาศของฉัน: Accept → ยืนยันในแถว / Decline
+  function offerRowHtml(l, o) {
+    const who = o.offerer || {};
+    const confirming = confirmOffer === o.id;
+    return `<div class="offer-row">
+        <div class="offer-main">
+          <div class="offer-thumb">${img(o.item.imageUrl)}</div>
+          <div class="offer-info">
+            <div class="offer-who"><img class="l-avatar" style="width:22px;height:22px" src="${escapeAttr(who.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(who.username)} draggable="false">
+              <span${profileLinkAttr(who.username)}>${escapeHtml(who.name || '')}</span></div>
+            <div class="l-name">${escapeHtml(o.item.name)}</div>
+            <div class="l-coll">${escapeHtml(o.item.collectionName || '')} · ${timeAgo(o.createdAt)}</div>
+          </div>
+        </div>
+        ${confirming ? `<div class="confirm-row">Give <b>${escapeHtml(l.offer.name)}</b>, get <b>${escapeHtml(o.item.name)}</b>?${(l.offers || []).length > 1 ? ' Other offers will be returned.' : ''} Trades cannot be undone.</div>
+          <div class="l-actions"><button type="button" class="btn ghost" onclick="confirmOffer=null;rerender()">Back</button>
+            <button type="button" class="btn" onclick="doAcceptOffer(${o.id})"${busy ? ' disabled' : ''}>Confirm trade</button></div>`
+        : `<div class="l-actions"><button type="button" class="btn ghost" onclick="doDecline(${o.id})"${busy ? ' disabled' : ''}>Decline</button>
+            <button type="button" class="btn" onclick="confirmOffer=${o.id};confirmCancel=null;rerender()">Accept</button></div>`}
+      </div>`;
+  }
 
-  async function doAccept(id) {
+  function openTrade(id) { openListing = id; pickedForListing = null; offerColl = 'all'; rerender(); }
+  // วาดใหม่โดยคงหน้าที่ปัดอยู่ของแผงเลือก Coaster
+  function rerender() {
+    const pager = document.querySelector('.offer-pager');
+    const left = pager ? pager.scrollLeft : 0;
+    if (tab === 'board') renderBoard(); else if (tab === 'mine') renderMine();
+    const next = document.querySelector('.offer-pager');
+    if (next) { next.scrollLeft = left; updateOfferDots(); }
+  }
+
+  // ---- แผงเลือก Coaster ที่จะเสนอ: กรองคอลเลกชัน + หน้า 2x5 ปัดซ้าย/ขวา ----
+  const OFFER_PER_PAGE = 10;
+  let offerColl = 'all';
+  const shortColl = (name) => {
+    const q = String(name || '').match(/["“](.+?)["”]/);   // BLM48 Limited Coaster "BINGO!" → BINGO!
+    return q ? q[1] : String(name || '');
+  };
+  function setOfferColl(id) {
+    offerColl = id;
+    if (tab === 'board') renderBoard(); else renderMine();   // คอลเลกชันใหม่ เริ่มหน้าแรก
+    const pager = document.querySelector('.offer-pager');
+    if (pager) { pager.scrollLeft = 0; updateOfferDots(); }
+  }
+  function offerPageInfo() {
+    const pager = document.querySelector('.offer-pager');
+    if (!pager) return null;
+    const width = Math.max(1, pager.clientWidth);
+    return { pager, width, count: pager.querySelectorAll('.offer-page').length, page: Math.round(pager.scrollLeft / width) };
+  }
+  function updateOfferDots() {
+    const info = offerPageInfo();
+    if (!info) return;
+    document.querySelectorAll('.pager-dot').forEach((d, i) => d.classList.toggle('active', i === info.page));
+    const wrap = info.pager.parentElement;
+    wrap.querySelector('.pager-arrow.prev').hidden = info.count < 2 || info.page <= 0;
+    wrap.querySelector('.pager-arrow.next').hidden = info.count < 2 || info.page >= info.count - 1;
+  }
+  function goOfferPage(i) {
+    const info = offerPageInfo();
+    if (!info) return;
+    info.pager.scrollTo({ left: Math.max(0, Math.min(info.count - 1, i)) * info.width, behavior: 'smooth' });
+  }
+  function stepOfferPage(d) { const info = offerPageInfo(); if (info) goOfferPage(info.page + d); }
+
+  // ทำรายการแล้วรีโหลดทั้งบอร์ดและแท็บของฉัน
+  async function runAction(call, okMsg, failMsg) {
+    if (busy) return null;
+    busy = true; rerender();
+    const res = await call();
+    busy = false;
+    const ok = res && res.status === 'success';
+    toast(ok ? okMsg(res) : ((res && res.message) || failMsg));
+    if (ok) { openListing = null; pickedForListing = null; confirmOffer = null; confirmCancel = null; }
+    await loadAll();
+    if (tab === 'mine') await loadMine();
+    return ok;
+  }
+
+  function doOffer(id) {
     const l = listings.find(x => x.id === id);
     const c = l && matchesFor(l).find(x => keyOf(x) === pickedForListing);
-    if (!c || busy) return;
-    busy = true; rerender();
-    const res = await blm48AcceptCoasterTrade(username, id, c.inventoryId);
-    busy = false;
-    if (res && res.status === 'success') {
-      toast(`Trade complete! You got ${l.offer.name}`);
-      openListing = null; pickedForListing = null;
-    } else {
-      toast((res && res.message) || 'Trade failed. Please try again.');
-    }
-    await loadAll();
+    if (!c) return;
+    runAction(() => blm48MakeCoasterOffer(username, id, c.inventoryId),
+      () => `Offer sent! We'll notify you when ${(l.owner && l.owner.name) || 'the owner'} responds`, 'Could not send the offer. Please try again.');
+  }
+  function doWithdraw(offerId) {
+    runAction(() => blm48WithdrawCoasterOffer(username, offerId),
+      () => 'Offer withdrawn. Your Coaster is back in your Inventory', 'Something went wrong. Please try again.');
+  }
+  function doDecline(offerId) {
+    runAction(() => blm48DeclineCoasterOffer(username, offerId), () => 'Offer declined', 'Something went wrong. Please try again.');
+  }
+  function doAcceptOffer(offerId) {
+    runAction(() => blm48AcceptCoasterOffer(username, offerId),
+      (res) => `Trade complete! You got ${(res.received && res.received.name) || 'the Coaster'}`, 'Trade failed. Please try again.');
   }
 
-  async function doCancel(id) {
-    if (busy) return;
-    busy = true; rerender();
-    const res = await blm48CancelCoasterTrade(username, id);
-    busy = false;
-    confirmCancel = null;
-    toast(res && res.status === 'success' ? 'Listing cancelled. The Coaster is back in your Inventory' : ((res && res.message) || 'Something went wrong. Please try again.'));
-    await loadAll();
-    if (tab === 'mine') loadMine();
+  function doCancel(id) {
+    runAction(() => blm48CancelCoasterTrade(username, id),
+      () => 'Listing cancelled. The Coaster is back in your Inventory', 'Something went wrong. Please try again.');
   }
 
   // ---------------- Post ----------------
@@ -420,16 +558,43 @@
   }
 
   // ---------------- Mine ----------------
-  let mine = [];
+  let mine = [];        // ประกาศของฉัน (+ แลกทันทีแบบเก่า)
+  let myOffers = [];    // ข้อเสนอที่ฉันส่ง
   async function loadMine() {
     const res = await blm48GetMyCoasterTrades(username);
-    mine = Array.isArray(res) ? res : [];
+    mine = (res && Array.isArray(res.listings)) ? res.listings : [];
+    myOffers = (res && Array.isArray(res.offers)) ? res.offers : [];
     renderMine();
+  }
+  const OFFER_TAG = {
+    pending: '<span class="status-tag open">Pending</span>',
+    accepted: '<span class="status-tag done">Accepted</span>',
+    declined: '<span class="status-tag cancelled">Declined</span>',
+    returned: '<span class="status-tag cancelled">Returned</span>',
+  };
+  function myOfferHtml(o) {
+    const l = o.listing || {};
+    const owner = l.owner || {};
+    const note = o.status === 'returned' ? 'Listing closed, your Coaster came back'
+      : o.status === 'declined' ? 'Your Coaster came back' : o.status === 'pending' ? 'Waiting for the owner' : timeAgo(o.closedAt || o.createdAt);
+    return `<div class="listing"><div class="l-head">
+        <img class="l-avatar" src="${escapeAttr(owner.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(owner.username)} draggable="false">
+        <div class="l-owner">Offer to ${escapeHtml(owner.name || '')}</div>${OFFER_TAG[o.status] || ''}</div>
+      <div class="l-body">
+        <div><div class="l-side-label">You offer</div>${img(o.item.imageUrl)}<div class="l-name">${escapeHtml(o.item.name)}</div></div>
+        <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
+        <div><div class="l-side-label">For ${rarBadge(l.rarity)}</div>${img(l.offer && l.offer.imageUrl)}<div class="l-name">${escapeHtml((l.offer && l.offer.name) || '')}</div></div>
+      </div>
+      <div class="l-time" style="margin-top:8px">${escapeHtml(note)}</div>
+      ${o.status === 'pending' ? `<div class="l-actions"><button type="button" class="btn ghost" onclick="doWithdraw(${o.id})"${busy ? ' disabled' : ''}>Withdraw offer</button></div>` : ''}
+    </div>`;
   }
   function renderMine() {
     const el = document.getElementById('mine-list');
-    if (!mine.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-clock-rotate-left"></i>No trade history yet</div>`; return; }
-    el.innerHTML = mine.map(t => {
+    if (!mine.length && !myOffers.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-clock-rotate-left"></i>No trade history yet</div>`; return; }
+    const offersSection = myOffers.length ? `<div class="sec-title">Offers I sent</div>` + myOffers.map(myOfferHtml).join('') : '';
+    const listingsSection = mine.length ? `<div class="sec-title">My listings</div>` : '';
+    el.innerHTML = listingsSection + mine.map(t => {
       if (t.status === 'open') return listingHtml(t);
       const iTook = t.taker && t.taker.mine;
       const gave = iTook ? t.received : t.offer;
@@ -450,7 +615,7 @@
           <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
           <div><div class="l-side-label">Received ${rarBadge(t.rarity)}</div>${img(got.imageUrl)}<div class="l-name">${escapeHtml(got.name)}</div></div>
         </div><div class="l-time" style="margin-top:8px;text-align:right">${when}</div></div>`;
-    }).join('');
+    }).join('') + offersSection;
   }
 
   // ---------------- load ----------------

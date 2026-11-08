@@ -215,9 +215,13 @@ function blm48CreateCoasterTrade(username, inventoryId, want) {
   return blm48Rpc('create_coaster_trade', { p_username: username, p_inventory_id: inventoryId, p_want: want || [] });
 }
 function blm48CancelCoasterTrade(username, tradeId) { return blm48Rpc('cancel_coaster_trade', { p_username: username, p_trade_id: tradeId }); }
-function blm48AcceptCoasterTrade(username, tradeId, inventoryId) {
-  return blm48Rpc('accept_coaster_trade', { p_username: username, p_trade_id: tradeId, p_inventory_id: inventoryId });
+// ข้อเสนอแลก: ส่ง/ถอน (ผู้เสนอ), รับ/ปฏิเสธ (เจ้าของประกาศ) — ไม่มีการแลกทันทีแล้ว
+function blm48MakeCoasterOffer(username, tradeId, inventoryId) {
+  return blm48Rpc('make_coaster_offer', { p_username: username, p_trade_id: tradeId, p_inventory_id: inventoryId });
 }
+function blm48WithdrawCoasterOffer(username, offerId) { return blm48Rpc('withdraw_coaster_offer', { p_username: username, p_offer_id: offerId }); }
+function blm48AcceptCoasterOffer(username, offerId) { return blm48Rpc('accept_coaster_offer', { p_username: username, p_offer_id: offerId }); }
+function blm48DeclineCoasterOffer(username, offerId) { return blm48Rpc('decline_coaster_offer', { p_username: username, p_offer_id: offerId }); }
 function blm48GetGiftWallet(username) {
   return blm48Rpc('get_gift_wallet', { p_username: username });
 }
