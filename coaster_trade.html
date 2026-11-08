@@ -75,6 +75,11 @@
         .pick { position: relative; border: 2px solid transparent; border-radius: 14px; padding: 0; background: none; cursor: pointer; text-align: left; font-family: inherit; }
         .pick.sel { border-color: #fcc419; }
         .pick .coaster-img { border-radius: 12px; }
+        .wm-wrap { position: relative; border-radius: 14px; overflow: hidden; }
+        .pick .wm-wrap { border-radius: 12px; }
+        .wm-wrap::after { content: ''; position: absolute; inset: 0; pointer-events: auto; -webkit-touch-callout: none; user-select: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='110'%3E%3Ctext x='80' y='60' text-anchor='middle' transform='rotate(-28 80 55)' font-family='Quicksand,Arial,sans-serif' font-size='17' font-weight='700' letter-spacing='1' fill='%23ffffff' fill-opacity='0.6' stroke='%23000000' stroke-opacity='0.18' stroke-width='0.6'%3EBLM48 TRADE%3C/text%3E%3C/svg%3E");
+            background-size: 62% auto; background-position: center; }
         .pick-count { position: absolute; top: 4px; right: 4px; background: rgba(34,34,34,.75); color: #fff; font-size: 10.5px; font-weight: 700; border-radius: 8px; padding: 1px 6px; }
         .pick-check { position: absolute; top: 4px; left: 4px; width: 20px; height: 20px; border-radius: 50%; background: #fcc419; color: #222; font-size: 11px; display: none; align-items: center; justify-content: center; }
         .pick.sel .pick-check { display: flex; }
@@ -160,7 +165,8 @@
 
   const keyOf = (c) => c.collectionId + '|' + c.name;
   const rarBadge = (r) => r === 'SSR' ? '<span class="rar ssr">SSR</span>' : '<span class="rar">Normal</span>';
-  const img = (url) => `<img class="coaster-img" src="${escapeAttr(url || '')}" alt="" draggable="false" loading="lazy">`;
+  // ลายน้ำ "BLM48 TRADE" ทับรูปตัวอย่าง (กันเอารูปไปใช้ต่อ) — ชั้นบนรับการแตะแทนรูป
+  const img = (url) => `<div class="wm-wrap"><img class="coaster-img" src="${escapeAttr(url || '')}" alt="" draggable="false" loading="lazy"></div>`;
 
   function toast(msg) {
     const t = document.getElementById('toast');
