@@ -640,7 +640,7 @@ body {
     document.getElementById('pf-oshi-count').innerText = formatCompactNumber(totalOshi);
 
     // นำฟังก์ชันย่อหน่วยตัวเลขมาใช้ครอบค่าสถิติกระเป๋าเงิน
-    document.getElementById('pf-cookies').innerText = formatCompactNumber(user.cookie || 0);
+    document.getElementById('pf-cookies').innerText = Number(user.cookie || 0).toLocaleString();
     // Points ของแฟนคลับ/แอดมิน = Fan Score ส่วนเมมเบอร์ใช้ Member Score (ใส่ค่าใน loadMemberScore)
     if (isUserMember()) {
       loadMemberScore();
