@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | Point Shop</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/shop-orders.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        :root { --ps-gold: #f2b705; --ps-gold-soft: #fff6d6; --ps-ink: #222; --ps-muted: #6b6b6b; --ps-line: #efefef; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; color: var(--ps-ink); }
+        .page-wrapper { padding: 0 12px 40px; }
+
+        /* ⭐ ยอด Points */
+        .ps-hero { text-align: center; padding: 22px 0 18px; border-bottom: 1px solid var(--ps-line); }
+        .ps-hero-label { font-size: 14px; color: var(--ps-muted); }
+        .ps-hero-value { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; font-size: 34px; font-weight: 700; }
+        .ps-hero-value svg { width: 34px; height: 34px; }
+        .ps-hero-kind { margin-top: 2px; font-size: 13px; color: var(--ps-muted); }
+        .ps-tier { display: inline-block; margin-left: 4px; padding: 1px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+        .ps-tier.gold { background: #fff1c2; color: #8a6200; }
+        .ps-tier.silver { background: #eceff3; color: #4b5563; }
+        .ps-tier.copper { background: #f8e4d6; color: #8a4b22; }
+
+        .ps-goal { margin: 14px auto 0; max-width: 420px; text-align: left; }
+        .ps-goal-text { font-size: 13px; color: #444; display: flex; justify-content: space-between; gap: 8px; }
+        .ps-goal-text b { color: var(--ps-ink); }
+        .ps-bar { height: 8px; border-radius: 999px; background: #f1f1f3; overflow: hidden; margin-top: 6px; }
+        .ps-bar > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffd43b, #f2b705); }
+
+        /* แท็บ Token / Cookie */
+        .ps-tabs { display: flex; margin-top: 6px; border-bottom: 1px solid var(--ps-line); }
+        .ps-tab {
+            flex: 1; background: none; border: none; cursor: pointer; position: relative;
+            padding: 13px 0 12px; font-family: inherit; font-size: 15px; font-weight: 600; color: #6b6b6b;
+        }
+        .ps-tab::after {
+            content: ''; position: absolute; left: 25%; right: 25%; bottom: -1px; height: 3px;
+            border-radius: 3px 3px 0 0; background: var(--ps-gold); transform: scaleX(0); transition: transform .2s ease;
+        }
+        .ps-tab.active { color: var(--ps-ink); font-weight: 700; }
+        .ps-tab.active::after { transform: scaleX(1); }
+
+        /* การ์ดแพ็ก */
+        .ps-list { display: flex; flex-direction: column; gap: 12px; padding-top: 16px; }
+        .ps-pack { border: 1px solid #ececec; border-radius: 16px; background: #fff; overflow: hidden; }
+        .ps-pack.is-best { border-color: #f6d36b; background: linear-gradient(180deg, #fffaf0, #fff 60%); }
+        .ps-pack-main { display: flex; align-items: center; gap: 12px; padding: 14px; }
+        .ps-pack-icon { width: 56px; height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .ps-pack-icon img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .ps-pack-body { flex: 1; min-width: 0; }
+        .ps-pack-amount { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .ps-bonus { font-size: 11.5px; font-weight: 700; color: #b42318; background: #ffe9e7; border-radius: 999px; padding: 2px 8px; }
+        .ps-best { font-size: 11.5px; font-weight: 700; color: #7a5600; background: #ffe58a; border-radius: 999px; padding: 2px 8px; }
+        .ps-pack-sub { margin-top: 2px; font-size: 12.5px; color: var(--ps-muted); }
+        .ps-pack-sub s { color: #6b6b6b; }
+        .ps-price {
+            flex-shrink: 0; min-width: 96px; border: none; border-radius: 999px; padding: 10px 14px; cursor: pointer;
+            background: #f9d26b; color: #222; font-family: inherit; font-size: 14px; font-weight: 700;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .ps-price:active { transform: scale(0.97); }
+        .ps-price:disabled { background: #f1f1f3; color: #6b6b6b; box-shadow: none; cursor: not-allowed; transform: none; }
+        .ps-need { padding: 0 14px 12px; }
+        .ps-need-text { font-size: 12px; color: var(--ps-muted); }
+        .ps-need .ps-bar { height: 6px; margin-top: 4px; }
+
+        /* ยืนยันแบบขยายในการ์ด (ไม่ใช้ป๊อปอัป) */
+        .ps-confirm { border-top: 1px dashed #e6e6e6; padding: 12px 14px 14px; background: #fcfcfc; }
+        .ps-confirm-text { font-size: 14px; }
+        .ps-warn { margin-top: 8px; padding: 9px 11px; border-radius: 10px; background: #fff4e5; color: #8a4b00; font-size: 12.5px; line-height: 1.55; }
+        .ps-confirm-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .ps-confirm-actions button { flex: 1; border-radius: 999px; padding: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .ps-cancel { background: #fff; border: 1px solid #ddd; color: #444; }
+        .ps-ok { background: #222; border: 1px solid #222; color: #fff; }
+        .ps-ok:disabled { opacity: .6; cursor: wait; }
+
+        .ps-toast { display: none; margin-top: 14px; padding: 12px 14px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+        .ps-toast.ok { display: block; background: #eaf7ee; color: #1f6b35; }
+        .ps-toast.err { display: block; background: #fff1f1; color: #b42318; }
+
+        /* ⏳ ก่อนเปิดร้าน: นับถอยหลัง */
+        .page-wrapper.is-closed > :not(.ps-opening) { display: none !important; }
+        .ps-opening { display: none; text-align: center; padding: 18vh 8px 40px; }
+        .ps-opening.show { display: block; }
+        .ps-opening-icon { width: 64px; height: 64px; }
+        .ps-opening-name { margin-top: 12px; font-size: 22px; font-weight: 700; }
+        .ps-opening-title { margin-top: 6px; font-size: 15px; color: #444; }
+        .ps-countdown { display: flex; justify-content: center; gap: 10px; margin-top: 22px; }
+        .ps-cd-box { min-width: 68px; padding: 12px 4px 10px; border-radius: 14px; background: var(--ps-gold-soft); }
+        .ps-cd-num { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ps-ink); }
+        .ps-cd-unit { margin-top: 2px; font-size: 12px; color: #6b4e00; }
+
+        .ps-section-title { margin: 26px 0 6px; font-size: 15px; font-weight: 700; }
+        .ps-note { font-size: 12.5px; color: var(--ps-muted); line-height: 1.6; }
+        .ps-recent-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--ps-line); font-size: 13.5px; }
+        .ps-recent-row span:last-child { color: var(--ps-muted); white-space: nowrap; }
+    </style>
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-page-title">Point Shop</div>
+</div>
+
+<div class="page-wrapper">
+    <div class="ps-hero">
+        <div class="ps-hero-label">My Points</div>
+        <div class="ps-hero-value">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f2b705"/><circle cx="12" cy="12" r="8.3" fill="#ffd43b" stroke="#e8a900" stroke-width="1"/><path d="M10 16.5V7.6h2.6a2.55 2.55 0 0 1 0 5.1H10" fill="none" stroke="#d99a00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="ps-points">-</span>
+        </div>
+        <div class="ps-hero-kind" id="ps-kind"></div>
+        <div class="ps-goal" id="ps-goal"></div>
+        <div class="ps-toast" id="ps-toast" role="status"></div>
+    </div>
+    <!-- ⏳ ก่อนเปิดร้าน: ซ่อนทั้งหน้า เหลือแค่เวลาเปิดร้าน (ดู .page-wrapper.is-closed) -->
+    <div class="ps-opening" id="ps-opening" aria-live="polite"></div>
+
+    <div class="ps-tabs" role="tablist">
+        <button type="button" class="ps-tab active" data-kind="token" onclick="selectKind('token')">Token</button>
+        <button type="button" class="ps-tab" data-kind="cookie" onclick="selectKind('cookie')">Cookie</button>
+    </div>
+
+    <div class="ps-list" id="ps-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
+
+    <div class="ps-section-title">วิธีได้ Points</div>
+    <p class="ps-note" id="ps-howto"></p>
+
+    <div id="ps-recent-wrap" style="display:none;">
+        <div class="ps-section-title">แลกล่าสุด</div>
+        <div id="ps-recent"></div>
+    </div>
+</div>
+
+<script>
+    const TIER_RULES = [
+        { tier: 'gold', min: 10000, monthly: 1000 },
+        { tier: 'silver', min: 5000, monthly: 500 },
+        { tier: 'copper', min: 0, monthly: 150 },
+    ];
+    const ICONS = {
+        token: 'assets/images/token.png',
+        cookie: 'assets/images/cookies/cookie.png',
+        cookieBig: 'assets/images/cookies/cookie-bag.png',
+    };
+
+    let user = null;
+    let shop = null;           // { scoreKind, points, tier, packages, recent }
+    let currentKind = 'token';
+    let openPackId = null;
+    let busy = false;
+
+    function goBack() { blm48Back('profile'); }
+    const fmt = n => Number(n || 0).toLocaleString();
+    const tierOf = pts => TIER_RULES.find(t => pts >= t.min);
+    const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+    function unitLabel(kind, amount) {
+        return kind === 'token' ? (amount === 1 ? 'Token' : 'Tokens') : (amount === 1 ? 'Cookie' : 'Cookies');
+    }
+
+    function renderHero() {
+        document.getElementById('ps-points').textContent = fmt(shop.points);
+        const kindEl = document.getElementById('ps-kind');
+        kindEl.innerHTML = shop.scoreKind === 'member'
+            ? 'จาก Member Score'
+            : `จาก Fan Score${shop.tier ? `<span class="ps-tier ${shop.tier}">${cap(shop.tier)}</span>` : ''}`;
+
+        // เป้าหมายถัดไป: แพ็กที่ใหญ่ขึ้น = โบนัสมากขึ้น ชวนให้สะสมต่อ
+        const tiers = [...new Set(shop.packages.map(p => p.points))].sort((a, b) => a - b);
+        const next = tiers.find(t => t > shop.points);
+        const goal = document.getElementById('ps-goal');
+        if (!next) {
+            goal.innerHTML = `<div class="ps-goal-text"><span>แลกแพ็กใหญ่สุดได้แล้ว รับโบนัส <b>+30%</b></span></div><div class="ps-bar"><span style="width:100%"></span></div>`;
+            return;
+        }
+        const prev = [...tiers].reverse().find(t => t <= shop.points) || 0;
+        const bonus = (shop.packages.find(p => p.points === next) || {}).bonus || 0;
+        const pct = Math.max(4, Math.min(100, ((shop.points - prev) / (next - prev)) * 100));
+        goal.innerHTML = `
+            <div class="ps-goal-text"><span>อีก <b>${fmt(next - shop.points)} P</b> แลกแพ็ก ${fmt(next)} P${bonus ? ` (โบนัส <b>+${bonus}%</b>)` : ''}</span><span>${fmt(shop.points)} / ${fmt(next)}</span></div>
+            <div class="ps-bar"><span style="width:${pct}%"></span></div>`;
+    }
+
+    function packIcon(p) {
+        if (p.kind === 'token') return ICONS.token;
+        return p.points >= 5000 ? ICONS.cookieBig : ICONS.cookie;
+    }
+
+    // คำเตือนเมื่อแลกแล้ว Fan Score ต่ำกว่าเกณฑ์ระดับสมาชิกปัจจุบัน
+    function tierWarning(p) {
+        if (shop.scoreKind !== 'fan') return '';
+        const before = tierOf(shop.points);
+        const after = tierOf(shop.points - p.points);
+        if (before.tier === after.tier) return '';
+        return `<div class="ps-warn"><i class="fa-solid fa-triangle-exclamation"></i> แลกแล้ว Fan Score จะเหลือ ${fmt(shop.points - p.points)} ระดับสมาชิกจะเปลี่ยนจาก <b>${cap(before.tier)}</b> เป็น <b>${cap(after.tier)}</b> (Monthly Cookie ${fmt(before.monthly)} → ${fmt(after.monthly)})</div>`;
+    }
+
+    function renderList() {
+        const packs = shop.packages.filter(p => p.kind === currentKind);
+        const maxBonus = Math.max(...packs.map(p => p.bonus));
+        document.getElementById('ps-list').innerHTML = packs.map(p => {
+            const affordable = shop.points >= p.points;
+            const can = affordable && shop.isOpen;   // ก่อนเปิดร้าน ดูได้แต่ยังกดแลกไม่ได้
+            const base = p.kind === 'token' ? p.points / 100 : p.points / 10;
+            const isBest = p.bonus === maxBonus && p.bonus > 0;
+            const open = openPackId === p.id && can;
+            return `
+            <div class="ps-pack${isBest ? ' is-best' : ''}">
+                <div class="ps-pack-main">
+                    <div class="ps-pack-icon"><img src="${packIcon(p)}" alt=""></div>
+                    <div class="ps-pack-body">
+                        <div class="ps-pack-amount">${fmt(p.amount)} ${unitLabel(p.kind, p.amount)}
+                            ${p.bonus ? `<span class="ps-bonus">+${p.bonus}%</span>` : ''}
+                            ${isBest ? '<span class="ps-best">คุ้มสุด</span>' : ''}
+                        </div>
+                        <div class="ps-pack-sub">${p.bonus ? `ปกติ <s>${fmt(base)}</s> · โบนัสฟรี +${fmt(p.amount - base)}` : 'อัตราปกติ'}</div>
+                    </div>
+                    <button type="button" class="ps-price" ${can ? '' : 'disabled'} onclick="togglePack('${p.id}')">${fmt(p.points)} P</button>
+                </div>
+                ${affordable ? '' : `<div class="ps-need"><div class="ps-need-text">สะสมอีก ${fmt(p.points - shop.points)} P</div><div class="ps-bar"><span style="width:${Math.max(3, (shop.points / p.points) * 100)}%"></span></div></div>`}
+                ${open ? `
+                <div class="ps-confirm">
+                    <div class="ps-confirm-text">แลก <b>${fmt(p.points)} P</b> เป็น <b>${fmt(p.amount)} ${unitLabel(p.kind, p.amount)}</b>?</div>
+                    ${tierWarning(p)}
+                    <div class="ps-confirm-actions">
+                        <button type="button" class="ps-cancel" onclick="togglePack(null)">ยกเลิก</button>
+                        <button type="button" class="ps-ok" id="ps-ok" onclick="confirmExchange('${p.id}')">ยืนยันแลก</button>
+                    </div>
+                </div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    function renderHowTo() {
+        document.getElementById('ps-howto').textContent = shop.scoreKind === 'member'
+            ? 'Member Score ได้จาก 10 Cookie ที่แฟนส่งให้ = 1 P · 1 Like = 1 P · 1 โพสต์ = 10 P · 1 คอมเมนต์จากแฟน = 2 P'
+            : 'Fan Score เพิ่มทุกครั้งที่ส่ง Cookie หรือ Gift ให้เมมเบอร์ (1 Cookie = 1 P) และเมื่อกดไลก์หรือคอมเมนต์โพสต์ของเมมเบอร์ ยิ่งสะสมไว้แลกแพ็กใหญ่ ยิ่งได้โบนัสมาก';
+    }
+
+    function renderRecent() {
+        const wrap = document.getElementById('ps-recent-wrap');
+        const rows = shop.recent || [];
+        wrap.style.display = rows.length ? '' : 'none';
+        document.getElementById('ps-recent').innerHTML = rows.map(r => `
+            <div class="ps-recent-row">
+                <span>${fmt(r.points)} P → ${fmt(r.amount)} ${unitLabel(r.kind, Number(r.amount))}</span>
+                <span>${new Date(r.at).toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </div>`).join('');
+    }
+
+    // ⏳ นับถอยหลังถึงวันเปิดร้าน (เวลาเปิดมาจากเซิร์ฟเวอร์: _point_shop_open_at)
+    let countdownTimer = null;
+    function renderOpening() {
+        const box = document.getElementById('ps-opening');
+        const closed = !shop.isOpen && !!shop.openAt;
+        document.querySelector('.page-wrapper').classList.toggle('is-closed', closed);
+        if (!closed) {
+            box.classList.remove('show');
+            if (countdownTimer) { clearInterval(countdownTimer); countdownTimer = null; }
+            return;
+        }
+        const openAt = new Date(shop.openAt);
+        const dateText = openAt.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'long', year: 'numeric' });
+        const tick = () => {
+            const ms = openAt.getTime() - Date.now();
+            if (ms <= 0) {
+                clearInterval(countdownTimer); countdownTimer = null;
+                loadShop();
+                return;
+            }
+            const s = Math.floor(ms / 1000);
+            const parts = [[Math.floor(s / 86400), 'วัน'], [Math.floor(s / 3600) % 24, 'ชั่วโมง'], [Math.floor(s / 60) % 60, 'นาที'], [s % 60, 'วินาที']];
+            box.querySelector('.ps-countdown').innerHTML = parts.map(([n, u]) =>
+                `<div class="ps-cd-box"><div class="ps-cd-num">${String(n).padStart(2, '0')}</div><div class="ps-cd-unit">${u}</div></div>`).join('');
+        };
+        box.innerHTML = `
+            <svg class="ps-opening-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f2b705"/><circle cx="12" cy="12" r="8.3" fill="#ffd43b" stroke="#e8a900" stroke-width="1"/><path d="M10 16.5V7.6h2.6a2.55 2.55 0 0 1 0 5.1H10" fill="none" stroke="#d99a00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="ps-opening-name">Point Shop</div>
+            <div class="ps-opening-title">เปิดร้าน ${dateText} เวลา 00:00 น.</div>
+            <div class="ps-countdown"></div>`;
+        box.classList.add('show');
+        tick();
+        if (!countdownTimer) countdownTimer = setInterval(tick, 1000);
+    }
+
+    function renderAll() { renderHero(); renderOpening(); renderList(); renderHowTo(); renderRecent(); }
+
+    function selectKind(kind) {
+        currentKind = kind;
+        openPackId = null;
+        document.querySelectorAll('.ps-tab').forEach(t => t.classList.toggle('active', t.dataset.kind === kind));
+        renderList();
+    }
+
+    function togglePack(id) {
+        openPackId = openPackId === id ? null : id;
+        renderList();
+    }
+
+    function showToast(type, html) {
+        const t = document.getElementById('ps-toast');
+        t.className = 'ps-toast ' + type;
+        t.innerHTML = html;
+    }
+
+    async function confirmExchange(id) {
+        if (busy) return;
+        busy = true;
+        const btn = document.getElementById('ps-ok');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+        try {
+            const res = await blm48ExchangePoints(user.username, id);
+            if (!res || res.status !== 'success') throw new Error((res && res.message) || 'แลกไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ');
+            if (res.wallet) {
+                Object.assign(user, { token: res.wallet.token, cookie: res.wallet.cookie, geToken: res.wallet.geToken, fanCookies: res.wallet.fanCookies });
+                saveUserSession(user);
+            }
+            openPackId = null;
+            showToast('ok', `<i class="fa-solid fa-circle-check"></i> ได้รับ <b>${fmt(res.amount)} ${unitLabel(res.kind, Number(res.amount))}</b> เข้ากระเป๋าแล้ว`);
+            await loadShop();
+        } catch (e) {
+            showToast('err', escapeHtml(e.message || 'แลกไม่สำเร็จ'));
+            renderList();
+        } finally {
+            busy = false;
+        }
+    }
+
+    async function loadShop() {
+        const res = await blm48GetPointShop(user.username);
+        if (!res || res.status !== 'success') {
+            document.getElementById('ps-list').innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml((res && res.message) || 'โหลด Point Shop ไม่สำเร็จ')}</div>`;
+            return;
+        }
+        shop = { ...res, points: Number(res.points) || 0, packages: res.packages || [] };
+        renderAll();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        user = getUserSession();
+        if (!user) { window.location.href = 'login'; return; }
+        loadShop().catch(e => {
+            console.error('point shop error:', e);
+            document.getElementById('ps-list').innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>โหลด Point Shop ไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>`;
+        });
+    });
+</script>
+</body>
+</html>

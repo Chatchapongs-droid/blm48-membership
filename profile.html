@@ -357,6 +357,8 @@ body {
     .stats-bar { grid-template-columns: repeat(3, 1fr); }
     .stat-cookie-img { width: 30px; height: 30px; object-fit: contain; margin: -4px -2px -4px 0; }
     .stat-point-icon { width: 21px; height: 21px; flex-shrink: 0; }
+    .stat-box-link { text-decoration: none; color: inherit; }
+    .stat-link-chev { font-size: 9px; color: #8a8a8a; margin-left: 2px; }
     .stat-topup-btn {
       width: 22px; height: 22px; border-radius: 50%; background: #f7c46c; color: #fff;
       display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
@@ -456,14 +458,14 @@ body {
           </div>
           <div class="stat-title">Cookies</div>
         </div>
-        <!-- ⭐ Points = คะแนนตาม Role: แฟนคลับ/แอดมิน = Fan Score, เมมเบอร์ = Member Score -->
-        <div class="stat-box">
+        <!-- ⭐ Points = คะแนนตาม Role: แฟนคลับ/แอดมิน = Fan Score, เมมเบอร์ = Member Score · กดเพื่อไป Point Shop -->
+        <a href="point_shop" class="stat-box stat-box-link">
           <div class="stat-num">
             <svg class="stat-point-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f2b705"/><circle cx="12" cy="12" r="8.3" fill="#ffd43b" stroke="#e8a900" stroke-width="1"/><path d="M10 16.5V7.6h2.6a2.55 2.55 0 0 1 0 5.1H10" fill="none" stroke="#d99a00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <span id="pf-points">0</span>
           </div>
-          <div class="stat-title">Points</div>
-        </div>
+          <div class="stat-title">Points <i class="fa-solid fa-chevron-right stat-link-chev"></i></div>
+        </a>
       </div>
 
       <!-- 🎭 Event -->
