@@ -116,6 +116,21 @@
             background: none; border: none; color: #999; font-size: 14px; cursor: pointer;
         }
 
+        /* 🎤 แท็บเลือกวง BLM48 / NPT48 (ขีดใต้สีประจำวง) */
+        .group-tabs { display: flex; margin: 0 20px; border-bottom: 1px solid #ececec; }
+        .group-tab {
+            flex: 1; background: none; border: none; cursor: pointer; position: relative;
+            padding: 10px 0 12px; font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-size: 15px; font-weight: 600; color: #8a8a8a; transition: color 0.15s;
+        }
+        .group-tab::after {
+            content: ''; position: absolute; left: 22%; right: 22%; bottom: -1px; height: 3px;
+            border-radius: 3px 3px 0 0; background: var(--group-color, #ffde5b);
+            transform: scaleX(0); transition: transform 0.2s ease;
+        }
+        .group-tab.active { color: #222; font-weight: 700; }
+        .group-tab.active::after { transform: scaleX(1); }
+
         /* ชิปหมวดหมู่ เลื่อนซ้าย-ขวา (เดิมเป็น action sheet ต้องกดเปิดก่อน) */
         .chip-row {
             display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; white-space: nowrap;
@@ -449,6 +464,7 @@
         </a>
 
         <div class="filter-section-container">
+            <div class="group-tabs" id="group-tabs" role="tablist" aria-label="เลือกวง"></div>
             <div class="inv-search-wrap">
                 <i class="fa-solid fa-magnifying-glass inv-search-icon"></i>
                 <input type="text" id="inventory-search-input" class="inv-search-input" placeholder="ค้นหาไอเทมด้วยชื่อ..." oninput="onInventorySearchInput(this.value)">
@@ -530,15 +546,32 @@
         { value: 'all',       label: 'All',             cats: null },
         { value: 'ssr',       label: 'SSR',             cats: ['BLM48 SSR Photo', 'SSR_card'] },
         { value: 'preorder',  label: 'Pre-order',       cats: ['Pre-order'] },
-        { value: 'photobook', label: 'BLM48 Photobook', cats: ['BLM48 Photobook'] },
-        { value: 'photocard', label: 'BLM48 PhotoCard', cats: ['BLM48 PhotoCard'] },
-        { value: 'photoset',  label: 'BLM48 PhotoSet',  cats: ['BLM48 PhotoSet'] },
+        { value: 'photobook', label: 'Photobook',       cats: ['BLM48 Photobook'] },
+        { value: 'photocard', label: 'PhotoCard',       cats: ['BLM48 PhotoCard'] },
+        { value: 'photoset',  label: 'PhotoSet',        cats: ['BLM48 PhotoSet'] },
         { value: 'thankyou',  label: 'Thank You Card',  cats: ['Thank You Card'] },
-        { value: 'cafe',      label: 'BLM48 Cafe',      cats: ['BLM48 Cafe'] },
+        { value: 'cafe',      label: 'Cafe',            cats: ['BLM48 Cafe'] },
         { value: 'coaster',   label: 'Coaster',         cats: ['Coaster'] },
-        { value: 'npt48',     label: 'NPT48',           cats: ['NPT48'] },
-        { value: 'others',   label: 'Other',           cats: ['หมวดหมู่อื่นๆ'] },
+        { value: 'others',    label: 'Other',           cats: ['หมวดหมู่อื่นๆ'] },
     ];
+
+    // 🎤 แยกของตามวง: หมวดที่ขึ้นต้นด้วย "NPT48" เป็นของ NPT48 ที่เหลือเป็นของ BLM48
+    const GROUP_TABS = ['BLM48', 'NPT48'];
+    let currentGroup = 'BLM48';
+    try {
+        const savedGroup = localStorage.getItem('blm48_inv_group');
+        if (savedGroup === 'NPT48') currentGroup = 'NPT48';
+    } catch (e) { /* ignore */ }
+    function groupOfCategory(cat) {
+        return /^NPT48\b/i.test(String(cat || '')) ? 'NPT48' : 'BLM48';
+    }
+    // ชื่อหมวดที่แสดงบนชิป: ตัดชื่อวงที่นำหน้าออก
+    function categoryLabel(cat) {
+        return String(cat || '').replace(/^(BLM48|NPT48)\s+/i, '') || 'Other';
+    }
+    function groupItems() {
+        return (globalInventoryData || []).filter(item => groupOfCategory(item.category) === currentGroup);
+    }
 
     let currentSearchQuery = '';    // คำค้นหาชื่อไอเทม (lowercase แล้ว)
 
@@ -672,45 +705,45 @@
                 return '#ff922b'; // ส้ม
             case 'BLM48 PhotoCard':
                 return '#20c997'; // เขียวมิ้นต์เข้ม
-            case 'NPT48':
-                return '#66cbff'; // ฟ้าประจำวง NPT48
             default:
-                return '#a0a0a0'; // เทา สำหรับหมวดหมู่อื่นๆ
+                // ของ NPT48 ทุกหมวดใช้ฟ้าประจำวง
+                return groupOfCategory(category) === 'NPT48' ? '#66cbff' : '#a0a0a0'; // เทา สำหรับหมวดหมู่อื่นๆ
         }
     }
 
-    // ฟังก์ชันช่วยเช็คว่ามีไอเทมในกลุ่มหลักนี้หรือไม่
+    // ฟังก์ชันช่วยเช็คว่ามีไอเทมในกลุ่มหลักนี้หรือไม่ (เฉพาะวงที่เลือกอยู่)
     function hasCategory(catName) {
-        if (!globalInventoryData) return false;
-        return globalInventoryData.some(item => item.category === catName);
+        return groupItems().some(item => item.category === catName);
     }
 
 
-    // ดึงรายชื่องานย่อย (Sub Collections) ทั้งหมดภายใต้กลุ่มหลัก
-    function getSubCollections(catName) {
-        if (!globalInventoryData) return [];
+    // ดึงรายชื่องานย่อย (Sub Collections) ทั้งหมดภายใต้หมวดที่เลือก (เฉพาะวงที่เลือกอยู่)
+    function getSubCollections(cats) {
         const subs = new Set();
-        globalInventoryData.forEach(item => {
-            if (item.category === catName && item.subCollection) {
+        groupItems().forEach(item => {
+            if (cats.includes(item.category) && item.subCollection) {
                 subs.add(item.subCollection);
             }
         });
         return Array.from(subs).sort((a, b) => a.localeCompare(b, 'th'));
     }
 
+    // ชิปหมวดของวงที่เลือก: BLM48 ใช้ลำดับหมวดเดิม, NPT48 สร้างจากหมวดที่มีของจริง
     function availablePrimaryFilters() {
-        return PRIMARY_FILTERS.filter(f => !f.cats || f.cats.some(c => hasCategory(c)));
+        if (currentGroup === 'BLM48') {
+            return PRIMARY_FILTERS.filter(f => !f.cats || f.cats.some(c => hasCategory(c)));
+        }
+        const cats = Array.from(new Set(groupItems().map(item => item.category)))
+            .sort((a, b) => categoryLabel(a).localeCompare(categoryLabel(b)));
+        return [{ value: 'all', label: 'All', cats: null },
+                ...cats.map(c => ({ value: 'cat:' + c, label: categoryLabel(c), cats: [c] }))];
+    }
+    function currentFilter() {
+        return availablePrimaryFilters().find(f => f.value === currentPrimaryTab) || null;
     }
 
-    // หมวดที่มีตัวกรองย่อยตามชื่องาน/คอลเลกชัน
-    const SUB_FILTER_CATEGORY = {
-        coaster: 'Coaster',
-        thankyou: 'Thank You Card',
-        photoset: 'BLM48 PhotoSet',
-        photobook: 'BLM48 Photobook',
-        photocard: 'BLM48 PhotoCard',
-        npt48: 'NPT48',
-    };
+    // หมวดที่มีตัวกรองย่อยตามชื่องาน/คอลเลกชัน (ของ NPT48 มีตัวกรองย่อยทุกหมวด)
+    const SUB_FILTER_TABS = ['coaster', 'thankyou', 'photoset', 'photobook', 'photocard'];
 
     // ชื่อคอลเลกชันสำหรับแสดงผล: ตัด prefix ภายใน (votemajor_ / gacha_) แล้วขึ้นต้นตัวพิมพ์ใหญ่
     function formatCollectionName(name) {
@@ -719,9 +752,10 @@
     }
 
     function subFilterOptions() {
-        const cat = SUB_FILTER_CATEGORY[currentPrimaryTab];
-        if (!cat) return [];
-        const subs = getSubCollections(cat).map(name => ({ value: name, label: formatCollectionName(name) }));
+        const f = currentFilter();
+        if (!f || !f.cats) return [];
+        if (currentGroup === 'BLM48' && !SUB_FILTER_TABS.includes(f.value)) return [];
+        const subs = getSubCollections(f.cats).map(name => ({ value: name, label: formatCollectionName(name) }));
         return [{ value: 'all', label: 'All' }, ...subs];
     }
 
@@ -748,7 +782,16 @@
     }
 
    function renderFilters() {
-    // ชิปหมวดหลัก (โชว์เฉพาะหมวดที่ผู้ใช้มีไอเทมจริง)
+    // แท็บเลือกวง BLM48 / NPT48
+    const groupTabs = document.getElementById('group-tabs');
+    if (groupTabs) {
+        groupTabs.innerHTML = GROUP_TABS.map(g =>
+            `<button type="button" role="tab" aria-selected="${g === currentGroup}" class="group-tab${g === currentGroup ? ' active' : ''}" style="--group-color:${g === 'NPT48' ? '#66cbff' : '#ffde5b'}" onclick="selectGroup('${g}')">${g}</button>`
+        ).join('');
+    }
+
+    // ชิปหมวดหลัก (โชว์เฉพาะหมวดที่ผู้ใช้มีไอเทมจริงในวงที่เลือก)
+    if (!currentFilter()) currentPrimaryTab = 'all';
     const chips = document.getElementById('filter-chips');
     if (chips) {
         chips.innerHTML = availablePrimaryFilters().map(f =>
@@ -769,6 +812,16 @@
         subPanel.classList.add('hidden');
     }
 }
+
+    function selectGroup(group) {
+        if (group === currentGroup) return;
+        currentGroup = group;
+        currentPrimaryTab = 'all';
+        currentSubTab = 'all';
+        try { localStorage.setItem('blm48_inv_group', group); } catch (e) { /* ignore */ }
+        renderFilters();
+        renderInventoryData();
+    }
 
     function selectPrimaryTab(tabName) {
         currentPrimaryTab = tabName;
@@ -794,22 +847,10 @@ function renderInventoryData() {
     }
 
     // คัดกรองไอเทมตามเงื่อนไขที่เลือก
-    let filteredItems = globalInventoryData.filter(item => {
-        if (currentPrimaryTab === 'cafe' && item.category !== 'BLM48 Cafe') return false;
-        if (currentPrimaryTab === 'coaster' && item.category !== 'Coaster') return false;
-        if (currentPrimaryTab === 'thankyou' && item.category !== 'Thank You Card') return false;
-        
-        // ⭐ เพิ่มเงื่อนไขเช็กสำหรับแท็บ SSR (เช็กเผื่อไว้ให้ทั้ง Name และ ID)
-        if (currentPrimaryTab === 'ssr' && item.category !== 'BLM48 SSR Photo' && item.category !== 'SSR_card') return false;
-
-        if (currentPrimaryTab === 'preorder' && item.category !== 'Pre-order') return false;
-
-        if (currentPrimaryTab === 'photoset' && item.category !== 'BLM48 PhotoSet') return false;
-        if (currentPrimaryTab === 'photobook' && item.category !== 'BLM48 Photobook') return false;
-        if (currentPrimaryTab === 'photocard' && item.category !== 'BLM48 PhotoCard') return false;
-        if (currentPrimaryTab === 'npt48' && item.category !== 'NPT48') return false;
-
-        if (currentPrimaryTab === 'others' && item.category !== 'หมวดหมู่อื่นๆ') return false;
+    const activeFilter = currentFilter();
+    let filteredItems = groupItems().filter(item => {
+        // หมวดที่เลือก (All = ทุกหมวดของวงนี้)
+        if (activeFilter && activeFilter.cats && !activeFilter.cats.includes(item.category)) return false;
 
         // ตัวกรองย่อย
         if (currentSubTab !== 'all' && item.subCollection !== currentSubTab) return false;
@@ -827,6 +868,8 @@ function renderInventoryData() {
             stateBox.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>ไม่พบไอเทมที่ตรงกับ "`;
             stateBox.appendChild(document.createTextNode(currentSearchQuery));
             stateBox.appendChild(document.createTextNode('"'));
+        } else if (groupItems().length === 0) {
+            stateBox.innerHTML = `<i class="fa-solid fa-box-open"></i>ยังไม่มีไอเทมของ ${currentGroup} ในกระเป๋างับ`;
         } else {
             stateBox.innerHTML = `<i class="fa-solid fa-magnifying-glass"></i>ไม่พบไอเทมในหมวดหมู่นี้งับ`;
         }
