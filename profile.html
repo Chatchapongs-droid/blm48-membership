@@ -645,7 +645,7 @@ body {
     if (isUserMember()) {
       loadMemberScore();
     } else {
-      document.getElementById('pf-points').innerText = formatCompactNumber(user.fanCookies || 0);
+      document.getElementById('pf-points').innerText = Number(user.fanCookies || 0).toLocaleString();
     }
 
     if (user.role && user.role.toLowerCase() === 'user') {
@@ -695,7 +695,7 @@ body {
     if (!user || !user.username) return;
     try {
       const s = await blm48GetMemberScore(user.username);
-      if (s && s.total !== undefined) document.getElementById('pf-points').innerText = formatCompactNumber(s.total || 0);
+      if (s && s.total !== undefined) document.getElementById('pf-points').innerText = Number(s.total || 0).toLocaleString();
     } catch (e) { console.error('loadMemberScore error:', e); }
   }
 
