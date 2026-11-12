@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | Top Up Cookies</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/shop-orders.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; }
+        .nav-history-btn {
+            position: absolute; right: 8px; bottom: 6px; height: 44px; padding: 0 8px;
+            display: flex; align-items: center; gap: 6px; text-decoration: none;
+            color: #222; font-size: 15px; font-weight: 500;
+        }
+        .nav-history-btn i { font-size: 18px; }
+
+        .my-cookies { text-align: center; padding: 22px 12px 20px; border-bottom: 1px solid #efefef; }
+        .my-cookies-label { font-size: 15px; color: #444; }
+        .my-cookies-value {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 4px; font-size: 24px; font-weight: 700; color: #222;
+        }
+        .my-cookies-value img { width: 40px; height: 40px; object-fit: contain; }
+        .my-tokens { margin-top: 6px; font-size: 12.5px; color: #767676; }
+
+        .pack-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 12px;
+            padding: 28px 12px 40px;
+        }
+        .pack { display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .pack-img-wrap { position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
+        .pack-img-wrap::after {
+            content: ''; position: absolute; bottom: 4px; left: 16%; right: 16%; height: 9px;
+            border-radius: 50%; background: #efdcf3; z-index: 0;
+        }
+        .pack-img-wrap img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; }
+        .pack-name { margin: 8px 0 8px; font-size: 14px; color: #333; }
+        .pack-btn {
+            width: 100%; border: none; border-radius: 999px; padding: 9px 6px; cursor: pointer;
+            background: #f9d26b; color: #222; font-family: inherit; font-size: 14px; font-weight: 700;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        .pack-btn:active { transform: scale(0.97); }
+        .pack-btn i { font-size: 13px; }
+        .pack-note { padding: 0 16px; font-size: 12.5px; color: #767676; text-align: center; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-page-title">Top Up Cookies</div>
+    <a href="cookie_history" class="nav-history-btn"><i class="fa-solid fa-clock-rotate-left"></i>History</a>
+</div>
+
+<div class="page-wrapper">
+    <div class="my-cookies">
+        <div class="my-cookies-label">My Cookies</div>
+        <div class="my-cookies-value"><img src="assets/images/cookies/cookie.png" alt=""><span id="my-cookies">0</span></div>
+        <div class="my-tokens">Balance: <span id="my-tokens">0</span> Tokens</div>
+    </div>
+
+    <div class="pack-grid" id="pack-grid"></div>
+    <p class="pack-note">กดราคาเพื่อเพิ่มแพ็กลงตะกร้า ชำระด้วย Token แล้วกด Redeem ที่ My Order เพื่อรับคุกกี้เข้ากระเป๋า</p>
+</div>
+
+<script>
+    // แพ็กคุกกี้ (1 Token = 10 Cookies) ต้องตรงกับที่ shop_checkout รับ (refId 10 / 100)
+    const COOKIE_PACKS = [
+        { tokens: 10,  cookies: 100,  img: 'assets/images/cookies/cookie.png' },
+        { tokens: 100, cookies: 1000, img: 'assets/images/cookies/cookie-bag.png' },
+    ];
+
+    let user = null;
+
+    function goBack() {
+        blm48Back('profile');
+    }
+
+    function renderPacks() {
+        document.getElementById('pack-grid').innerHTML = COOKIE_PACKS.map((p, i) => `
+            <div class="pack">
+                <div class="pack-img-wrap"><img src="${p.img}" alt=""></div>
+                <div class="pack-name">${p.cookies.toLocaleString()} Cookies</div>
+                <button type="button" class="pack-btn" onclick="buyPack(${i})"><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</button>
+            </div>`).join('');
+    }
+
+    function renderBalance() {
+        document.getElementById('my-cookies').textContent = Number(user.cookie || 0).toLocaleString();
+        document.getElementById('my-tokens').textContent = Number(user.token || 0).toLocaleString();
+    }
+
+    // เพิ่มแพ็กลงตะกร้าเดียวกับหน้า Shop แล้วไปหน้าตะกร้าเพื่อ Check Out
+    function buyPack(i) {
+        const p = COOKIE_PACKS[i];
+        if (!p || !user) return;
+        blm48Cart.add({
+            kind: 'cookie', refId: String(p.tokens), variant: 1,
+            name: `${p.cookies.toLocaleString()} Cookies`, label: 'Cookie Pack',
+            image: p.img, unitPrice: p.tokens
+        }, 1);
+        window.location.href = 'cart';
+    }
+
+    async function refreshBalance() {
+        try {
+            const wallet = await blm48GetWallet(user.username);
+            if (wallet && wallet.token !== undefined) {
+                user.token = wallet.token;
+                user.cookie = wallet.cookie;
+                user.geToken = wallet.geToken;
+                user.fanCookies = wallet.fanCookies;
+                saveUserSession(user);
+                renderBalance();
+            }
+        } catch (e) { console.error('refreshBalance error:', e); }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        user = getUserSession();
+        if (!user) { window.location.href = 'login'; return; }
+        renderPacks();
+        renderBalance();
+        refreshBalance();
+    });
+</script>
+</body>
+</html>

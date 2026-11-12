@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | Cookies Usage History</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/shop-orders.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; }
+        .ch-list { padding: 0 12px; }
+        .ch-row {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 0; border-bottom: 1px solid #efefef;
+        }
+        .ch-body { flex: 1; min-width: 0; }
+        .ch-title { font-size: 16px; color: #222; }
+        .ch-sub { font-size: 12.5px; color: #767676; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ch-time { font-size: 12.5px; color: #767676; margin-top: 2px; }
+        .ch-amount { flex-shrink: 0; font-size: 17px; font-weight: 700; }
+        .ch-amount.is-minus { color: #cf2f36; }
+        .ch-amount.is-plus { color: #3d8a1c; }
+        .ch-more {
+            display: block; margin: 18px auto 30px; border: 1px solid #e5e5e5; background: #fff; color: #444;
+            border-radius: 999px; padding: 9px 22px; font-family: inherit; font-size: 14px; cursor: pointer;
+        }
+        .ch-more:disabled { color: #aaa; }
+    </style>
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-page-title">Cookies Usage History</div>
+</div>
+
+<div class="page-wrapper">
+    <div class="ch-list" id="ch-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
+    <button type="button" class="ch-more" id="ch-more" style="display:none;" onclick="loadMore()">โหลดเพิ่มเติม</button>
+</div>
+
+<script>
+    const PAGE_SIZE = 50;
+    let user = null;
+    let offset = 0;
+    let loading = false;
+
+    function goBack() {
+        blm48Back('topup_cookies');
+    }
+
+    function formatTime(ts) {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return '-';
+        const date = d.toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'long', year: 'numeric' });
+        const time = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Bangkok', hour: '2-digit', minute: '2-digit', hour12: false });
+        return `${date} ${time}`;
+    }
+
+    function rowHtml(e) {
+        const amt = Number(e.amount) || 0;
+        const sign = amt > 0 ? '+' : '-';
+        return `
+            <div class="ch-row">
+                <div class="ch-body">
+                    <div class="ch-title">${escapeHtml(e.title)}</div>
+                    ${e.subtitle ? `<div class="ch-sub">${escapeHtml(e.subtitle)}</div>` : ''}
+                    <div class="ch-time">${formatTime(e.at)}</div>
+                </div>
+                <div class="ch-amount ${amt > 0 ? 'is-plus' : 'is-minus'}">${sign}${Math.abs(amt).toLocaleString()}</div>
+            </div>`;
+    }
+
+    async function loadMore() {
+        if (loading) return;
+        loading = true;
+        const list = document.getElementById('ch-list');
+        const more = document.getElementById('ch-more');
+        more.disabled = true;
+        try {
+            const res = await blm48GetMyCookieHistory(user.username, PAGE_SIZE, offset);
+            if (!res || res.status !== 'success') throw new Error((res && res.message) || 'load failed');
+            const items = res.items || [];
+            if (offset === 0) {
+                list.innerHTML = items.length
+                    ? ''
+                    : `<div class="empty-state"><i class="fa-solid fa-cookie-bite"></i>ยังไม่มีประวัติการใช้คุกกี้ค่ะ</div>`;
+            }
+            list.insertAdjacentHTML('beforeend', items.map(rowHtml).join(''));
+            offset += items.length;
+            more.style.display = res.hasMore ? 'block' : 'none';
+        } catch (e) {
+            console.error('cookie history error:', e);
+            if (offset === 0) list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>โหลดประวัติไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>`;
+        } finally {
+            loading = false;
+            more.disabled = false;
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        user = getUserSession();
+        if (!user) { window.location.href = 'login'; return; }
+        loadMore();
+    });
+</script>
+</body>
+</html>

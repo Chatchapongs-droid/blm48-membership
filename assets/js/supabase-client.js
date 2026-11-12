@@ -178,6 +178,10 @@ function blm48GetVoteCollections() {
 function blm48GetMyHistory(username) {
   return blm48Rpc('get_my_history', { p_username: username });
 }
+// 🍪 Cookie in/out ledger for cookie_history.html: { status, balance, hasMore, items:[{title, subtitle, amount, at}] }
+function blm48GetMyCookieHistory(username, limit, offset) {
+  return blm48Rpc('get_my_cookie_history', { p_username: username, p_limit: limit || 50, p_offset: offset || 0 });
+}
 
 // 🎁 กระเป๋าของขวัญของ Major Vote: ตอนซื้อของขวัญจะเลือกได้ว่าจะ "โหวตให้เลย" หรือ "เก็บเข้ากระเป๋า"
 // ไว้ก่อน แล้วค่อยเอาของที่เก็บไว้มาโหวตให้ผู้สมัครในแคมเปญที่เปิดรับของขวัญทีหลังก็ได้
