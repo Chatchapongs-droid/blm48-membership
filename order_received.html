@@ -122,7 +122,7 @@
         entry.add = Number(r.amount) || 0;
       } else {
         key = 'item|' + r.label + '|' + r.imageUrl;
-        const type = r.itemType === 'Coaster' ? 'Merchandise'
+        const type = (r.itemType === 'Coaster' || r.itemType === 'NPT48') ? 'Merchandise'
           : r.collectionId === 'coll_cafe' ? 'Cafe' : (l.kind === 'preorder' ? 'Pre-order item' : 'Item');
         entry = { kind: 'item', label: r.label, image: r.imageUrl, type, isSSR: !!r.isSSR, qty: 0,
                   note: 'Saved to your Inventory.', collectionId: r.collectionId,

@@ -536,7 +536,8 @@
         { value: 'thankyou',  label: 'Thank You Card',  cats: ['Thank You Card'] },
         { value: 'cafe',      label: 'BLM48 Cafe',      cats: ['BLM48 Cafe'] },
         { value: 'coaster',   label: 'Coaster',         cats: ['Coaster'] },
-        { value: 'others',    label: 'Other',           cats: ['หมวดหมู่อื่นๆ'] },
+        { value: 'npt48',     label: 'NPT48',           cats: ['NPT48'] },
+        { value: 'others',   label: 'Other',           cats: ['หมวดหมู่อื่นๆ'] },
     ];
 
     let currentSearchQuery = '';    // คำค้นหาชื่อไอเทม (lowercase แล้ว)
@@ -671,6 +672,8 @@
                 return '#ff922b'; // ส้ม
             case 'BLM48 PhotoCard':
                 return '#20c997'; // เขียวมิ้นต์เข้ม
+            case 'NPT48':
+                return '#66cbff'; // ฟ้าประจำวง NPT48
             default:
                 return '#a0a0a0'; // เทา สำหรับหมวดหมู่อื่นๆ
         }
@@ -706,6 +709,7 @@
         photoset: 'BLM48 PhotoSet',
         photobook: 'BLM48 Photobook',
         photocard: 'BLM48 PhotoCard',
+        npt48: 'NPT48',
     };
 
     // ชื่อคอลเลกชันสำหรับแสดงผล: ตัด prefix ภายใน (votemajor_ / gacha_) แล้วขึ้นต้นตัวพิมพ์ใหญ่
@@ -803,6 +807,7 @@ function renderInventoryData() {
         if (currentPrimaryTab === 'photoset' && item.category !== 'BLM48 PhotoSet') return false;
         if (currentPrimaryTab === 'photobook' && item.category !== 'BLM48 Photobook') return false;
         if (currentPrimaryTab === 'photocard' && item.category !== 'BLM48 PhotoCard') return false;
+        if (currentPrimaryTab === 'npt48' && item.category !== 'NPT48') return false;
 
         if (currentPrimaryTab === 'others' && item.category !== 'หมวดหมู่อื่นๆ') return false;
 
