@@ -59,19 +59,41 @@
         .pack.is-selected .pack-btn { background: #222; color: #fff; }
         .pack-btn:disabled { background: #f1f1f3; color: #6b6b6b; box-shadow: none; cursor: not-allowed; }
 
-        /* ยืนยันซื้อแบบในหน้า (ไม่ใช้ป๊อปอัป) */
-        .buy-confirm { display: none; margin: 0 12px 24px; padding: 16px; border-radius: 16px; background: #fffaf0; border: 1px solid #f6e3ad; text-align: center; }
-        .buy-confirm.show { display: block; }
-        .buy-confirm-text { font-size: 15px; color: #222; }
-        .buy-confirm-sub { margin-top: 4px; font-size: 12.5px; color: #6b6b6b; }
-        .buy-confirm-actions { display: flex; gap: 8px; margin-top: 14px; }
-        .buy-confirm-actions button { flex: 1; border-radius: 999px; padding: 11px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        /* Bottom Sheet ยืนยันซื้อ (ข้อความภาษาอังกฤษเท่านั้น) */
+        .buy-overlay {
+            position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.38);
+            opacity: 0; visibility: hidden; transition: opacity .22s ease, visibility .22s;
+        }
+        .buy-overlay.show { opacity: 1; visibility: visible; }
+        .buy-sheet {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 3001;
+            max-width: 560px; margin: 0 auto; background: #fff;
+            border-radius: 20px 20px 0 0; padding: 8px 16px calc(18px + env(safe-area-inset-bottom));
+            transform: translateY(105%); transition: transform .28s cubic-bezier(.2,.8,.2,1);
+            font-family: 'Quicksand', 'Kanit', sans-serif;
+        }
+        .buy-sheet.show { transform: translateY(0); }
+        .buy-sheet-handle { width: 40px; height: 4px; border-radius: 4px; background: #ddd; margin: 0 auto 12px; }
+        .buy-sheet-title { text-align: center; font-size: 16px; font-weight: 700; color: #222; }
+        .buy-sheet-item { display: flex; align-items: center; gap: 12px; margin: 16px 0 6px; }
+        .buy-sheet-item img { width: 56px; height: 56px; object-fit: contain; flex-shrink: 0; }
+        .buy-sheet-item-name { font-size: 17px; font-weight: 700; color: #222; }
+        .buy-sheet-item-sub { font-size: 13px; color: #767676; margin-top: 2px; }
+        .buy-sheet-rows { margin: 12px 0 4px; border-top: 1px solid #f0f0f0; }
+        .buy-sheet-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #555; }
+        .buy-sheet-row b { color: #222; font-weight: 700; }
+        .buy-sheet-row b.neg { color: #b42318; }
+        .buy-sheet-note { margin-top: 10px; font-size: 13px; text-align: center; color: #767676; }
+        .buy-sheet-note.err { color: #b42318; }
+        .buy-sheet-actions { display: flex; gap: 8px; margin-top: 16px; }
+        .buy-sheet-actions button { flex: 1; border-radius: 999px; padding: 12px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
         .buy-cancel { background: #fff; border: 1px solid #ddd; color: #444; }
         .buy-ok { background: #222; border: 1px solid #222; color: #fff; }
-        .buy-ok:disabled { opacity: .6; cursor: not-allowed; }
-        .buy-status { display: none; margin: 0 12px 20px; padding: 12px 14px; border-radius: 12px; font-size: 14px; text-align: center; }
-        .buy-status.ok { display: block; background: #eaf7ee; color: #1f6b35; }
-        .buy-status.err { display: block; background: #fff1f1; color: #b42318; }
+        .buy-ok:disabled { opacity: .5; cursor: not-allowed; }
+        .buy-done { text-align: center; padding: 10px 0 2px; }
+        .buy-done-icon { font-size: 44px; color: #2e9e55; }
+        .buy-done-title { margin-top: 8px; font-size: 17px; font-weight: 700; color: #222; }
+        .buy-done-sub { margin-top: 4px; font-size: 13.5px; color: #767676; }
     </style>
 </head>
 <body>
@@ -90,8 +112,10 @@
     </div>
 
     <div class="pack-grid" id="pack-grid"></div>
-    <div class="buy-status" id="buy-status" role="status"></div>
-    <div class="buy-confirm" id="buy-confirm"></div></div>
+</div>
+
+<div class="buy-overlay" id="buy-overlay" onclick="closeSheet()"></div>
+<div class="buy-sheet" id="buy-sheet" role="dialog" aria-modal="true" aria-labelledby="buy-sheet-title"></div>
 
 <script>
     // แพ็กคุกกี้ (1 Token = 10 Cookies) ซื้อทันทีผ่าน RPC exchange_cookies: หัก Token + เพิ่ม Cookie + บันทึก 'แลกซื้อคุกกี้'
@@ -122,33 +146,73 @@
         document.getElementById('my-tokens').textContent = Number(user.token || 0).toLocaleString();
     }
 
-    function setStatus(type, html) {
-        const el = document.getElementById('buy-status');
-        el.className = 'buy-status' + (type ? ' ' + type : '');
-        el.innerHTML = html || '';
+    // Bottom Sheet ยืนยันซื้อ — ข้อความในชีตเป็นภาษาอังกฤษทั้งหมด
+    function renderSheet(errMsg) {
+        const sheet = document.getElementById('buy-sheet');
+        const p = COOKIE_PACKS[selected];
+        if (!p) return;
+        const bal = Number(user.token || 0);
+        const after = bal - p.tokens;
+        const short = after < 0;
+        const note = errMsg
+            ? `<div class="buy-sheet-note err"><i class="fa-solid fa-circle-exclamation"></i> ${errMsg}</div>`
+            : short
+                ? `<div class="buy-sheet-note err">Not enough Tokens. You need ${(-after).toLocaleString()} more.</div>`
+                : `<div class="buy-sheet-note">Cookies are added to your wallet instantly.</div>`;
+        sheet.innerHTML = `
+            <div class="buy-sheet-handle"></div>
+            <div class="buy-sheet-title" id="buy-sheet-title">Confirm Purchase</div>
+            <div class="buy-sheet-item">
+                <img src="${p.img}" alt="">
+                <div>
+                    <div class="buy-sheet-item-name">${p.cookies.toLocaleString()} Cookies</div>
+                    <div class="buy-sheet-item-sub">1 Token = 10 Cookies</div>
+                </div>
+            </div>
+            <div class="buy-sheet-rows">
+                <div class="buy-sheet-row"><span>Price</span><b><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</b></div>
+                <div class="buy-sheet-row"><span>Your Balance</span><b>${bal.toLocaleString()} Tokens</b></div>
+                <div class="buy-sheet-row"><span>Balance After</span><b class="${short ? 'neg' : ''}">${short ? '—' : after.toLocaleString() + ' Tokens'}</b></div>
+            </div>
+            ${note}
+            <div class="buy-sheet-actions">
+                <button type="button" class="buy-cancel" onclick="closeSheet()" ${buying ? 'disabled' : ''}>Cancel</button>
+                <button type="button" class="buy-ok" id="buy-ok" onclick="confirmBuy()" ${short || buying ? 'disabled' : ''}>${buying ? '<i class="fa-solid fa-spinner fa-spin"></i>' : 'Buy Now'}</button>
+            </div>`;
     }
 
-    function renderConfirm() {
-        const box = document.getElementById('buy-confirm');
-        const p = COOKIE_PACKS[selected];
-        if (!p) { box.classList.remove('show'); box.innerHTML = ''; return; }
-        const short = Number(user.token || 0) < p.tokens;
-        box.innerHTML = `
-            <div class="buy-confirm-text">ซื้อ <b>${p.cookies.toLocaleString()} Cookies</b> ด้วย <b>${p.tokens.toLocaleString()} Tokens</b>?</div>
-            <div class="buy-confirm-sub">${short ? 'Token ไม่พอ (มี ' + Number(user.token || 0).toLocaleString() + ' Tokens)' : 'คุกกี้เข้ากระเป๋าทันที'}</div>
-            <div class="buy-confirm-actions">
-                <button type="button" class="buy-cancel" onclick="selectPack(null)">ยกเลิก</button>
-                <button type="button" class="buy-ok" id="buy-ok" onclick="confirmBuy()" ${short || buying ? 'disabled' : ''}>ยืนยันซื้อ</button>
+    function renderDone(p) {
+        document.getElementById('buy-sheet').innerHTML = `
+            <div class="buy-sheet-handle"></div>
+            <div class="buy-done">
+                <div class="buy-done-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="buy-done-title" id="buy-sheet-title">Purchase Complete</div>
+                <div class="buy-done-sub">${p.cookies.toLocaleString()} Cookies have been added to your wallet.</div>
+            </div>
+            <div class="buy-sheet-actions">
+                <button type="button" class="buy-ok" onclick="closeSheet()">Done</button>
             </div>`;
-        box.classList.add('show');
+    }
+
+    function openSheet() {
+        renderSheet();
+        document.getElementById('buy-overlay').classList.add('show');
+        document.getElementById('buy-sheet').classList.add('show');
+    }
+
+    function closeSheet() {
+        if (buying) return;
+        selected = null;
+        document.getElementById('buy-overlay').classList.remove('show');
+        document.getElementById('buy-sheet').classList.remove('show');
+        renderPacks();
     }
 
     function selectPack(i) {
         if (buying) return;
-        selected = (i === null || selected === i) ? null : i;
-        setStatus('', '');
+        selected = i;
         renderPacks();
-        renderConfirm();
+        openSheet();
     }
 
     // ซื้อทันที: Token ถูกหัก คุกกี้เข้ากระเป๋าเลย (ไม่ผ่านตะกร้า/Redeem)
@@ -156,25 +220,24 @@
         const p = COOKIE_PACKS[selected];
         if (!p || buying) return;
         buying = true;
-        const btn = document.getElementById('buy-ok');
-        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+        renderSheet();
         try {
             const res = await blm48ExchangeCookies(user.username, p.tokens);
-            if (!res || res.status !== 'success') throw new Error((res && res.message) || 'ซื้อไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ');
+            if (!res || res.status !== 'success') throw new Error('fail');
             user.token = res.newToken;
             user.cookie = res.newCookie;
             saveUserSession(user);
-            selected = null;
             renderBalance();
-            setStatus('ok', `<i class="fa-solid fa-circle-check"></i> ได้รับ <b>${p.cookies.toLocaleString()} Cookies</b> เข้ากระเป๋าแล้ว`);
-        } catch (e) {
-            setStatus('err', escapeHtml(e.message || 'ซื้อไม่สำเร็จ'));
-        } finally {
             buying = false;
-            renderPacks();
-            renderConfirm();
+            renderDone(p);
+        } catch (e) {
+            console.error('Buy cookies error:', e);
+            buying = false;
+            renderSheet('Purchase failed. Please try again.');
         }
     }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
 
     async function refreshBalance() {
         try {
