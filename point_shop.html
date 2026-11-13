@@ -87,9 +87,17 @@
         .ps-need-text { font-size: 12px; color: var(--ps-muted); }
         .ps-need .ps-bar { height: 6px; margin-top: 4px; }
 
-        /* ยืนยันแบบขยายในการ์ด (ไม่ใช้ป๊อปอัป) */
-        .ps-confirm { border-top: 1px dashed #e6e6e6; padding: 12px 14px 14px; background: #fcfcfc; }
-        .ps-confirm-text { font-size: 14px; }
+        /* Pop Up ยืนยันการแลก (2026-11-13: Emmy ขอให้เป็นป๊อปอัปแทนการขยายในการ์ด) */
+        .ps-modal { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+        .ps-modal.show { opacity: 1; pointer-events: auto; }
+        .ps-modal-box { width: 100%; max-width: 340px; background: #fff; border-radius: 20px; padding: 22px 18px 18px; text-align: center; transform: scale(.94); transition: transform .18s ease; }
+        .ps-modal.show .ps-modal-box { transform: scale(1); }
+        .ps-modal-icon { width: 64px; height: 64px; object-fit: contain; }
+        .ps-modal-title { margin-top: 8px; font-size: 18px; font-weight: 700; }
+        .ps-confirm-text { margin-top: 6px; font-size: 14px; color: #444; line-height: 1.55; }
+        .ps-modal-bal { margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: #fafafa; font-size: 13px; color: #444; display: flex; justify-content: space-between; gap: 8px; }
+        .ps-modal-bal b { color: var(--ps-ink); }
+        .ps-modal .ps-warn { text-align: left; }
         .ps-warn { margin-top: 8px; padding: 9px 11px; border-radius: 10px; background: #fff4e5; color: #8a4b00; font-size: 12.5px; line-height: 1.55; }
         .ps-confirm-actions { display: flex; gap: 8px; margin-top: 12px; }
         .ps-confirm-actions button { flex: 1; border-radius: 999px; padding: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -153,13 +161,14 @@
 
     <div class="ps-list" id="ps-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
 
-    <div class="ps-section-title">วิธีได้ Points</div>
-    <p class="ps-note" id="ps-howto"></p>
-
     <div id="ps-recent-wrap" style="display:none;">
         <div class="ps-section-title ps-section-head"><span>แลกล่าสุด</span><a href="point_shop_history">ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></a></div>
         <div id="ps-recent"></div>
     </div>
+</div>
+
+<div class="ps-modal" id="ps-modal" role="dialog" aria-modal="true" aria-labelledby="ps-modal-title" onclick="if (event.target === this) togglePack(null)">
+    <div class="ps-modal-box" id="ps-modal-box"></div>
 </div>
 
 <script>
@@ -236,7 +245,6 @@
             // จำนวนก่อนโบนัส คิดจากโบนัสของแพ็กเอง (ไม่ผูกกับอัตราแลก ซึ่งกำหนดฝั่งเซิร์ฟเวอร์ใน _point_shop_packages)
             const base = Math.round(p.amount / (1 + p.bonus / 100));
             const isBest = p.bonus === maxBonus && p.bonus > 0;
-            const open = openPackId === p.id && can;
             return `
             <div class="ps-pack${isBest ? ' is-best' : ''}">
                 <div class="ps-pack-main">
@@ -251,23 +259,30 @@
                     <button type="button" class="ps-price" ${can ? '' : 'disabled'} onclick="togglePack('${p.id}')">${fmt(p.points)} P</button>
                 </div>
                 ${affordable ? '' : `<div class="ps-need"><div class="ps-need-text">สะสมอีก ${fmt(p.points - shop.points)} P</div><div class="ps-bar"><span style="width:${Math.max(3, (shop.points / p.points) * 100)}%"></span></div></div>`}
-                ${open ? `
-                <div class="ps-confirm">
-                    <div class="ps-confirm-text">แลก <b>${fmt(p.points)} P</b> เป็น <b>${fmt(p.amount)} ${unitLabel(p.kind, p.amount)}</b>?</div>
-                    ${tierWarning(p)}
-                    <div class="ps-confirm-actions">
-                        <button type="button" class="ps-cancel" onclick="togglePack(null)">ยกเลิก</button>
-                        <button type="button" class="ps-ok" id="ps-ok" onclick="confirmExchange('${p.id}')">ยืนยันแลก</button>
-                    </div>
-                </div>` : ''}
             </div>`;
         }).join('');
     }
 
-    function renderHowTo() {
-        document.getElementById('ps-howto').textContent = shop.scoreKind === 'member'
-            ? 'Member Score ได้จาก 10 Cookie ที่แฟนส่งให้ = 1 P · 1 Like = 1 P · 1 โพสต์ = 10 P · 1 คอมเมนต์จากแฟน = 2 P'
-            : 'Fan Score เพิ่มทุกครั้งที่ส่ง Cookie หรือ Gift ให้เมมเบอร์ (1 Cookie = 1 P) และเมื่อกดไลก์หรือคอมเมนต์โพสต์ของเมมเบอร์ ยิ่งสะสมไว้แลกแพ็กใหญ่ ยิ่งได้โบนัสมาก';
+    // Pop Up ยืนยันการแลก
+    function renderModal() {
+        const modal = document.getElementById('ps-modal');
+        const p = openPackId && shop.packages.find(x => x.id === openPackId);
+        if (!p || !shop.isOpen || shop.points < p.points) {
+            openPackId = null;
+            modal.classList.remove('show');
+            return;
+        }
+        document.getElementById('ps-modal-box').innerHTML = `
+            <img class="ps-modal-icon" src="${packIcon(p)}" alt="">
+            <div class="ps-modal-title" id="ps-modal-title">${fmt(p.amount)} ${unitLabel(p.kind, p.amount)}</div>
+            <div class="ps-confirm-text">แลก <b>${fmt(p.points)} P</b> เป็น <b>${fmt(p.amount)} ${unitLabel(p.kind, p.amount)}</b> ใช่ไหม?</div>
+            <div class="ps-modal-bal"><span>Points คงเหลือหลังแลก</span><b>${fmt(shop.points - p.points)} P</b></div>
+            ${tierWarning(p)}
+            <div class="ps-confirm-actions">
+                <button type="button" class="ps-cancel" onclick="togglePack(null)">ยกเลิก</button>
+                <button type="button" class="ps-ok" id="ps-ok" onclick="confirmExchange('${p.id}')">ยืนยันแลก</button>
+            </div>`;
+        modal.classList.add('show');
     }
 
     function renderRecent() {
@@ -325,24 +340,29 @@
         if (!countdownTimer) countdownTimer = setInterval(tick, 1000);
     }
 
-    function renderAll() { renderHero(); renderOpening(); renderList(); renderHowTo(); renderRecent(); }
+    function renderAll() { renderHero(); renderOpening(); renderList(); renderModal(); renderRecent(); }
 
     function selectKind(kind) {
         currentKind = kind;
         openPackId = null;
         document.querySelectorAll('.ps-tab').forEach(t => t.classList.toggle('active', t.dataset.kind === kind));
         renderList();
+        renderModal();
     }
 
     function togglePack(id) {
-        openPackId = openPackId === id ? null : id;
-        renderList();
+        if (busy) return;
+        openPackId = id;
+        renderModal();
     }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && openPackId) togglePack(null); });
 
     function showToast(type, html) {
         const t = document.getElementById('ps-toast');
         t.className = 'ps-toast ' + type;
         t.innerHTML = html;
+        t.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     async function confirmExchange(id) {
@@ -358,11 +378,14 @@
                 saveUserSession(user);
             }
             openPackId = null;
+            renderModal();
             showToast('ok', `<i class="fa-solid fa-circle-check"></i> ได้รับ <b>${fmt(res.amount)} ${unitLabel(res.kind, Number(res.amount))}</b> เข้ากระเป๋าแล้ว`);
             await loadShop();
         } catch (e) {
+            busy = false;
+            openPackId = null;
+            renderModal();
             showToast('err', escapeHtml(e.message || 'แลกไม่สำเร็จ'));
-            renderList();
         } finally {
             busy = false;
         }
