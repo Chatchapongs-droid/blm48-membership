@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | Point History</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/shop-orders.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        :root { --ph-ink: #222; --ph-muted: #6b6b6b; --ph-line: #efefef; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; color: var(--ph-ink); }
+        .page-wrapper { padding: 0 12px 40px; }
+
+        /* สรุปยอดรวมตลอดการใช้งาน */
+        .ph-sum { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 18px 0 16px; border-bottom: 1px solid var(--ph-line); }
+        .ph-sum-box { text-align: center; padding: 12px 4px; border-radius: 14px; background: #fafafa; }
+        .ph-sum-num { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .ph-sum-label { margin-top: 2px; font-size: 12px; color: var(--ph-muted); }
+
+        .ph-filter { display: flex; gap: 8px; padding: 14px 0 4px; }
+        .ph-chip { border: 1px solid #e3e3e3; background: #fff; border-radius: 999px; padding: 7px 14px; font-family: inherit; font-size: 13.5px; font-weight: 600; color: #444; cursor: pointer; }
+        .ph-chip.active { background: #222; border-color: #222; color: #fff; }
+
+        .ph-month { margin: 18px 0 2px; font-size: 13px; font-weight: 700; color: var(--ph-muted); }
+        .ph-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--ph-line); }
+        .ph-icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; background: #fff6d6; display: flex; align-items: center; justify-content: center; }
+        .ph-icon img { width: 26px; height: 26px; object-fit: contain; }
+        .ph-body { flex: 1; min-width: 0; }
+        .ph-title { font-size: 14.5px; font-weight: 700; }
+        .ph-time { margin-top: 2px; font-size: 12.5px; color: var(--ph-muted); }
+        .ph-points { flex-shrink: 0; font-size: 14px; font-weight: 700; color: #b42318; font-variant-numeric: tabular-nums; }
+
+        .ph-more { display: block; width: 100%; margin-top: 16px; padding: 11px; border: 1px solid #ddd; border-radius: 999px; background: #fff; font-family: inherit; font-size: 14px; font-weight: 600; color: #444; cursor: pointer; }
+        .ph-more:disabled { opacity: .6; cursor: wait; }
+        .loading-state { color: var(--ph-muted); }
+        .ph-empty { text-align: center; padding: 48px 8px; color: var(--ph-muted); font-size: 14px; line-height: 1.6; }
+        .ph-empty i { display: block; font-size: 30px; margin-bottom: 10px; color: #8a8a8a; }
+        .ph-empty a { display: inline-block; margin-top: 12px; padding: 9px 18px; border-radius: 999px; background: #f9d26b; color: #222; font-weight: 700; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-page-title">Point History</div>
+</div>
+
+<div class="page-wrapper">
+    <div class="ph-sum">
+        <div class="ph-sum-box"><div class="ph-sum-num" id="sum-points">-</div><div class="ph-sum-label">Points ที่ใช้</div></div>
+        <div class="ph-sum-box"><div class="ph-sum-num" id="sum-tokens">-</div><div class="ph-sum-label">Token ที่ได้</div></div>
+        <div class="ph-sum-box"><div class="ph-sum-num" id="sum-cookies">-</div><div class="ph-sum-label">Cookie ที่ได้</div></div>
+    </div>
+
+    <div class="ph-filter" role="tablist">
+        <button type="button" class="ph-chip active" data-kind="all" onclick="setFilter('all')">ทั้งหมด</button>
+        <button type="button" class="ph-chip" data-kind="token" onclick="setFilter('token')">Token</button>
+        <button type="button" class="ph-chip" data-kind="cookie" onclick="setFilter('cookie')">Cookie</button>
+    </div>
+
+    <div id="ph-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
+    <button type="button" class="ph-more" id="ph-more" onclick="loadMore()" hidden>โหลดเพิ่ม</button>
+</div>
+
+<script>
+    const PAGE = 30;
+    const ICONS = { token: 'assets/images/token.png', cookie: 'assets/images/cookies/cookie-icon.svg' };
+    let user = null;
+    let items = [];
+    let hasMore = false;
+    let filter = 'all';
+    let loading = false;
+
+    function goBack() { blm48Back('point_shop'); }
+    const fmt = n => Number(n || 0).toLocaleString();
+    const unitLabel = (kind, n) => kind === 'token' ? (n === 1 ? 'Token' : 'Tokens') : (n === 1 ? 'Cookie' : 'Cookies');
+    const monthKey = d => d.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', month: 'long', year: 'numeric' });
+    const timeText = d => d.toLocaleString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + ' น.';
+
+    function setFilter(kind) {
+        filter = kind;
+        document.querySelectorAll('.ph-chip').forEach(c => c.classList.toggle('active', c.dataset.kind === kind));
+        render();
+    }
+
+    function render() {
+        const list = document.getElementById('ph-list');
+        const rows = items.filter(r => filter === 'all' || r.kind === filter);
+        document.getElementById('ph-more').hidden = !hasMore;
+        if (!rows.length) {
+            list.innerHTML = items.length
+                ? `<div class="ph-empty"><i class="fa-solid fa-filter"></i>ยังไม่มีรายการแลกเป็น ${filter === 'token' ? 'Token' : 'Cookie'}${hasMore ? ' ในรายการที่โหลดแล้ว' : ''}</div>`
+                : `<div class="ph-empty"><i class="fa-solid fa-clock-rotate-left"></i>ยังไม่มีประวัติการแลก Points<br><a href="point_shop">ไปที่ Point Shop</a></div>`;
+            return;
+        }
+        let lastMonth = '';
+        list.innerHTML = rows.map(r => {
+            const d = new Date(r.at);
+            const m = monthKey(d);
+            const head = m !== lastMonth ? `<div class="ph-month">${m}</div>` : '';
+            lastMonth = m;
+            const amt = Number(r.amount);
+            return `${head}
+            <div class="ph-row">
+                <div class="ph-icon"><img src="${ICONS[r.kind] || ICONS.cookie}" alt=""></div>
+                <div class="ph-body">
+                    <div class="ph-title">ได้รับ ${fmt(amt)} ${unitLabel(r.kind, amt)}</div>
+                    <div class="ph-time">${timeText(d)}</div>
+                </div>
+                <div class="ph-points">-${fmt(r.points)} P</div>
+            </div>`;
+        }).join('');
+    }
+
+    async function load(before) {
+        const res = await blm48GetPointExchangeHistory(user.username, before, PAGE);
+        if (!res || res.status !== 'success') throw new Error((res && res.message) || 'โหลดประวัติไม่สำเร็จ');
+        const got = res.items || [];
+        items = items.concat(got);
+        hasMore = got.length === PAGE;
+        if (res.totals) {
+            document.getElementById('sum-points').textContent = fmt(res.totals.points);
+            document.getElementById('sum-tokens').textContent = fmt(res.totals.tokens);
+            document.getElementById('sum-cookies').textContent = fmt(res.totals.cookies);
+        }
+        render();
+    }
+
+    async function loadMore() {
+        if (loading || !hasMore || !items.length) return;
+        loading = true;
+        const btn = document.getElementById('ph-more');
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        try { await load(items[items.length - 1].at); }
+        catch (e) { console.error('point history error:', e); }
+        finally { loading = false; btn.disabled = false; btn.textContent = 'โหลดเพิ่ม'; }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        user = getUserSession();
+        if (!user) { window.location.href = 'login'; return; }
+        load(null).catch(e => {
+            console.error('point history error:', e);
+            document.getElementById('ph-list').innerHTML = `<div class="ph-empty"><i class="fa-solid fa-triangle-exclamation"></i>โหลดประวัติไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ</div>`;
+        });
+    });
+</script>
+</body>
+</html>

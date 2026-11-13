@@ -189,6 +189,10 @@ function blm48GetPointShop(username) {
 function blm48ExchangePoints(username, packageId) {
   return blm48Rpc('exchange_points', { p_username: username, p_package_id: packageId });
 }
+// ประวัติการแลก Point ของบัญชีตัวเอง (ใหม่สุดก่อน) before = เวลาของรายการสุดท้ายที่โหลดไปแล้ว
+function blm48GetPointExchangeHistory(username, before, limit) {
+  return blm48Rpc('get_point_exchange_history', { p_username: username, p_before: before || null, p_limit: limit || 30 });
+}
 
 // 🎁 กระเป๋าของขวัญของ Major Vote: ตอนซื้อของขวัญจะเลือกได้ว่าจะ "โหวตให้เลย" หรือ "เก็บเข้ากระเป๋า"
 // ไว้ก่อน แล้วค่อยเอาของที่เก็บไว้มาโหวตให้ผู้สมัครในแคมเปญที่เปิดรับของขวัญทีหลังก็ได้

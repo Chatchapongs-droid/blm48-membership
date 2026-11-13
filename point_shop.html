@@ -28,6 +28,10 @@
             display: flex; align-items: center; justify-content: center;
             color: #222; font-size: 20px; text-decoration: none;
         }
+        /* ปุ่มประวัติการแลก อยู่ซ้ายของปุ่ม i */
+        .nav-info-btn.nav-history-btn { right: 50px; }
+        .ps-section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+        .ps-section-head a { font-size: 13px; font-weight: 600; color: #444; text-decoration: none; white-space: nowrap; }
 
         /* ⭐ ยอด Points */
         .ps-hero { text-align: center; padding: 22px 0 18px; border-bottom: 1px solid var(--ps-line); }
@@ -123,6 +127,7 @@
 <div class="top-navigation-bar">
     <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
     <div class="top-bar-page-title">Point Shop</div>
+    <a href="point_shop_history" class="nav-info-btn nav-history-btn" aria-label="ประวัติการแลก Points"><i class="fa-solid fa-clock-rotate-left"></i></a>
     <a href="points_guide" class="nav-info-btn" aria-label="วิธีได้รับ Points"><i class="fa-solid fa-circle-info"></i></a>
 </div>
 
@@ -152,7 +157,7 @@
     <p class="ps-note" id="ps-howto"></p>
 
     <div id="ps-recent-wrap" style="display:none;">
-        <div class="ps-section-title">แลกล่าสุด</div>
+        <div class="ps-section-title ps-section-head"><span>แลกล่าสุด</span><a href="point_shop_history">ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></a></div>
         <div id="ps-recent"></div>
     </div>
 </div>
