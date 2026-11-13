@@ -526,7 +526,7 @@
           <img class="member-avatar" src="${escapeAttr(resolveDriveImage(m.profile_img))}">
           <div>
             <div class="member-name">${escapeHtml(m.name || m.username)}</div>
-            <div class="member-username">${m.username ? '@' + escapeHtml(m.username) : 'ไม่มีบัญชีผูกไว้'}</div>
+            ${m.username ? '' : '<div class="member-username">ไม่มีบัญชีผูกไว้</div>'}
           </div>
         </div>
         <div class="member-stats">

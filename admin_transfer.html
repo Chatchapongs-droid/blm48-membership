@@ -297,7 +297,7 @@
     const { target, token, cookie, getoken } = pendingTransfer;
     document.getElementById('cf-avatar').src = resolveDriveImage(target.profile_img);
     document.getElementById('cf-name').textContent = target.name || target.username;
-    document.getElementById('cf-sub').textContent = `@${target.username} · ${(target.role || '').toUpperCase()}`;
+    document.getElementById('cf-sub').textContent = (target.role || '').toUpperCase();
 
     const items = [];
     if (token > 0) items.push(`<div class="item">+ ${Number(token).toLocaleString()} Token</div>`);

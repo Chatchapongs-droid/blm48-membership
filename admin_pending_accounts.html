@@ -268,14 +268,14 @@
           <button type="button" class="entry-row" onclick="toggleCard(${i})">
             <img class="entry-avatar" src="${escapeAttr(resolveDriveImage(u.profile_img))}">
             <div class="entry-body">
-              <div class="entry-title">${escapeHtml(u.name || u.username)} <span style="color:#767676; font-weight:400;">@${escapeHtml(u.username)}</span></div>
+              <div class="entry-title">${escapeHtml(u.name || u.username)}</div>
               <div class="entry-subtitle">${escapeHtml((u.role || '').toUpperCase())} · ${st.step === 'done' ? (st.result.ok ? 'อนุมัติแล้ว' : 'ไม่สำเร็จ') : waitText(u.created_at)} · ${dt}</div>
             </div>
             <i class="fas fa-chevron-right entry-chevron"></i>
           </button>
           <div class="pending-detail">
             <div class="detail-line"><span>ชื่อ</span><span>${escapeHtml(u.name || '-')}</span></div>
-            <div class="detail-line"><span>Username</span><span>@${escapeHtml(u.username)}</span></div>
+            <div class="detail-line"><span>Username</span><span>${escapeHtml(u.username)}</span></div>
             <div class="detail-line"><span>Role</span><span>${escapeHtml((u.role || '-').toUpperCase())}</span></div>
             <div class="detail-line"><span>สร้างเมื่อ</span><span>${dt}</span></div>
             ${renderActionArea(u, i, st)}
@@ -286,7 +286,7 @@
   }
 
   function renderActionArea(u, i, st) {
-    const who = `<b>${escapeHtml(u.name || u.username)}</b> (@${escapeHtml(u.username)})`;
+    const who = `<b>${escapeHtml(u.name || u.username)}</b>`;
     if (st.step === 'done') {
       return `<div class="result-box ${st.result.ok ? 'ok' : 'err'}">${escapeHtml(st.result.message)}</div>`;
     }

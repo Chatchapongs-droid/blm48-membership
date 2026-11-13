@@ -155,7 +155,7 @@
             <div class="log-row">
               <img class="log-avatar" src="${escapeAttr(l.avatar || '')}" alt="" onerror="this.style.visibility='hidden'">
               <div class="log-body">
-                <div class="log-name">${escapeHtml(l.name || l.username)} <span>@${escapeHtml(l.username)}</span></div>
+                <div class="log-name">${escapeHtml(l.name || l.username)}</div>
                 <div class="log-meta">${escapeHtml(PAGE_LABELS[l.page] || l.page)}${l.device ? ' · ' + escapeHtml(l.device) : ''}</div>
               </div>
               <div class="log-side">

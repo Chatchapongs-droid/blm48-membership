@@ -219,7 +219,7 @@
           <div class="entry-row">
             <img class="entry-avatar" src="${escapeAttr(resolveDriveImage(u.profile_img))}">
             <div class="entry-body">
-              <div class="entry-title">${escapeHtml(u.name || u.username)} <span style="color:#767676; font-weight:400;">@${escapeHtml(u.username)}</span></div>
+              <div class="entry-title">${escapeHtml(u.name || u.username)}</div>
               <div class="entry-subtitle">
                 ${escapeHtml((u.role || '').toUpperCase())}${suspended ? ' · <span class="tag-suspended">ถูกระงับ</span>' : pending ? ' · <span class="tag-pending">รออนุมัติ</span>' : ''}
               </div>
