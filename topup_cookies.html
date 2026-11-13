@@ -57,6 +57,22 @@
         .pack-btn:active { transform: scale(0.97); }
         .pack-btn i { font-size: 13px; }
         .pack-note { padding: 0 16px; font-size: 12.5px; color: #767676; text-align: center; line-height: 1.6; }
+        .pack.is-selected .pack-btn { background: #222; color: #fff; }
+        .pack-btn:disabled { background: #f1f1f3; color: #6b6b6b; box-shadow: none; cursor: not-allowed; }
+
+        /* ยืนยันซื้อแบบในหน้า (ไม่ใช้ป๊อปอัป) */
+        .buy-confirm { display: none; margin: 0 12px 24px; padding: 16px; border-radius: 16px; background: #fffaf0; border: 1px solid #f6e3ad; text-align: center; }
+        .buy-confirm.show { display: block; }
+        .buy-confirm-text { font-size: 15px; color: #222; }
+        .buy-confirm-sub { margin-top: 4px; font-size: 12.5px; color: #6b6b6b; }
+        .buy-confirm-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .buy-confirm-actions button { flex: 1; border-radius: 999px; padding: 11px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+        .buy-cancel { background: #fff; border: 1px solid #ddd; color: #444; }
+        .buy-ok { background: #222; border: 1px solid #222; color: #fff; }
+        .buy-ok:disabled { opacity: .6; cursor: not-allowed; }
+        .buy-status { display: none; margin: 0 12px 20px; padding: 12px 14px; border-radius: 12px; font-size: 14px; text-align: center; }
+        .buy-status.ok { display: block; background: #eaf7ee; color: #1f6b35; }
+        .buy-status.err { display: block; background: #fff1f1; color: #b42318; }
     </style>
 </head>
 <body>
@@ -75,17 +91,21 @@
     </div>
 
     <div class="pack-grid" id="pack-grid"></div>
-    <p class="pack-note">กดราคาเพื่อเพิ่มแพ็กลงตะกร้า ชำระด้วย Token แล้วกด Redeem ที่ My Order เพื่อรับคุกกี้เข้ากระเป๋า</p>
+    <div class="buy-status" id="buy-status" role="status"></div>
+    <div class="buy-confirm" id="buy-confirm"></div>
+    <p class="pack-note">ซื้อด้วย Token แล้วคุกกี้เข้ากระเป๋าทันที ไม่ต้องกด Redeem</p>
 </div>
 
 <script>
-    // แพ็กคุกกี้ (1 Token = 10 Cookies) ต้องตรงกับที่ shop_checkout รับ (refId 10 / 100)
+    // แพ็กคุกกี้ (1 Token = 10 Cookies) ซื้อทันทีผ่าน RPC exchange_cookies: หัก Token + เพิ่ม Cookie + บันทึก 'แลกซื้อคุกกี้'
     const COOKIE_PACKS = [
         { tokens: 10,  cookies: 100,  img: 'assets/images/cookies/cookie.png' },
         { tokens: 100, cookies: 1000, img: 'assets/images/cookies/cookie-bag.png' },
     ];
 
     let user = null;
+    let selected = null;   // index ของแพ็กที่กดเลือก (รอยืนยัน)
+    let buying = false;
 
     function goBack() {
         blm48Back('profile');
@@ -93,10 +113,10 @@
 
     function renderPacks() {
         document.getElementById('pack-grid').innerHTML = COOKIE_PACKS.map((p, i) => `
-            <div class="pack">
+            <div class="pack${selected === i ? ' is-selected' : ''}">
                 <div class="pack-img-wrap"><img src="${p.img}" alt=""></div>
                 <div class="pack-name">${p.cookies.toLocaleString()} Cookies</div>
-                <button type="button" class="pack-btn" onclick="buyPack(${i})"><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</button>
+                <button type="button" class="pack-btn" onclick="selectPack(${i})" ${buying ? 'disabled' : ''}><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</button>
             </div>`).join('');
     }
 
@@ -105,16 +125,58 @@
         document.getElementById('my-tokens').textContent = Number(user.token || 0).toLocaleString();
     }
 
-    // เพิ่มแพ็กลงตะกร้าเดียวกับหน้า Shop แล้วไปหน้าตะกร้าเพื่อ Check Out
-    function buyPack(i) {
-        const p = COOKIE_PACKS[i];
-        if (!p || !user) return;
-        blm48Cart.add({
-            kind: 'cookie', refId: String(p.tokens), variant: 1,
-            name: `${p.cookies.toLocaleString()} Cookies`, label: 'Cookie Pack',
-            image: p.img, unitPrice: p.tokens
-        }, 1);
-        window.location.href = 'cart';
+    function setStatus(type, html) {
+        const el = document.getElementById('buy-status');
+        el.className = 'buy-status' + (type ? ' ' + type : '');
+        el.innerHTML = html || '';
+    }
+
+    function renderConfirm() {
+        const box = document.getElementById('buy-confirm');
+        const p = COOKIE_PACKS[selected];
+        if (!p) { box.classList.remove('show'); box.innerHTML = ''; return; }
+        const short = Number(user.token || 0) < p.tokens;
+        box.innerHTML = `
+            <div class="buy-confirm-text">ซื้อ <b>${p.cookies.toLocaleString()} Cookies</b> ด้วย <b>${p.tokens.toLocaleString()} Tokens</b>?</div>
+            <div class="buy-confirm-sub">${short ? 'Token ไม่พอ (มี ' + Number(user.token || 0).toLocaleString() + ' Tokens)' : 'คุกกี้เข้ากระเป๋าทันที'}</div>
+            <div class="buy-confirm-actions">
+                <button type="button" class="buy-cancel" onclick="selectPack(null)">ยกเลิก</button>
+                <button type="button" class="buy-ok" id="buy-ok" onclick="confirmBuy()" ${short || buying ? 'disabled' : ''}>ยืนยันซื้อ</button>
+            </div>`;
+        box.classList.add('show');
+    }
+
+    function selectPack(i) {
+        if (buying) return;
+        selected = (i === null || selected === i) ? null : i;
+        setStatus('', '');
+        renderPacks();
+        renderConfirm();
+    }
+
+    // ซื้อทันที: Token ถูกหัก คุกกี้เข้ากระเป๋าเลย (ไม่ผ่านตะกร้า/Redeem)
+    async function confirmBuy() {
+        const p = COOKIE_PACKS[selected];
+        if (!p || buying) return;
+        buying = true;
+        const btn = document.getElementById('buy-ok');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; }
+        try {
+            const res = await blm48ExchangeCookies(user.username, p.tokens);
+            if (!res || res.status !== 'success') throw new Error((res && res.message) || 'ซื้อไม่สำเร็จ กรุณาลองใหม่อีกครั้งค่ะ');
+            user.token = res.newToken;
+            user.cookie = res.newCookie;
+            saveUserSession(user);
+            selected = null;
+            renderBalance();
+            setStatus('ok', `<i class="fa-solid fa-circle-check"></i> ได้รับ <b>${p.cookies.toLocaleString()} Cookies</b> เข้ากระเป๋าแล้ว`);
+        } catch (e) {
+            setStatus('err', escapeHtml(e.message || 'ซื้อไม่สำเร็จ'));
+        } finally {
+            buying = false;
+            renderPacks();
+            renderConfirm();
+        }
     }
 
     async function refreshBalance() {

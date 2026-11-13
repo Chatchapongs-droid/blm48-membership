@@ -1393,6 +1393,7 @@
             font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 600;
             color: #aaa; padding: 14px 0 12px; position: relative;
         }
+        a.shop-tab { text-decoration: none; display: inline-block; }
         .shop-tab.active { color: #222; }
         .shop-tab.active::after {
             content: ''; position: absolute; left: 0; right: 0; bottom: 8px; height: 5px;
@@ -1497,7 +1498,8 @@
     <button type="button" class="shop-tab active" data-tab="all" onclick="selectShopTab('all')">All</button>
     <button type="button" class="shop-tab" data-tab="preorder" onclick="selectShopTab('preorder')">Pre-order</button>
     <button type="button" class="shop-tab" data-tab="gacha" onclick="selectShopTab('gacha')">Merchandise</button>
-    <button type="button" class="shop-tab" data-tab="cookie" onclick="selectShopTab('cookie')">Cookie</button>
+    <!-- Cookie ซื้อได้ทันทีที่หน้า Top Up Cookies (ไม่ผ่านตะกร้า/Redeem) แท็บนี้จึงพาไปหน้านั้น -->
+    <a class="shop-tab" href="topup_cookies">Cookie</a>
     <button type="button" class="shop-tab" data-tab="cafe" onclick="selectShopTab('cafe')">Cafe</button>
 </div>
 
@@ -1533,42 +1535,6 @@
 
 <div class="merch-grid" id="merch-container">
     <!-- เพิ่มสินค้าโดยระบบโหลดอัตโนมัติ -->
-</div>
-</section>
-
-<section class="shop-section" data-shop-section="cookie">
-<h2 class="section-title" id="section-cookie">Cookie Shop</h2>
-<div class="shop-container" id="cookie-shop-container">
-    <!-- 100Cookie -->
-    <div class="merch-card" data-token-price="10" data-product="cookie:10">
-        <div class="merch-image-container">
-            <img src="https://lh3.googleusercontent.com/d/1iYnw_eiQS4LZvHXF2bLEF7utf0wHi-FF=s1000" alt="100 Cookies" class="merch-image">
-        </div>
-        <div class="merch-info">
-            <span class="merch-category" style="color: #8b5a3c;">Pack</span>
-            <h3 class="merch-title">100 Cookies</h3>
-            <p class="merch-subtitle">เติมคุกกี้สำหรับใช้งานทั่วไป</p>
-            <button class="merch-button" onclick="addCookiesToCart(10, 100, 'https://lh3.googleusercontent.com/d/1iYnw_eiQS4LZvHXF2bLEF7utf0wHi-FF=s1000')">
-                <i class="fas fa-coins"></i> 10 Tokens
-            </button>
-        </div>
-    </div>
-    <!-- 1000Cookie -->
-    <div class="merch-card" data-token-price="100" data-product="cookie:100">
-        <div class="merch-image-container">
-            <img src="https://lh3.googleusercontent.com/d/15UzuRt7ArZ-wUuoLLdZfqF9pdgCJt6ZQ=s1000" alt="1,000 Cookies" class="merch-image">
-        </div>
-
-        <div class="merch-info">
-            <span class="merch-badge"><i class="fas fa-star"></i> Best Value</span>
-            <span class="merch-category" style="color: #8b5a3c;">Value Pack</span>
-            <h3 class="merch-title">1,000 Cookies</h3>
-            <p class="merch-subtitle">เติมคุกกี้สำหรับใช้งานทั่วไป</p>
-            <button class="merch-button" onclick="addCookiesToCart(100, 1000, 'https://lh3.googleusercontent.com/d/15UzuRt7ArZ-wUuoLLdZfqF9pdgCJt6ZQ=s1000')">
-                <i class="fas fa-coins"></i> 100 Tokens
-            </button>
-        </div>
-    </div>
 </div>
 </section>
 
@@ -1733,16 +1699,6 @@ function updateCartBadge() {
     const count = blm48Cart.count();
     badge.textContent = count > 99 ? '99+' : count;
     badge.style.display = count > 0 ? '' : 'none';
-}
-
-function addCookiesToCart(tokenPrice, cookieReward, itemImg) {
-    if (!userData) return;
-    blm48Cart.add({
-        kind: 'cookie', refId: String(tokenPrice), variant: 1,
-        name: `${Number(cookieReward).toLocaleString()} Cookies`, label: 'Cookie Pack',
-        image: itemImg, unitPrice: tokenPrice
-    }, 1);
-    showCartToast(`${Number(cookieReward).toLocaleString()} Cookies added to cart`);
 }
 
 function addCafeToCart(itemId, price, itemName, itemImg) {
@@ -2219,10 +2175,6 @@ async function loadBestSellerBadges() {
     const res = await blm48GetShopBestSellers();
     if (!res || res.status !== 'success') return;
 
-    if (res.cookieBestTokenPrice !== null && res.cookieBestTokenPrice !== undefined) {
-      const card = document.querySelector(`#cookie-shop-container .merch-card[data-token-price="${res.cookieBestTokenPrice}"]`);
-      addBestSellerBadge(card);
-    }
     if (res.cafeBestItemName) {
       const card = document.querySelector(`#cafe-shop-container .merch-card[data-item-name="${CSS.escape(res.cafeBestItemName)}"]`);
       addBestSellerBadge(card);
