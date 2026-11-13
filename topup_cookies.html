@@ -48,6 +48,13 @@
             padding: 2px 7px; border-radius: 999px; background: #ff5c93; color: #fff;
             font-size: 11.5px; font-weight: 700; line-height: 1.4;
         }
+        .pack-x2 {
+            position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap;
+            padding: 2px 8px; border-radius: 999px; background: #222; color: #ffd45c;
+            font-size: 11px; font-weight: 700; line-height: 1.4;
+        }
+        .first-note { margin: 0 12px; padding: 10px 12px; border-radius: 12px; background: #fff6d6; color: #5a4300; font-size: 13px; text-align: center; }
+        .first-note[hidden] { display: none; }
         .pack-name { margin: 8px 0 8px; font-size: 14px; color: #333; font-weight: 600; }
         .pack-btn {
             width: 100%; border: none; border-radius: 999px; padding: 9px 6px; cursor: pointer;
@@ -113,6 +120,7 @@
     </div>
 
     <div class="pack-grid" id="pack-grid"></div>
+    <div class="first-note" id="first-note" hidden><b>1st x2</b> — Your first purchase of each pack gives double Cookies.</div>
 </div>
 
 <div class="buy-overlay" id="buy-overlay" onclick="closeSheet()"></div>
@@ -136,6 +144,10 @@
     let user = null;
     let selected = null;   // index ของแพ็กที่กดเลือก (รอยืนยัน)
     let buying = false;
+    // โปรซื้อครั้งแรกได้ x2 (ครั้งเดียวต่อบัญชีต่อแพ็ก) — Token price ของแพ็กที่ใช้สิทธิ์ไปแล้ว
+    // null = ยังโหลดไม่เสร็จ (ไม่โชว์ x2 จนกว่าจะรู้แน่) — เซิร์ฟเวอร์เป็นคนตัดสินจริงใน exchange_cookies
+    let firstUsed = null;
+    const isFirst = p => Array.isArray(firstUsed) && !firstUsed.includes(p.tokens);
 
     function goBack() {
         blm48Back('profile');
@@ -144,7 +156,7 @@
     function renderPacks() {
         document.getElementById('pack-grid').innerHTML = COOKIE_PACKS.map((p, i) => `
             <div class="pack${selected === i ? ' is-selected' : ''}">
-                <div class="pack-img-wrap"><img src="${p.img}" alt="">${p.bonus ? `<span class="pack-bonus">+${p.bonus}%</span>` : ''}</div>
+                <div class="pack-img-wrap"><img src="${p.img}" alt="">${p.bonus ? `<span class="pack-bonus">+${p.bonus}%</span>` : ''}${isFirst(p) ? '<span class="pack-x2">1st x2</span>' : ''}</div>
                 <div class="pack-name">${p.cookies.toLocaleString()} Cookies</div>
                 <button type="button" class="pack-btn" onclick="selectPack(${i})" ${buying ? 'disabled' : ''} aria-label="Buy ${p.cookies.toLocaleString()} Cookies for ${p.tokens.toLocaleString()} Tokens"><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()}</button>
             </div>`).join('');
@@ -163,6 +175,8 @@
         const bal = Number(user.token || 0);
         const after = bal - p.tokens;
         const short = after < 0;
+        const first = isFirst(p);
+        const total = first ? p.cookies * 2 : p.cookies;
         const note = errMsg
             ? `<div class="buy-sheet-note err"><i class="fa-solid fa-circle-exclamation"></i> ${errMsg}</div>`
             : short
@@ -174,13 +188,14 @@
             <div class="buy-sheet-item">
                 <img src="${p.img}" alt="">
                 <div>
-                    <div class="buy-sheet-item-name">${p.cookies.toLocaleString()} Cookies</div>
-                    <div class="buy-sheet-item-sub">${p.note || '1 Token = 10 Cookies'}</div>
+                    <div class="buy-sheet-item-name">${total.toLocaleString()} Cookies</div>
+                    <div class="buy-sheet-item-sub">${first ? 'First purchase of this pack — x2!' : (p.note || '1 Token = 10 Cookies')}</div>
                 </div>
             </div>
             <div class="buy-sheet-rows">
-                ${p.bonus ? `<div class="buy-sheet-row"><span>Cookies</span><b>${(p.tokens * 10).toLocaleString()}</b></div>
-                <div class="buy-sheet-row"><span>Bonus +${p.bonus}%</span><b style="color:#e0457b">+${(p.cookies - p.tokens * 10).toLocaleString()}</b></div>` : ''}
+                ${p.bonus || first ? `<div class="buy-sheet-row"><span>Cookies</span><b>${(p.tokens * 10).toLocaleString()}</b></div>` : ''}
+                ${p.bonus ? `<div class="buy-sheet-row"><span>Bonus +${p.bonus}%</span><b style="color:#e0457b">+${(p.cookies - p.tokens * 10).toLocaleString()}</b></div>` : ''}
+                ${first ? `<div class="buy-sheet-row"><span>First Purchase x2</span><b style="color:#e0457b">+${p.cookies.toLocaleString()}</b></div>` : ''}
                 <div class="buy-sheet-row"><span>Price</span><b><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</b></div>
                 <div class="buy-sheet-row"><span>Your Balance</span><b>${bal.toLocaleString()} Tokens</b></div>
                 <div class="buy-sheet-row"><span>Balance After</span><b class="${short ? 'neg' : ''}">${short ? '—' : after.toLocaleString() + ' Tokens'}</b></div>
@@ -192,13 +207,13 @@
             </div>`;
     }
 
-    function renderDone(p) {
+    function renderDone(cookies, wasFirst) {
         document.getElementById('buy-sheet').innerHTML = `
             <div class="buy-sheet-handle"></div>
             <div class="buy-done">
                 <div class="buy-done-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="buy-done-title" id="buy-sheet-title">Purchase Complete</div>
-                <div class="buy-done-sub">${p.cookies.toLocaleString()} Cookies have been added to your wallet.</div>
+                <div class="buy-done-sub">${cookies.toLocaleString()} Cookies have been added to your wallet.${wasFirst ? '<br>First purchase x2 applied!' : ''}</div>
             </div>
             <div class="buy-sheet-actions">
                 <button type="button" class="buy-ok" onclick="closeSheet()">Done</button>
@@ -240,7 +255,9 @@
             saveUserSession(user);
             renderBalance();
             buying = false;
-            renderDone(p);
+            if (Array.isArray(firstUsed) && !firstUsed.includes(p.tokens)) firstUsed.push(p.tokens);
+            renderDone(Number(res.cookies || p.cookies), !!res.firstBuyBonus);
+            updateFirstNote();
         } catch (e) {
             console.error('Buy cookies error:', e);
             buying = false;
@@ -264,12 +281,29 @@
         } catch (e) { console.error('refreshBalance error:', e); }
     }
 
+    function updateFirstNote() {
+        document.getElementById('first-note').hidden = !COOKIE_PACKS.some(isFirst);
+    }
+
+    async function loadFirstBuys() {
+        try {
+            const res = await blm48GetCookieFirstBuys(user.username);
+            if (!res || res.status !== 'success') return;
+            firstUsed = (res.used || []).map(Number);
+            if (!buying) renderPacks();
+            // ชีตยังอยู่หน้ายืนยัน (มีปุ่ม #buy-ok) -> อัปเดตยอด x2; หน้า Purchase Complete ไม่ต้องแตะ
+            if (selected !== null && !buying && document.getElementById('buy-ok')) renderSheet();
+            updateFirstNote();
+        } catch (e) { console.error('loadFirstBuys error:', e); }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
         user = getUserSession();
         if (!user) { window.location.href = 'login'; return; }
         renderPacks();
         renderBalance();
         refreshBalance();
+        loadFirstBuys();
     });
 </script>
 </body>

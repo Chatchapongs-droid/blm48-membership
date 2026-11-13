@@ -707,6 +707,10 @@ function blm48ClaimDailyMissionReward(username) {
 function blm48ExchangeCookies(username, tokenPrice) {
   return blm48Rpc('exchange_cookies', { p_username: username, p_token_price: tokenPrice });
 }
+// Top Up Cookies: Token prices of packs this account already used its first-purchase x2 on
+function blm48GetCookieFirstBuys(username) {
+  return blm48Rpc('get_cookie_first_buys', { p_username: username });
+}
 
 // Gacha machine catalog (shop.html) - reads the already-synced collections/items tables.
 function blm48GetGachaCollections(username) {
