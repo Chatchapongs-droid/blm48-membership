@@ -394,7 +394,7 @@
                 iconColor: '#d2691e',
                 title: `ปาคุกกี้ให้ ${escapeHtml(log.member)}`,
                 subtitle: 'Send Cookie',
-                amountText: `-${escapeHtml(log.amount)} 🍪`,
+                amountText: `-${escapeHtml(log.amount)}`,
                 amountColor: '#d2691e',
                 subAmountText: '',
                 timestamp: log.timestamp
@@ -429,7 +429,7 @@
                 iconColor: '#ff69b4',
                 title: `ส่ง "${escapeHtml(log.giftName)}" x${qty} ให้ ${escapeHtml(log.candidateName)}`,
                 subtitle: escapeHtml(log.tier),
-                amountText: `-${totalCost.toLocaleString()} 🍪`,
+                amountText: `-${totalCost.toLocaleString()}`,
                 amountColor: '#ff5376',
                 subAmountText: `+${totalPoints.toLocaleString()} pts`,
                 timestamp: log.timestamp
