@@ -43,7 +43,12 @@
         .pack { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .pack-img-wrap { position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
         .pack-img-wrap img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; }
-        .pack-name { margin: 8px 0 8px; font-size: 14px; color: #333; }
+        .pack-bonus {
+            position: absolute; top: -2px; right: -10px; z-index: 2;
+            padding: 2px 7px; border-radius: 999px; background: #ff5c93; color: #fff;
+            font-size: 11.5px; font-weight: 700; line-height: 1.4;
+        }
+        .pack-name { margin: 8px 0 8px; font-size: 14px; color: #333; font-weight: 600; }
         .pack-btn {
             width: 100%; border: none; border-radius: 999px; padding: 9px 6px; cursor: pointer;
             background: #f9d26b; color: #222; font-family: inherit; font-size: 14px; font-weight: 700;
@@ -114,10 +119,18 @@
 <div class="buy-sheet" id="buy-sheet" role="dialog" aria-modal="true" aria-labelledby="buy-sheet-title"></div>
 
 <script>
-    // แพ็กคุกกี้ (1 Token = 10 Cookies) ซื้อทันทีผ่าน RPC exchange_cookies: หัก Token + เพิ่ม Cookie + บันทึก 'แลกซื้อคุกกี้'
+    // แพ็กคุกกี้ 8 ขั้น (2026-11-13): 1 Token = 10 Cookies + โบนัสตามขนาดแพ็ก (สูงสุด +30%)
+    // ซื้อทันทีผ่าน RPC exchange_cookies — จำนวนคุกกี้จริงคิดฝั่งเซิร์ฟเวอร์ (ตารางเดียวกันนี้) ราคาที่ไม่อยู่ในตารางจะถูกปฏิเสธ
+    // ถ้าแก้ตารางนี้ ต้องแก้ exchange_cookies() ใน Supabase ให้ตรงกันด้วย
     const COOKIE_PACKS = [
-        { tokens: 10,  cookies: 100,  img: 'assets/images/cookies/pack-1.svg' },
-        { tokens: 100, cookies: 1000, img: 'assets/images/cookies/pack-3.svg' },
+        { tokens: 10,   cookies: 100,   bonus: 0,  img: 'assets/images/cookies/pack-1.svg' },
+        { tokens: 50,   cookies: 525,   bonus: 5,  img: 'assets/images/cookies/pack-2.svg' },
+        { tokens: 100,  cookies: 1100,  bonus: 10, img: 'assets/images/cookies/pack-3.svg' },
+        { tokens: 250,  cookies: 2875,  bonus: 15, img: 'assets/images/cookies/pack-4.svg' },
+        { tokens: 400,  cookies: 4800,  bonus: 20, img: 'assets/images/cookies/pack-5.svg', note: 'Enough for 1 Members Design gift' },
+        { tokens: 1000, cookies: 12500, bonus: 25, img: 'assets/images/cookies/pack-6.svg' },
+        { tokens: 2500, cookies: 32500, bonus: 30, img: 'assets/images/cookies/pack-7.svg' },
+        { tokens: 5000, cookies: 65000, bonus: 30, img: 'assets/images/cookies/pack-8.svg' },
     ];
 
     let user = null;
@@ -131,9 +144,9 @@
     function renderPacks() {
         document.getElementById('pack-grid').innerHTML = COOKIE_PACKS.map((p, i) => `
             <div class="pack${selected === i ? ' is-selected' : ''}">
-                <div class="pack-img-wrap"><img src="${p.img}" alt=""></div>
+                <div class="pack-img-wrap"><img src="${p.img}" alt="">${p.bonus ? `<span class="pack-bonus">+${p.bonus}%</span>` : ''}</div>
                 <div class="pack-name">${p.cookies.toLocaleString()} Cookies</div>
-                <button type="button" class="pack-btn" onclick="selectPack(${i})" ${buying ? 'disabled' : ''}><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</button>
+                <button type="button" class="pack-btn" onclick="selectPack(${i})" ${buying ? 'disabled' : ''} aria-label="Buy ${p.cookies.toLocaleString()} Cookies for ${p.tokens.toLocaleString()} Tokens"><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()}</button>
             </div>`).join('');
     }
 
@@ -162,10 +175,12 @@
                 <img src="${p.img}" alt="">
                 <div>
                     <div class="buy-sheet-item-name">${p.cookies.toLocaleString()} Cookies</div>
-                    <div class="buy-sheet-item-sub">1 Token = 10 Cookies</div>
+                    <div class="buy-sheet-item-sub">${p.note || '1 Token = 10 Cookies'}</div>
                 </div>
             </div>
             <div class="buy-sheet-rows">
+                ${p.bonus ? `<div class="buy-sheet-row"><span>Cookies</span><b>${(p.tokens * 10).toLocaleString()}</b></div>
+                <div class="buy-sheet-row"><span>Bonus +${p.bonus}%</span><b style="color:#e0457b">+${(p.cookies - p.tokens * 10).toLocaleString()}</b></div>` : ''}
                 <div class="buy-sheet-row"><span>Price</span><b><i class="fas fa-coins"></i> ${p.tokens.toLocaleString()} Tokens</b></div>
                 <div class="buy-sheet-row"><span>Your Balance</span><b>${bal.toLocaleString()} Tokens</b></div>
                 <div class="buy-sheet-row"><span>Balance After</span><b class="${short ? 'neg' : ''}">${short ? '—' : after.toLocaleString() + ' Tokens'}</b></div>
