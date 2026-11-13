@@ -536,7 +536,7 @@
                     renderSubjectChip(stats, memberName);
                     const rankedFans = Array.isArray(fans) ? fans.filter(f => Number(f.total || 0) > 0) : [];
                     renderTopFans(rankedFans, MODE === 'vip'
-                        ? 'วันนี้ยังไม่มีใครซัพพอร์ตเมมเบอร์คนนี้เลยค่ะ<br>มาเป็น VIP คนแรกของวันกันนะคะ 👑'
+                        ? 'วันนี้ยังไม่มีใครซัพพอร์ตเมมเบอร์คนนี้เลยค่ะ<br>มาเป็น VIP คนแรกของวันกันนะคะ'
                         : 'ยังไม่มีแฟนคลับปาคุกกี้ให้เมมเบอร์คนนี้เลยค่ะ');
                 } catch (error) {
                     console.error("Top fans fetch error:", error);

@@ -537,7 +537,7 @@
         const res = pushIsOn ? await unsubscribeFromPush(savedUsername) : await subscribeToPush(savedUsername);
         if (res.status === "success") {
           pushIsOn = !pushIsOn;
-          cuteToast(pushIsOn ? "เปิดการแจ้งเตือนบนมือถือแล้วค่ะ! 🔔" : "ปิดการแจ้งเตือนบนมือถือแล้วค่ะ");
+          cuteToast(pushIsOn ? "เปิดการแจ้งเตือนบนมือถือแล้วค่ะ!" : "ปิดการแจ้งเตือนบนมือถือแล้วค่ะ");
         } else {
           cuteToast(res.message || "ทำรายการไม่สำเร็จ", "fa-triangle-exclamation");
         }
@@ -669,7 +669,7 @@
     // 🗑️ 4. ฟังก์ชันลบเดี่ยวแบบ Global
     // =========================================================
     window.deleteSingleNoti = async function(id) {
-      const isConfirm = await cuteConfirm("คุณแน่ใจหรือไม่ว่าต้องการลบการแจ้งเตือนนี้? 🗑️");
+      const isConfirm = await cuteConfirm("คุณแน่ใจหรือไม่ว่าต้องการลบการแจ้งเตือนนี้?");
       if (!isConfirm) return;
 
       btnRefresh.querySelector('i').classList.add('fa-spin');

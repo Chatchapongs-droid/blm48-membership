@@ -757,7 +757,7 @@
         sheetOptions = options;
         sheetOnPick = onPick;
         document.getElementById('filter-options').innerHTML = options.map((o, i) =>
-            `<button type="button" class="sheet-option" onclick="pickSheetOption(${i})">${o.value === currentValue ? '✔ ' : ''}${escapeHtml(o.label)}</button>`
+            `<button type="button" class="sheet-option" onclick="pickSheetOption(${i})">${o.value === currentValue ? '<i class="fa-solid fa-check"></i> ' : ''}${escapeHtml(o.label)}</button>`
         ).join('');
         document.getElementById('filter-sheet').classList.add('open');
     }

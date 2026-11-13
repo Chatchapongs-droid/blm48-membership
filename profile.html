@@ -1179,7 +1179,7 @@ function updateSubPageIcon(imgId, fallbackId, iconUrl) {
       if (res && res.status === 'success') {
         profilePushOn = !profilePushOn;
         Swal.fire({ toast: true, position: 'top', icon: 'success', showConfirmButton: false, timer: 1800,
-          title: profilePushOn ? 'เปิดการแจ้งเตือนบนมือถือแล้วค่ะ 🔔' : 'ปิดการแจ้งเตือนบนมือถือแล้วค่ะ' });
+          title: profilePushOn ? 'เปิดการแจ้งเตือนบนมือถือแล้วค่ะ' : 'ปิดการแจ้งเตือนบนมือถือแล้วค่ะ' });
       } else {
         Swal.fire({ icon: 'error', title: 'ทำรายการไม่สำเร็จ', text: (res && res.message) || 'กรุณาลองใหม่อีกครั้งค่ะ', confirmButtonColor: '#40c057' });
       }

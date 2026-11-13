@@ -383,7 +383,7 @@ function reconcileComments(postId, comments) {
 async function actionSharePost(postId, targetPage) {
   if (!postId) return;
   const shareUrl = `${window.location.origin}/${targetPage || 'index'}?post=${encodeURIComponent(postId)}`;
-  const shareData = { title: 'BLM48', text: 'มาดูโพสต์นี้ในแอป BLM48 กันเถอะ! 🌸', url: shareUrl };
+  const shareData = { title: 'BLM48', text: 'มาดูโพสต์นี้ในแอป BLM48 กันเถอะ!', url: shareUrl };
 
   if (navigator.share) {
     try {
@@ -1042,7 +1042,7 @@ function blm48IsReplying(postId) {
 async function blm48SubmitReply(postId, btnElement) {
   const currentUser = getUserSession();
   if (!currentUser || !currentUser.username) {
-    Swal.fire('พบปัญหา 😥', 'กรุณาล็อกอินเข้าสู่ระบบก่อนตอบกลับนะงับ', 'warning');
+    Swal.fire('พบปัญหา', 'กรุณาล็อกอินเข้าสู่ระบบก่อนตอบกลับนะงับ', 'warning');
     return;
   }
   const inputEl = document.getElementById(`comment-input-${postId}`);

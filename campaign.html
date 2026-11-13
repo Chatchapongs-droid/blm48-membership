@@ -130,7 +130,7 @@
 
   function openSortSheet() {
     document.getElementById('sort-options').innerHTML = SORT_OPTIONS.map(o =>
-      `<button type="button" class="sheet-option" onclick="selectSort('${o.value}')">${o.value === currentSort ? '✔ ' : ''}${o.label}</button>`
+      `<button type="button" class="sheet-option" onclick="selectSort('${o.value}')">${o.value === currentSort ? '<i class="fa-solid fa-check"></i> ' : ''}${o.label}</button>`
     ).join('');
     document.getElementById('sort-sheet').classList.add('open');
   }
