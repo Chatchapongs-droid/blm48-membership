@@ -94,15 +94,6 @@
         <div class="token-desc">ใช้โหวตกิจกรรม Major Vote ที่รับ GE Token</div>
     </div>
 
-    <div class="token-item">
-        <div class="token-row">
-            <div class="token-logo logo-cookie"><i class="fas fa-cookie-bite"></i></div>
-            <div class="token-label">Cookie</div>
-            <div class="token-amount" id="cookie-balance">-</div>
-        </div>
-        <div class="token-name"><b>Token name:</b> BLM48 Cookie</div>
-        <div class="token-desc">ใช้มอบให้เมมเบอร์เพื่อสะสม Fan Score และร่วมกิจกรรม Special Fans Day</div>
-    </div>
 </div>
 
 <script>
@@ -112,10 +103,10 @@
         blm48Back('majorvote');
     }
 
-    function showBalances(tokenVal, geTokenVal, cookieVal) {
+    // Cookie ถูกเอาออกจากหน้านี้ (2026-11-13) — ดูยอดคุกกี้ที่หน้า Profile / Top Up Cookies
+    function showBalances(tokenVal, geTokenVal) {
         document.getElementById('token-balance').textContent = Number(tokenVal || 0).toLocaleString();
         document.getElementById('getoken-balance').textContent = Number(geTokenVal || 0).toLocaleString();
-        document.getElementById('cookie-balance').textContent = Number(cookieVal || 0).toLocaleString();
     }
 
     // แสดงยอดจากแคชเดียวกับหน้า Major Vote ก่อน แล้วค่อยดึงค่าจริงจาก Supabase
@@ -124,7 +115,7 @@
             const cached = localStorage.getItem('bnl_vote_wallet_cache') || localStorage.getItem('bnl_user_data_cache');
             if (!cached) return;
             const w = JSON.parse(cached);
-            showBalances(w.Token !== undefined ? w.Token : w.token, w.GEToken !== undefined ? w.GEToken : w.geToken, w.Cookie !== undefined ? w.Cookie : w.cookie);
+            showBalances(w.Token !== undefined ? w.Token : w.token, w.GEToken !== undefined ? w.GEToken : w.geToken);
         } catch (e) { console.error(e); }
     }
 
@@ -132,7 +123,7 @@
         try {
             const wallet = await blm48GetWallet(username);
             if (wallet && wallet.token !== undefined) {
-                showBalances(wallet.token, wallet.geToken, wallet.cookie);
+                showBalances(wallet.token, wallet.geToken);
                 localStorage.setItem('bnl_vote_wallet_cache', JSON.stringify(wallet));
             }
         } catch (e) {

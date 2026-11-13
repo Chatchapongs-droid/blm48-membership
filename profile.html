@@ -442,7 +442,6 @@ body {
             <i class="fas fa-pencil-alt"></i>
           </div>
         </div>
-        <div id="pf-role" class="member-role">MEMBER</div>
       </div>
 
       <div class="stats-bar">
@@ -609,7 +608,7 @@ body {
     }
 
     document.getElementById('pf-name').innerText = user.name || user.username;
-    document.getElementById('pf-role').innerText = (user.role || 'MEMBER').toUpperCase();
+    // ป้ายบอกโรล (MEMBER/USER/ADMIN) ใต้ชื่อถูกเอาออกตามคำขอ (2026-11-13)
     
     const avatarEl = document.getElementById('pf-avatar');
     if (user.profile_img) {

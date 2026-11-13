@@ -385,7 +385,7 @@
 
     .interaction-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
     }
     .btn-interact {
@@ -895,10 +895,6 @@
           <span class="icon-circle"><svg class="ln-ic"><use href="#ic-meh"/></svg></span>
           <span class="btn-label">+ Oshi</span>
         </button>
-        <button id="btn-cookie-trigger" class="btn-interact btn-cookie" onclick="actionCookie()">
-          <span class="icon-circle"><svg class="ln-ic"><use href="#ic-cookie"/></svg></span>
-          <span class="btn-label">+ Cookie</span>
-        </button>
         <button class="btn-interact btn-more" onclick="openMoreMenu()">
           <span class="icon-circle"><svg class="ln-ic"><use href="#ic-more"/></svg></span>
           <span class="btn-label">More</span>
@@ -998,7 +994,7 @@ function renderMemberStatsAndFans() {
     // 🎯 เช็กสถานะแกรดเพื่อเปิด-ปิด การแสดงผลป้ายดีไซน์
     const gradBadge = document.getElementById('mb-grad-badge');
     const gradAvatarIcon = document.getElementById('avatar-grad-icon');
-    const btnCookie = document.getElementById('btn-cookie-trigger');
+    const btnGift = document.getElementById('btn-gift-trigger');
     const nameEl = document.getElementById('mb-name');
     
     if (nameEl) nameEl.innerText = m.name || memberName;
@@ -1010,7 +1006,8 @@ function renderMemberStatsAndFans() {
     if (gradBadge) gradBadge.style.display = isGrad ? 'inline-flex' : 'none';
     if (subEl) subEl.style.display = isGrad ? 'none' : ''; // ป้าย GRADUATED แทนชื่อวง
     if (gradAvatarIcon) gradAvatarIcon.style.display = isGrad ? 'flex' : 'none';
-    if (btnCookie) btnCookie.setAttribute('data-graduated', isGrad ? 'true' : 'false');
+    // ปุ่ม + Cookie ถูกเอาออก (2026-11-13) — สถานะแกรดย้ายมาเก็บที่ปุ่ม Gift แทน
+    if (btnGift) btnGift.setAttribute('data-graduated', isGrad ? 'true' : 'false');
     const thanksBox = document.getElementById('champ-thanks-container');
     if (thanksBox) thanksBox.classList.toggle('is-graduated', isGrad); // ไอคอนหมวกหลังชื่อในการ์ด Special Fans Day
 
@@ -1480,7 +1477,7 @@ function renderMemberStatsAndFans() {
     // 🎁 Gift: แผงส่งของขวัญ (assets/js/member-gift-sheet.js ใช้ร่วมกับหน้า Home)
     function actionGift() {
       if (!checkLoginStatus()) return;
-      if (document.getElementById('btn-cookie-trigger').getAttribute('data-graduated') === 'true') {
+      if (document.getElementById('btn-gift-trigger').getAttribute('data-graduated') === 'true') {
         Swal.fire({ title: 'ส่งของขวัญไม่ได้', text: 'เมมเบอร์ท่านนี้จบการศึกษาแล้วค่ะ', confirmButtonColor: '#ffd75e' });
         return;
       }
