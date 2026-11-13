@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <title>BLM48 Membership | วิธีได้รับ Points</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/shop-orders.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        /* หน้าอธิบายวิธีได้รับ Points (เปิดจากปุ่ม i มุมขวาบนของ Point Shop) — กติกาตรงกับฟังก์ชันฝั่ง Supabase:
+           Fan Score: give_cookie / send_member_gift (1 Cookie = 1 P), like_post / like_comment / add_comment (+9, เฉพาะโพสต์เมมเบอร์)
+           Member Score: member_score_rows() (10 Cookie = 1 P, Like = 1, Post = 10, Comment จากผู้อื่น = 2)
+           ตารางแลกดึงจาก get_point_shop ของบัญชีนี้ จึงตรงกับราคาจริงเสมอ */
+        :root { --pg-ink: #222; --pg-muted: #6b6b6b; --pg-line: #efefef; --pg-gold-soft: #fff6d6; --pg-gold-ink: #6b4e00; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; color: var(--pg-ink); }
+        .page-wrapper { padding: 0 12px 48px; max-width: 640px; margin: 0 auto; }
+
+        .pg-intro { padding: 20px 0 18px; border-bottom: 1px solid var(--pg-line); }
+        .pg-intro h1 { margin: 0; font-size: 20px; font-weight: 700; }
+        .pg-intro p { margin: 8px 0 0; font-size: 14px; line-height: 1.7; color: #444; }
+
+        .pg-section { padding: 22px 0 6px; }
+        .pg-section h2 { margin: 0 0 4px; font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .pg-section h2 .pg-yours { padding: 1px 9px; border-radius: 999px; background: #222; color: #fff; font-size: 11px; font-weight: 600; }
+        .pg-section .pg-lead { margin: 0 0 10px; font-size: 13.5px; color: var(--pg-muted); line-height: 1.6; }
+
+        .pg-rules { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--pg-line); }
+        .pg-rules li { display: flex; align-items: flex-start; gap: 12px; padding: 13px 0; border-bottom: 1px solid var(--pg-line); }
+        .pg-rule-icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: #f5f5f7; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #333; }
+        .pg-rule-body { flex: 1; min-width: 0; }
+        .pg-rule-title { font-size: 14.5px; font-weight: 600; }
+        .pg-rule-desc { margin-top: 2px; font-size: 12.5px; color: var(--pg-muted); line-height: 1.55; }
+        .pg-rule-pts { flex-shrink: 0; font-size: 14.5px; font-weight: 700; white-space: nowrap; }
+
+        .pg-note { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: #f5f5f7; font-size: 13px; line-height: 1.65; color: #333; }
+        .pg-note.gold { background: var(--pg-gold-soft); color: var(--pg-gold-ink); }
+
+        .pg-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+        .pg-table th, .pg-table td { padding: 10px 6px; border-bottom: 1px solid var(--pg-line); text-align: left; }
+        .pg-table th { font-size: 12px; font-weight: 600; color: var(--pg-muted); }
+        .pg-table td:last-child, .pg-table th:last-child { text-align: right; }
+        .pg-table .pg-kind { color: var(--pg-muted); font-size: 12px; }
+
+        .pg-steps { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #333; }
+        .pg-terms { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.8; color: #444; }
+        .pg-loading { padding: 14px 0; font-size: 13px; color: var(--pg-muted); }
+    </style>
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-page-title">วิธีได้รับ Points</div>
+</div>
+
+<div class="page-wrapper">
+    <div class="pg-intro">
+        <h1>Points คืออะไร</h1>
+        <p>Points คือคะแนนสะสมจากการร่วมกิจกรรมภายในแอป BLM48 Membership สามารถนำไปแลกเป็น Token หรือ Cookie ได้ที่ Point Shop
+           โดยบัญชีแฟนคลับจะสะสมเป็น <b>Fan Score</b> และบัญชีเมมเบอร์จะสะสมเป็น <b>Member Score</b> ซึ่งมีวิธีได้รับและอัตราแลกที่แตกต่างกัน</p>
+    </div>
+
+    <div id="pg-sections"></div>
+
+    <div class="pg-section">
+        <h2>อัตราการแลกของบัญชีคุณ</h2>
+        <p class="pg-lead">แพ็กที่ใหญ่ขึ้นจะได้รับโบนัสมากขึ้น อัตราด้านล่างเป็นอัตราปัจจุบันของบัญชีที่เข้าสู่ระบบอยู่</p>
+        <div id="pg-rates"><div class="pg-loading"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลดอัตราการแลก...</div></div>
+    </div>
+
+    <div class="pg-section">
+        <h2>ขั้นตอนการแลก</h2>
+        <ol class="pg-steps">
+            <li>เข้าสู่หน้า Point Shop จากหน้า Profile</li>
+            <li>เลือกหมวด Token หรือ Cookie</li>
+            <li>แตะราคาของแพ็กที่ต้องการ แล้วตรวจสอบรายละเอียด</li>
+            <li>กดยืนยัน ระบบจะหัก Points และเพิ่ม Token หรือ Cookie เข้ากระเป๋าทันที</li>
+        </ol>
+    </div>
+
+    <div class="pg-section">
+        <h2>ข้อกำหนดและเงื่อนไข</h2>
+        <ul class="pg-terms">
+            <li>การแลกจะหักจากคะแนนสะสมจริง และไม่สามารถยกเลิกหรือคืนคะแนนได้หลังยืนยัน</li>
+            <li>สำหรับบัญชีแฟนคลับ ระดับสมาชิก (Copper / Silver / Gold) คำนวณจาก Fan Score ที่คงเหลือ การแลกอาจทำให้ระดับสมาชิกลดลง และส่งผลต่อจำนวนคุกกี้ Membership ประจำเดือน ระบบจะแจ้งเตือนก่อนยืนยันทุกครั้งที่การแลกทำให้ระดับเปลี่ยน</li>
+            <li>อันดับ Top Fans ของเมมเบอร์แต่ละคนไม่ลดลงจากการแลก Points</li>
+            <li>การยกเลิกการกดถูกใจ จะหักคะแนนที่ได้รับจากการกดถูกใจนั้นคืน</li>
+            <li>BLM48 Membership ขอสงวนสิทธิ์ในการเปลี่ยนแปลงอัตราการได้รับและการแลก Points โดยจะแจ้งให้ทราบผ่านแอป</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // กติกาการได้ Points — ต้องตรงกับฟังก์ชันฝั่ง Supabase (ดูคอมเมนต์ด้านบน) ถ้าแก้ฝั่งเซิร์ฟเวอร์ต้องแก้ที่นี่ด้วย
+    const FAN_RULES = [
+        { icon: 'fa-cookie-bite', title: 'มอบคุกกี้ให้เมมเบอร์', desc: 'ทุกคุกกี้ที่มอบให้เมมเบอร์จะได้รับ Points เท่ากับจำนวนคุกกี้', pts: '1 Cookie = 1 P' },
+        { icon: 'fa-gift', title: 'ส่งของขวัญให้เมมเบอร์', desc: 'ได้รับ Points เท่ากับราคาคุกกี้ของของขวัญที่ส่ง', pts: 'ตามราคา' },
+        { icon: 'fa-heart', title: 'กดถูกใจโพสต์ของเมมเบอร์', desc: 'ได้รับต่อการกดถูกใจ 1 ครั้ง', pts: '+9 P' },
+        { icon: 'fa-comment', title: 'แสดงความคิดเห็นหรือตอบกลับในโพสต์ของเมมเบอร์', desc: 'ได้รับต่อความคิดเห็นหรือการตอบกลับ 1 ครั้ง', pts: '+9 P' },
+        { icon: 'fa-thumbs-up', title: 'กดถูกใจความคิดเห็นในโพสต์ของเมมเบอร์', desc: 'ได้รับต่อการกดถูกใจความคิดเห็น 1 ครั้ง', pts: '+9 P' },
+    ];
+    const MEMBER_RULES = [
+        { icon: 'fa-cookie-bite', title: 'ได้รับคุกกี้จากแฟนคลับ', desc: 'รวมคุกกี้ที่ได้รับจากการถูกใจและความคิดเห็นของแฟนคลับ', pts: '10 Cookie = 1 P' },
+        { icon: 'fa-heart', title: 'โพสต์ได้รับการกดถูกใจ', desc: 'ได้รับต่อการกดถูกใจ 1 ครั้ง', pts: '+1 P' },
+        { icon: 'fa-pen-to-square', title: 'ลงโพสต์', desc: 'ได้รับต่อโพสต์ 1 โพสต์', pts: '+10 P' },
+        { icon: 'fa-comment', title: 'โพสต์ได้รับความคิดเห็นจากผู้อื่น', desc: 'ได้รับต่อความคิดเห็น 1 ครั้ง', pts: '+2 P' },
+    ];
+
+    let user = null;
+    const fmt = n => Number(n || 0).toLocaleString();
+
+    function goBack() { blm48Back('point_shop'); }
+
+    function rulesHtml(rules) {
+        return `<ul class="pg-rules">${rules.map(r => `
+            <li>
+                <span class="pg-rule-icon"><i class="fa-solid ${r.icon}"></i></span>
+                <span class="pg-rule-body">
+                    <span class="pg-rule-title">${r.title}</span>
+                    <div class="pg-rule-desc">${r.desc}</div>
+                </span>
+                <span class="pg-rule-pts">${r.pts}</span>
+            </li>`).join('')}</ul>`;
+    }
+
+    function renderSections() {
+        const isMember = String((user && user.role) || '').toLowerCase() === 'member';
+        const fan = `
+            <div class="pg-section">
+                <h2>บัญชีแฟนคลับ (Fan Score)${!isMember ? '<span class="pg-yours">บัญชีของคุณ</span>' : ''}</h2>
+                <p class="pg-lead">สะสมจากการสนับสนุนและร่วมกิจกรรมกับเมมเบอร์</p>
+                ${rulesHtml(FAN_RULES)}
+                <div class="pg-note">คะแนนจากการกดถูกใจและการแสดงความคิดเห็น นับเฉพาะกิจกรรมบนโพสต์ของเมมเบอร์ ไม่รวมโพสต์ในหน้า Fan Post</div>
+                <div class="pg-note gold">Fan Score ยังใช้กำหนดระดับสมาชิก: Gold ตั้งแต่ 10,000 / Silver ตั้งแต่ 5,000 / Copper ต่ำกว่า 5,000 ซึ่งได้รับคุกกี้ Membership ประจำเดือน 1,000 / 500 / 150 คุกกี้ตามลำดับ</div>
+            </div>`;
+        const member = `
+            <div class="pg-section">
+                <h2>บัญชีเมมเบอร์ (Member Score)${isMember ? '<span class="pg-yours">บัญชีของคุณ</span>' : ''}</h2>
+                <p class="pg-lead">สะสมจากการได้รับการสนับสนุนจากแฟนคลับและการลงโพสต์</p>
+                ${rulesHtml(MEMBER_RULES)}
+            </div>`;
+        document.getElementById('pg-sections').innerHTML = isMember ? member + fan : fan + member;
+    }
+
+    async function renderRates() {
+        const box = document.getElementById('pg-rates');
+        try {
+            const res = await blm48GetPointShop(user.username);
+            if (!res || res.status !== 'success' || !Array.isArray(res.packages)) throw new Error('fail');
+            const order = { token: 0, cookie: 1 };
+            const packs = [...res.packages].sort((a, b) => order[a.kind] - order[b.kind] || a.points - b.points);
+            box.innerHTML = `
+                <table class="pg-table">
+                    <thead><tr><th>ใช้ Points</th><th>ได้รับ</th><th>โบนัส</th></tr></thead>
+                    <tbody>${packs.map(p => `
+                        <tr>
+                            <td><b>${fmt(p.points)} P</b></td>
+                            <td>${fmt(p.amount)} <span class="pg-kind">${p.kind === 'token' ? 'Token' : 'Cookie'}</span></td>
+                            <td>${p.bonus ? '+' + p.bonus + '%' : '-'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>`;
+        } catch (e) {
+            console.error('Load point rates error:', e);
+            box.innerHTML = '<div class="pg-loading">ไม่สามารถโหลดอัตราการแลกได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง</div>';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        user = getUserSession();
+        if (!user) { window.location.href = 'login'; return; }
+        renderSections();
+        renderRates();
+    });
+</script>
+</body>
+</html>

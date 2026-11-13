@@ -779,6 +779,7 @@ function updateSubPageIcon(imgId, fallbackId, iconUrl) {
       if (noti.postId) return 'fa-rectangle-list';
       if (noti.notifType === 'shop') return 'fa-bag-shopping';
       if (noti.notifType === 'pointshop') return 'fa-coins';
+      if (noti.notifType === 'monthlycookie') return 'fa-cookie-bite';
       if (noti.notifType === 'wallet') return 'fa-wallet';
       if (noti.notifType === 'preorder') return 'fa-box';
       if (noti.notifType === 'theater') return 'fa-clover';
@@ -837,6 +838,12 @@ function updateSubPageIcon(imgId, fallbackId, iconUrl) {
             item.addEventListener("click", (e) => {
               if (e.target.closest(".btn-del-item")) return;
               window.location.href = "point_shop";
+            });
+          } else if (noti.notifType === "monthlycookie") {
+            item.style.cursor = "pointer";
+            item.addEventListener("click", (e) => {
+              if (e.target.closest(".btn-del-item")) return;
+              window.location.href = "profile";
             });
           } else if (noti.notifType === "wallet") {
             item.style.cursor = "pointer";

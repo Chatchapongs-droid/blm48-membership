@@ -1735,6 +1735,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetUrl = row.post_id
       ? `postdetail?id=${encodeURIComponent(row.post_id)}`
       : notifTypeVal === 'pointshop' ? 'point_shop'
+      : notifTypeVal === 'monthlycookie' ? 'profile'
       : (notifTypeVal === 'shop' ? 'shop.html' : (notifTypeVal === 'wallet' ? 'history.html' : (notifTypeVal === 'preorder' ? 'orders.html' : (notifTypeVal === 'theater' ? 'theater_bookings' : 'notification.html'))));
     showIosNotification({
       avatar: row.avatar,

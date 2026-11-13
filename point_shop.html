@@ -22,6 +22,12 @@
         :root { --ps-gold: #f2b705; --ps-gold-soft: #fff6d6; --ps-ink: #222; --ps-muted: #6b6b6b; --ps-line: #efefef; }
         body { font-family: 'Quicksand', 'Kanit', sans-serif; background: #fff; color: var(--ps-ink); }
         .page-wrapper { padding: 0 12px 40px; }
+        /* ปุ่ม i มุมขวาบน -> หน้า points_guide (วิธีได้รับ Points) */
+        .nav-info-btn {
+            position: absolute; right: 8px; bottom: 6px; width: 44px; height: 44px;
+            display: flex; align-items: center; justify-content: center;
+            color: #222; font-size: 20px; text-decoration: none;
+        }
 
         /* ⭐ ยอด Points */
         .ps-hero { text-align: center; padding: 22px 0 18px; border-bottom: 1px solid var(--ps-line); }
@@ -117,6 +123,7 @@
 <div class="top-navigation-bar">
     <button type="button" class="nav-back-btn" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fa-solid fa-chevron-left"></i></button>
     <div class="top-bar-page-title">Point Shop</div>
+    <a href="points_guide" class="nav-info-btn" aria-label="วิธีได้รับ Points"><i class="fa-solid fa-circle-info"></i></a>
 </div>
 
 <div class="page-wrapper">

@@ -49,5 +49,6 @@ end;
 $function$;
 revoke all on function public.notify_point_shop_open() from public, anon, authenticated;
 
--- 17:00 GMT on 13 Nov = 00:00 on 14 Nov Bangkok (cron runs in GMT); the job removes itself after sending
-select cron.schedule('point-shop-open-notify', '0 17 13 11 *', 'select public.notify_point_shop_open();');
+-- 17:01 GMT on 13 Nov = 00:01 on 14 Nov Bangkok (cron runs in GMT); the job removes itself after sending
+-- (moved from 00:00 to 00:01 on 2026-11-13 via cron.alter_job; the shop itself still opens at 00:00)
+select cron.schedule('point-shop-open-notify', '1 17 13 11 *', 'select public.notify_point_shop_open();');
