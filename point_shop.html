@@ -184,6 +184,7 @@
     const fmt = n => Number(n || 0).toLocaleString();
     const tierOf = pts => TIER_RULES.find(t => pts >= t.min);
     const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+    const openTime = at => new Date(at).toLocaleTimeString("en-GB", { timeZone: "Asia/Bangkok", hour: "2-digit", minute: "2-digit" });
 
     function unitLabel(kind, amount) {
         return kind === 'token' ? (amount === 1 ? 'Token' : 'Tokens') : (amount === 1 ? 'Cookie' : 'Cookies');
@@ -289,7 +290,7 @@
         const preview = document.getElementById('ps-admin-preview');
         if (shop.adminPreview && shop.openAt) {
             const d = new Date(shop.openAt).toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'long', year: 'numeric' });
-            preview.innerHTML = `<i class="fa-solid fa-lock"></i> Admin เท่านั้นที่เห็นร้านนี้ตอนนี้ (แลกได้จริง) · เปิดให้ทุกคน ${d} เวลา 00:00 น.`;
+            preview.innerHTML = `<i class="fa-solid fa-lock"></i> Admin เท่านั้นที่เห็นร้านนี้ตอนนี้ (แลกได้จริง) · เปิดให้ทุกคน ${d} เวลา ${openTime(shop.openAt)} น.`;
             preview.hidden = false;
         } else {
             preview.hidden = true;
@@ -317,7 +318,7 @@
         box.innerHTML = `
             <svg class="ps-opening-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f2b705"/><circle cx="12" cy="12" r="8.3" fill="#ffd43b" stroke="#e8a900" stroke-width="1"/><path d="M10 16.5V7.6h2.6a2.55 2.55 0 0 1 0 5.1H10" fill="none" stroke="#d99a00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <div class="ps-opening-name">Point Shop</div>
-            <div class="ps-opening-title">เปิดร้าน ${dateText} เวลา 00:00 น.</div>
+            <div class="ps-opening-title">เปิดร้าน ${dateText} เวลา ${openTime(shop.openAt)} น.</div>
             <div class="ps-countdown"></div>`;
         box.classList.add('show');
         tick();
