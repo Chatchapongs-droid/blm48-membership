@@ -103,6 +103,9 @@
         .ps-cd-num { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ps-ink); }
         .ps-cd-unit { margin-top: 2px; font-size: 12px; color: #6b4e00; }
 
+        /* Admin เข้าได้ก่อนวันเปิดร้าน (2026-11-13) */
+        .ps-admin-preview { margin-top: 14px; padding: 10px 12px; border-radius: 12px; background: #f1f1f3; color: #333; font-size: 13px; line-height: 1.5; }
+        .ps-admin-preview[hidden] { display: none; }
         .ps-section-title { margin: 26px 0 6px; font-size: 15px; font-weight: 700; }
         .ps-note { font-size: 12.5px; color: var(--ps-muted); line-height: 1.6; }
         .ps-recent-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--ps-line); font-size: 13.5px; }
@@ -126,6 +129,7 @@
         <div class="ps-hero-kind" id="ps-kind"></div>
         <div class="ps-goal" id="ps-goal"></div>
         <div class="ps-toast" id="ps-toast" role="status"></div>
+        <div class="ps-admin-preview" id="ps-admin-preview" hidden></div>
     </div>
     <!-- ⏳ ก่อนเปิดร้าน: ซ่อนทั้งหน้า เหลือแค่เวลาเปิดร้าน (ดู .page-wrapper.is-closed) -->
     <div class="ps-opening" id="ps-opening" aria-live="polite"></div>
@@ -216,7 +220,8 @@
         document.getElementById('ps-list').innerHTML = packs.map(p => {
             const affordable = shop.points >= p.points;
             const can = affordable && shop.isOpen;   // ก่อนเปิดร้าน ดูได้แต่ยังกดแลกไม่ได้
-            const base = p.kind === 'token' ? p.points / 100 : p.points / 10;
+            // จำนวนก่อนโบนัส คิดจากโบนัสของแพ็กเอง (ไม่ผูกกับอัตราแลก ซึ่งกำหนดฝั่งเซิร์ฟเวอร์ใน _point_shop_packages)
+            const base = Math.round(p.amount / (1 + p.bonus / 100));
             const isBest = p.bonus === maxBonus && p.bonus > 0;
             const open = openPackId === p.id && can;
             return `
@@ -268,6 +273,15 @@
     function renderOpening() {
         const box = document.getElementById('ps-opening');
         const closed = !shop.isOpen && !!shop.openAt;
+        // Admin/CEO เปิดใช้ได้ก่อน (เซิร์ฟเวอร์ส่ง adminPreview มา) — แจ้งว่าคนอื่นยังไม่เห็น
+        const preview = document.getElementById('ps-admin-preview');
+        if (shop.adminPreview && shop.openAt) {
+            const d = new Date(shop.openAt).toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'long', year: 'numeric' });
+            preview.innerHTML = `<i class="fa-solid fa-lock"></i> Admin เท่านั้นที่เห็นร้านนี้ตอนนี้ (แลกได้จริง) · เปิดให้ทุกคน ${d} เวลา 00:00 น.`;
+            preview.hidden = false;
+        } else {
+            preview.hidden = true;
+        }
         document.querySelector('.page-wrapper').classList.toggle('is-closed', closed);
         if (!closed) {
             box.classList.remove('show');
