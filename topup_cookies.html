@@ -42,10 +42,6 @@
         }
         .pack { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .pack-img-wrap { position: relative; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; }
-        .pack-img-wrap::after {
-            content: ''; position: absolute; bottom: 4px; left: 16%; right: 16%; height: 9px;
-            border-radius: 50%; background: #efdcf3; z-index: 0;
-        }
         .pack-img-wrap img { position: relative; z-index: 1; width: 100%; height: 100%; object-fit: contain; }
         .pack-name { margin: 8px 0 8px; font-size: 14px; color: #333; }
         .pack-btn {
@@ -107,7 +103,7 @@
 <div class="page-wrapper">
     <div class="my-cookies">
         <div class="my-cookies-label">My Cookies</div>
-        <div class="my-cookies-value"><img src="assets/images/cookies/cookie.png" alt=""><span id="my-cookies">0</span></div>
+        <div class="my-cookies-value"><img src="assets/images/cookies/cookie-icon.svg" alt=""><span id="my-cookies">0</span></div>
         <div class="my-tokens">Balance: <span id="my-tokens">0</span> Tokens</div>
     </div>
 
@@ -120,8 +116,8 @@
 <script>
     // แพ็กคุกกี้ (1 Token = 10 Cookies) ซื้อทันทีผ่าน RPC exchange_cookies: หัก Token + เพิ่ม Cookie + บันทึก 'แลกซื้อคุกกี้'
     const COOKIE_PACKS = [
-        { tokens: 10,  cookies: 100,  img: 'assets/images/cookies/cookie.png' },
-        { tokens: 100, cookies: 1000, img: 'assets/images/cookies/cookie-bag.png' },
+        { tokens: 10,  cookies: 100,  img: 'assets/images/cookies/pack-1.svg' },
+        { tokens: 100, cookies: 1000, img: 'assets/images/cookies/pack-8.svg' },
     ];
 
     let user = null;

@@ -38,3 +38,26 @@
   width: 100%;
   height: 100%;
 }
+
+/* 🍪 ไอคอนคุกกี้ (2026-11-13) — รูป cookies/cookie-icon.svg แทน fa-cookie-bite / fa-cookie ทุกหน้า
+   ใช้ i.fa-… ให้ชนะ thin-icons.css (โหลดทีหลังและใช้ !important เหมือนกัน) */
+i.fa-cookie-bite::before,
+i.fa-cookie::before {
+  content: "" !important;
+  display: inline-block;
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.2em;
+  background: url("../images/cookies/cookie-icon.svg") center / contain no-repeat;
+}
+/* วงกลมที่เคยวาดไอคอนคุกกี้เอง -> ให้รูปคุกกี้เต็มกล่องแทน (เหมือนเหรียญ Token) */
+.token-logo.logo-cookie {
+  background: none !important;
+  box-shadow: none !important;
+}
+.token-logo.logo-cookie > i,
+.token-logo.logo-cookie > i::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
