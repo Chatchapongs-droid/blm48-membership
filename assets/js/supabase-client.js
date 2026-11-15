@@ -137,6 +137,10 @@ function blm48AdminRevealPreorderRandom(adminUsername, orderId) {
 function blm48GetInventory(username) {
   return blm48Rpc('get_inventory', { p_username: username });
 }
+// 📚 สมุดสะสม: ทุกชุดการ์ด/ของสะสม + ช่องที่มีแล้ว/ยังขาด (ช่องที่ยังไม่มีไม่ส่งชื่อ/รูป)
+function blm48GetCollectionAlbum(username) {
+  return blm48Rpc('get_collection_album', { p_username: username });
+}
 function blm48DeleteInventoryItems(username, category, subCollection, itemName, qty) {
   return blm48Rpc('delete_inventory_items', {
     p_username: username,
