@@ -178,7 +178,7 @@
     const c = detail && detail.campaign;
     if (!c) return;
     if (!user) { window.location.href = 'login'; return; }
-    if (!user.role || user.role.toLowerCase() !== 'user') {
+    if (!user.role || !['user','ceo'].includes(user.role.toLowerCase())) {
       Swal.fire({ title: 'คำเตือน', text: 'เฉพาะบัญชีแฟนคลับเท่านั้นที่ซัพพอร์ต Campaign ได้', icon: 'error', confirmButtonColor: '#ff85a2' });
       return;
     }

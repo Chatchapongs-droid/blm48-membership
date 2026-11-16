@@ -4218,7 +4218,7 @@ function setupUserProfile(user) {
   if (nameElement) nameElement.innerText = user.name;
 
   // ถ้าเป็น role user ให้แสดงไอคอนดินสอ
-  if (user.role && user.role.toLowerCase() === 'user') {
+  if (user.role && ['user','ceo'].includes(user.role.toLowerCase())) {
     if (editBtn) editBtn.style.display = 'inline-block';
   } else {
     if (editBtn) editBtn.style.display = 'none';
@@ -4227,7 +4227,7 @@ function setupUserProfile(user) {
   
   // --- แก้ไขชื่อเล่น ---
   async function updateDisplayName() {
-    if (!user || (user.role || '').toLowerCase() !== "user") return;
+    if (!user || !['user','ceo'].includes((user.role || '').toLowerCase())) return;
 
     const { value: newName } = await Swal.fire({
       title: 'แก้ไขชื่อของคุณ',

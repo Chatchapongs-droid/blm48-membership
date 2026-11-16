@@ -969,7 +969,7 @@
 
     const role = (user.role || '').toLowerCase();
     isMemberRole = role === 'member';
-    if (role === 'user') {
+    if (role === 'user' || role === 'ceo') {
       document.getElementById('fanpost-add-btn').style.display = 'inline-flex';
       initFanPostComposer();
     }

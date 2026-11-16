@@ -1608,7 +1608,7 @@ function renderMemberStatsAndFans() {
     function actionCookie() {
       if (!checkLoginStatus()) return;
 
-      if (!user || !user.role || user.role.toLowerCase() !== 'user') {
+      if (!user || !user.role || !['user','ceo'].includes(user.role.toLowerCase())) {
         Swal.fire({ title: 'คำเตือน', text: 'คุณไม่สามารถส่งคุกกี้ได้ เนื่องจากบัญชีนี้มีสถานะเป็นเมมเบอร์หรือแอดมิน', icon: 'error', confirmButtonColor: 'var(--blmem-pink)' });
         return;
       }

@@ -189,7 +189,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     user = getUserSession();
     if (!user) { window.location.href = 'login'; return; }
-    if (!(user.is_admin === true || (user.role && user.role.toLowerCase() === 'admin'))) {
+    if (!(user.is_admin === true || (user.role && ['admin','ceo'].includes(user.role.toLowerCase())))) {
       document.getElementById('access-denied').style.display = 'block';
       return;
     }

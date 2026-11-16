@@ -655,12 +655,12 @@ body {
       document.getElementById('pf-points').innerText = Number(user.fanCookies || 0).toLocaleString();
     }
 
-    if (user.role && user.role.toLowerCase() === 'user') {
+    if (user.role && ['user','ceo'].includes(user.role.toLowerCase())) {
       document.getElementById('edit-name-btn').style.display = 'inline-flex';
     }
 
     // เมนูเฉพาะ Role Admin หรือบัญชีที่ได้รับสิทธิ์ Admin ควบ (is_admin) เท่านั้น (ลิงก์ไปหน้า Admin Dashboard แยกต่างหาก)
-    const isAdmin = (user.role && user.role.toLowerCase() === 'admin') || user.is_admin === true;
+    const isAdmin = (user.role && ['admin','ceo'].includes(user.role.toLowerCase())) || user.is_admin === true;
     const menuAdminDashboard = document.getElementById('menu-admin-dashboard');
     if (menuAdminDashboard) menuAdminDashboard.style.display = isAdmin ? 'flex' : 'none';
     if (isAdmin) loadAdminPendingBadge();
@@ -728,7 +728,7 @@ body {
 
   // --- แก้ไขชื่อเล่น ---
   async function updateDisplayName() {
-    if (!user || user.role.toLowerCase() !== "user") return;
+    if (!user || !['user','ceo'].includes((user.role || '').toLowerCase())) return;
 
     const { value: newName } = await Swal.fire({
       title: 'แก้ไขชื่อของคุณ',
