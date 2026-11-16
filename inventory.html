@@ -544,9 +544,11 @@
         { value: 'all',       label: 'All',             cats: null },
         { value: 'ssr',       label: 'SSR',             cats: ['BLM48 SSR Photo', 'SSR_card'] },
         { value: 'preorder',  label: 'Pre-order',       cats: ['Pre-order'] },
-        { value: 'photobook', label: 'Photobook',       cats: ['BLM48 Photobook'] },
+        { value: 'photobook', label: 'Photobook',       cats: ['BLM48 Photobook', 'Photobook'] },
         { value: 'photocard', label: 'PhotoCard',       cats: ['BLM48 PhotoCard', 'PhotoCard'] },
-        { value: 'photoset',  label: 'PhotoSet',        cats: ['BLM48 PhotoSet'] },
+        { value: 'photoset',  label: 'PhotoSet',        cats: ['BLM48 PhotoSet', 'PhotoSet'] },
+        { value: 'badge',     label: 'Badge',           cats: ['BLM48 Badge', 'Badge'] },
+        { value: 'poster',    label: 'Poster',          cats: ['BLM48 Poster', 'Poster'] },
         { value: 'thankyou',  label: 'Thank You Card',  cats: ['Thank You Card'] },
         { value: 'cafe',      label: 'Cafe',            cats: ['BLM48 Cafe'] },
         { value: 'coaster',   label: 'Coaster',         cats: ['Coaster'] },
@@ -567,8 +569,13 @@
     function categoryLabel(cat) {
         return String(cat || '').replace(/^(BLM48|NPT48)\s+/i, '') || 'Other';
     }
+    // วงของไอเทม: ใช้ group จากคอลเลกชัน (BLM48 / NPT48 / Both) ถ้ามี ไม่งั้นดูจากชื่อหมวด · Both = ขึ้นทั้งสองวง
+    function itemInGroup(item) {
+        const g = item.group || groupOfCategory(item.category);
+        return g === 'Both' || g === currentGroup;
+    }
     function groupItems() {
-        return (globalInventoryData || []).filter(item => groupOfCategory(item.category) === currentGroup);
+        return (globalInventoryData || []).filter(itemInGroup);
     }
 
     let currentSearchQuery = '';    // คำค้นหาชื่อไอเทม (lowercase แล้ว)

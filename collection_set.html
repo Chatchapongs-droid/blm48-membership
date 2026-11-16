@@ -177,7 +177,7 @@
         document.getElementById('head-cover').innerHTML = set.cover
             ? `<img src="${escapeAttr(set.cover)}" alt="" onerror="this.remove()">`
             : '<i class="fa-solid fa-layer-group" style="color:#ccc;font-size:24px"></i>';
-        document.getElementById('head-cat').textContent = (set.group + ' · ' + String(set.category || '').replace(/^(BLM48|NPT48)\s+/, '')).toUpperCase();
+        document.getElementById('head-cat').textContent = ((set.group === 'Both' ? 'BLM48 + NPT48' : set.group) + ' · ' + String(set.category || '').replace(/^(BLM48|NPT48)\s+/, '')).toUpperCase();
         document.getElementById('head-name').textContent = set.name;
         document.getElementById('head-bar').style.width = (set.total ? Math.floor(set.owned * 100 / set.total) : 0) + '%';
         document.getElementById('head-count').innerHTML = `${set.owned}<small>/${set.total}</small>`;

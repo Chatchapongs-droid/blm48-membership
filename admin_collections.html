@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
@@ -50,6 +50,7 @@
         .pill.open { background: #e6f9ee; color: #1a7f45; }
         .pill.scheduled { background: #e8f0ff; color: #2d5bd1; }
         .pill.soldout { background: #fff1f3; color: #d6304f; }
+        .pill.grp { background: #e8f6ff; color: #1d7fb8; }
         .pill.off, .pill.ended { background: #f1f1f1; color: #666; }
         .pill.draft { background: #fff3c4; color: #7a5a00; }
         .pill.low { background: #fff1f3; color: #d6304f; }
@@ -79,7 +80,7 @@
 </div>
 
 <div class="page-wrapper">
-    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>This page is for Admin accounts only</div>
     <div id="page-content">
         <div class="tools">
             <input id="search" class="search" type="search" placeholder="Search collection..." oninput="render()">
@@ -96,7 +97,7 @@
 
   // สถานะคำนวณที่เซิร์ฟเวอร์ (_admin_collection_state)
   // 'draft' = ปิดอยู่และยังไม่เคยขาย (แยกจาก 'off' ที่เคยขายแล้วปิด) / เรียงตามลำดับนี้ งานที่ต้องดูอยู่บนสุด
-  const STATES = { open: 'เปิดขาย', scheduled: 'ตั้งเวลาไว้', draft: 'ร่าง', soldout: 'สต็อกหมด', off: 'ปิดขาย', ended: 'หมดเวลา' };
+  const STATES = { open: 'On sale', scheduled: 'Scheduled', draft: 'Draft', soldout: 'Sold out', off: 'Off sale', ended: 'Ended' };
   const ORDER = Object.keys(STATES);
   const FILTERS = [['all', 'All'], ['open', 'On sale'], ['scheduled', 'Scheduled'], ['draft', 'Draft'], ['soldout', 'Sold out'], ['off', 'Off'], ['ended', 'Ended']];
   const stateOf = c => c.state === 'off' && !Number(c.sold) ? 'draft' : c.state;
@@ -108,7 +109,7 @@
 
   function fmt(n) { return Number(n || 0).toLocaleString(); }
   function fmtDate(s) {
-    return s ? new Date(s).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+    return s ? new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
   }
   function setFilter(k) { filter = k; store('adminColsFilter', k); render(); }
 
@@ -116,21 +117,21 @@
     const list = document.getElementById('col-list');
     try {
       const res = await blm48AdminListCollections(user.username);
-      if (!res || res.status !== 'success') { list.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      if (!res || res.status !== 'success') { list.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'Could not load data')}</div>`; return; }
       cols = res.data || [];
       render();
     } catch (e) {
-      list.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+      list.innerHTML = '<div class="empty-state">Cannot connect to the server</div>';
     }
   }
 
   function rowHtml(c) {
     const st = stateOf(c);
     let when = '';
-    if (st === 'scheduled') when = '<i class="fa-regular fa-clock"></i> เปิดขาย ' + fmtDate(c.saleStartAt);
-    else if (c.saleEndAt && st !== 'ended') when = 'ปิดขาย ' + fmtDate(c.saleEndAt);
-    else if (st === 'ended') when = 'ปิดไปเมื่อ ' + fmtDate(c.saleEndAt);
-    else if (st === 'draft') when = 'ยังไม่เปิดขาย · แตะเพื่อตั้งค่าต่อ';
+    if (st === 'scheduled') when = '<i class="fa-regular fa-clock"></i> Opens ' + fmtDate(c.saleStartAt);
+    else if (c.saleEndAt && st !== 'ended') when = 'Ends ' + fmtDate(c.saleEndAt);
+    else if (st === 'ended') when = 'Ended ' + fmtDate(c.saleEndAt);
+    else if (st === 'draft') when = 'Not on sale yet · tap to continue setting up';
     const cover = c.coverImage ? `style="background-image:url('${escapeAttr(c.coverImage)}')"` : '';
     return `
       <a class="c-row ${st}" href="admin_collection?id=${encodeURIComponent(c.collectionId)}">
@@ -138,10 +139,11 @@
         <div class="c-info">
           <div class="c-name">${escapeHtml(c.name || c.collectionId)}</div>
           <div class="c-sub">
-            <span class="pill ${st}">${STATES[st] || st}</span>${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> ใกล้หมด</span>' : ''}
+            <span class="pill ${st}">${STATES[st] || st}</span>${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> Low stock</span>' : ''}
+            ${c.group && c.group !== 'BLM48' ? `<span class="pill grp">${c.group === 'Both' ? 'BLM48 + NPT48' : escapeHtml(c.group)}</span>` : ''}
             <span class="c-price"><i class="fa-solid fa-coins"></i> ${fmt(c.costTokens)}${c.allowX5 ? ` · x5 ${fmt(c.costTokensX5)}` : ''}</span>
           </div>
-          <div class="c-when">${c.isLucky ? 'Lucky Box' : `${fmt(c.itemCount)} การ์ด${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''} · เหลือ ${fmt(c.stock)} · ขายแล้ว ${fmt(c.sold)}`}${when ? '<br>' + when : ''}</div>
+          <div class="c-when">${c.isLucky ? 'Lucky Box' : `${fmt(c.itemCount)} cards${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''} · ${fmt(c.stock)} left · ${fmt(c.sold)} sold`}${when ? '<br>' + when : ''}</div>
         </div>
         <i class="fa-solid fa-chevron-right c-arrow"></i>
       </a>`;
@@ -157,7 +159,7 @@
     const rows = found.filter(c => filter === 'all' || stateOf(c) === filter)
       .sort((a, b) => ORDER.indexOf(stateOf(a)) - ORDER.indexOf(stateOf(b)));
     document.getElementById('col-list').innerHTML = rows.length ? rows.map(rowHtml).join('')
-      : `<div class="empty-state">${q || filter !== 'all' ? 'ไม่พบคอลเลกชัน' : 'ยังไม่มีคอลเลกชัน · กด + เพื่อสร้าง'}</div>`;
+      : `<div class="empty-state">${q || filter !== 'all' ? 'No collections found' : 'No collections yet · tap + to create one'}</div>`;
   }
 
   window.addEventListener('DOMContentLoaded', () => {

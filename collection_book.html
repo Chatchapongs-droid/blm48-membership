@@ -166,7 +166,8 @@
     function writePref(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
     function groupColor(g) { return (GROUPS.find(x => x.key === g) || GROUPS[0]).color; }
-    function setsOfGroup() { return album.filter(s => s.group === currentGroup); }
+    function inGroup(s, g) { return s.group === g || s.group === 'Both'; } // Both = ขึ้นทั้งสองวง
+    function setsOfGroup() { return album.filter(s => inGroup(s, currentGroup)); }
     function pct(o, t) { return t ? Math.floor(o * 100 / t) : 0; }
 
     function renderTabs() {
@@ -249,7 +250,7 @@
             const data = await blm48GetCollectionAlbum(user.username);
             album = Array.isArray(data) ? data : [];
             // ถ้าวงที่จำไว้ไม่มีชุดเลย แต่อีกวงมี ให้เปิดวงที่มี
-            if (!album.some(s => s.group === currentGroup) && album.length) currentGroup = album[0].group;
+            if (!album.some(s => inGroup(s, currentGroup)) && album.length) currentGroup = album[0].group === 'NPT48' ? 'NPT48' : 'BLM48';
             render();
         } catch (err) {
             console.error(err);

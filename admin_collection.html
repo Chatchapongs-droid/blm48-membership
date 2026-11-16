@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
@@ -201,7 +201,7 @@
 </div>
 
 <div class="page-wrapper">
-    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>This page is for Admin accounts only</div>
     <div id="page-content">
         <div id="root"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
     </div>
@@ -213,19 +213,30 @@
 
 <script>
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-  const STATES = { open: 'เปิดขายอยู่', scheduled: 'ตั้งเวลาไว้', soldout: 'สต็อกหมด', off: 'ปิดขาย', draft: 'ร่าง', ended: 'หมดเวลาขาย' };
+  const STATES = { open: 'On sale', scheduled: 'Scheduled', soldout: 'Sold out', off: 'Off sale', draft: 'Draft', ended: 'Ended' };
   const TABS = [['info', 'Info'], ['sale', 'Sale'], ['cards', 'Cards'], ['stock', 'Stock']];
   const params = new URLSearchParams(location.search);
   let collectionId = params.get('id');
   let user = null;
   let saved = null;   // ข้อมูลล่าสุดจากเซิร์ฟเวอร์
   let draft = null;   // ค่าที่กำลังแก้ { ...collection, items: [{ key, id, name, imageUrl, pct, tag, stock, sold, add }] }
-  let categories = ['Coaster', 'PhotoCard', 'BLM48 PhotoCard', 'NPT48 Badge', 'NPT48 PhotoCard', 'BLM48 Photobook'];
-  // ตัวเลือกใน Drop Down: หมวดมาตรฐาน + หมวดที่ใช้อยู่แล้วในระบบ + หมวดปัจจุบันของคอลเลกชันนี้ (ไม่ให้หาย)
-  function categoryOptions() {
-    const list = [...categories];
-    const cur = String(draft.category || '').trim();
-    if (cur && !list.includes(cur)) list.push(cur);
+  // วงของสินค้า (เก็บใน collections.group_name) + หมวดสินค้าแบบไม่มีชื่อวง
+  const GROUPS = [['BLM48', 'BLM48'], ['NPT48', 'NPT48'], ['Both', 'Both groups']];
+  let categoryTypes = ['Coaster', 'PhotoCard', 'Badge', 'PhotoSet', 'Photobook', 'Poster'];
+  function splitCategory(cat) { return String(cat || '').replace(/^(BLM48|NPT48)\s+/i, '').trim() || 'Coaster'; }
+  function groupOf(c) {
+    if (['BLM48', 'NPT48', 'Both'].includes(c.group)) return c.group;
+    return /^NPT48/i.test(String(c.category || '')) ? 'NPT48' : 'BLM48';
+  }
+  // ค่าที่เก็บใน collections.category (Inventory/Collection Book ยังอ่านชื่อวงนำหน้าได้เหมือนเดิม)
+  function composeCategory(group, type) {
+    if (group === 'NPT48') return 'NPT48 ' + type;
+    if (group === 'Both') return type;
+    return type === 'Coaster' ? 'Coaster' : 'BLM48 ' + type;
+  }
+  function typeOptions() {
+    const list = [...categoryTypes];
+    if (draft.type && !list.includes(draft.type)) list.push(draft.type);
     return [...new Set(list)];
   }
   let tab = TABS.some(([k]) => k === params.get('tab')) ? params.get('tab') : 'info';
@@ -236,7 +247,7 @@
 
   function fmt(n) { return Number(n || 0).toLocaleString(); }
   function fmtDate(s) {
-    return s ? new Date(s).toLocaleString('th-TH', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
+    return s ? new Date(s).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '';
   }
   // ISO <-> ช่อง datetime-local (เวลาเครื่อง)
   function toLocalInput(iso) {
@@ -277,7 +288,7 @@
 
   function toDraft(c) {
     return {
-      name: c.name || '', description: c.description || '', coverImage: c.coverImage || '', category: c.category || 'Coaster',
+      name: c.name || '', description: c.description || '', coverImage: c.coverImage || '', group: groupOf(c), type: splitCategory(c.category),
       backImage: c.backImage || '', backStyle: c.backStyle === 'shape' ? 'shape' : 'card',
       on: !!c.on, costTokens: c.costTokens ?? '', costTokensX5: c.costTokensX5 ?? '', allowX5: c.allowX5 !== false,
       maxDrawsPerAccount: c.maxDrawsPerAccount ?? '', saleStartAt: toLocalInput(c.saleStartAt), saleEndAt: toLocalInput(c.saleEndAt),
@@ -296,13 +307,13 @@
     const root = document.getElementById('root');
     try {
       const res = await blm48AdminGetCollection(user.username, collectionId);
-      if (!res || res.status !== 'success') { root.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      if (!res || res.status !== 'success') { root.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'Could not load data')}</div>`; return; }
       saved = res.data;
-      if (Array.isArray(res.categories)) categories = [...new Set([...categories, ...res.categories.filter(Boolean)])];
+      if (Array.isArray(res.categories)) categoryTypes = [...new Set([...categoryTypes, ...res.categories.filter(Boolean).map(splitCategory)])];
       draft = toDraft(saved);
       render();
     } catch (e) {
-      root.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+      root.innerHTML = '<div class="empty-state">Cannot connect to the server</div>';
     }
   }
 
@@ -325,31 +336,31 @@
   // ตรวจก่อนบันทึก -> { msg, tab } ข้อแรกที่ผิด (ตรงกับที่เซิร์ฟเวอร์ตรวจ) / tab = แท็บที่ต้องไปแก้
   function validate() {
     const e = (msg, tab) => ({ msg, tab });
-    if (!draft.name.trim()) return e('กรุณากรอกชื่อคอลเลกชัน', 'info');
+    if (!draft.name.trim()) return e('Please enter a collection name', 'info');
     const cost = Number(draft.costTokens);
-    if (draft.costTokens === '' || !Number.isInteger(cost) || cost < 0) return e('ราคาสุ่ม 1 ครั้งต้องเป็นจำนวนเต็ม', 'sale');
+    if (draft.costTokens === '' || !Number.isInteger(cost) || cost < 0) return e('x1 price must be a whole number', 'sale');
     if (draft.allowX5) {
       const c5 = Number(draft.costTokensX5);
-      if (draft.costTokensX5 === '' || !Number.isInteger(c5) || c5 < 0) return e('ราคาสุ่ม x5 ต้องเป็นจำนวนเต็ม', 'sale');
+      if (draft.costTokensX5 === '' || !Number.isInteger(c5) || c5 < 0) return e('x5 price must be a whole number', 'sale');
     }
-    if (draft.maxDrawsPerAccount !== '' && !(Number.isInteger(Number(draft.maxDrawsPerAccount)) && Number(draft.maxDrawsPerAccount) >= 1)) return e('จำกัดครั้งต่อบัญชีต้องตั้งแต่ 1 ขึ้นไป หรือเว้นว่าง', 'sale');
-    if (draft.saleStartAt && draft.saleEndAt && new Date(draft.saleEndAt) <= new Date(draft.saleStartAt)) return e('เวลาปิดขายต้องหลังเวลาเปิดขาย', 'sale');
+    if (draft.maxDrawsPerAccount !== '' && !(Number.isInteger(Number(draft.maxDrawsPerAccount)) && Number(draft.maxDrawsPerAccount) >= 1)) return e('Limit per account must be 1 or more, or left empty', 'sale');
+    if (draft.saleStartAt && draft.saleEndAt && new Date(draft.saleEndAt) <= new Date(draft.saleStartAt)) return e('Sale end must be after sale start', 'sale');
     if (!saved.isLucky) {
       const names = new Set();
       for (const i of draft.items) {
-        if (!i.name.trim()) return e('การ์ดทุกใบต้องมีชื่อ', 'cards');
-        if (!i.imageUrl) return e(`การ์ด "${i.name}" ยังไม่มีรูป`, 'cards');
-        if (!(Number(i.pct) >= 0)) return e(`อัตราออกของ "${i.name}" ไม่ถูกต้อง`, 'cards');
-        if (i.add !== '' && !Number.isInteger(Number(i.add))) return e(`จำนวนคงเหลือของ "${i.name}" ต้องเป็นจำนวนเต็ม`, 'cards');
+        if (!i.name.trim()) return e('Every card needs a name', 'cards');
+        if (!i.imageUrl) return e(`Card "${i.name}" has no image`, 'cards');
+        if (!(Number(i.pct) >= 0)) return e(`Rate for "${i.name}" is not valid`, 'cards');
+        if (i.add !== '' && !Number.isInteger(Number(i.add))) return e(`Remaining stock for "${i.name}" must be a whole number`, 'cards');
         const n = i.name.trim().toLowerCase();
-        if (names.has(n)) return e(`มีการ์ดชื่อ "${i.name}" ซ้ำกัน`, 'cards');
+        if (names.has(n)) return e(`Card name "${i.name}" is used twice`, 'cards');
         names.add(n);
       }
     }
     if (draft.on && !saved.isLucky) {
-      if (!draft.coverImage) return e('ต้องมีรูปปกก่อนเปิดขาย', 'info');
-      if (!draft.items.length) return e('ต้องมีการ์ดอย่างน้อย 1 ใบก่อนเปิดขาย', 'cards');
-      if (!draft.items.some(i => i.stock + (Number(i.add) || 0) > 0 && Number(i.pct) > 0)) return e('ต้องมีการ์ดที่มีสต็อกและอัตราออกมากกว่า 0 ก่อนเปิดขาย', 'stock');
+      if (!draft.coverImage) return e('Add a cover image before going on sale', 'info');
+      if (!draft.items.length) return e('Add at least 1 card before going on sale', 'cards');
+      if (!draft.items.some(i => i.stock + (Number(i.add) || 0) > 0 && Number(i.pct) > 0)) return e('Need at least one card with stock and a rate above 0 before going on sale', 'stock');
     }
     return null;
   }
@@ -358,12 +369,12 @@
   function readiness() {
     const t = totals();
     return [
-      { label: 'ชื่อ', ok: !!draft.name.trim(), tab: 'info' },
-      { label: 'รูปปก', ok: !!draft.coverImage, tab: 'info' },
-      { label: 'ราคา', ok: draft.costTokens !== '' && Number(draft.costTokens) >= 0, tab: 'sale' },
-      { label: 'การ์ด', ok: draft.items.length > 0 && draft.items.every(i => i.name.trim() && i.imageUrl), tab: 'cards' },
-      { label: 'อัตรา 100%', ok: draft.items.length > 0 && Math.abs(t.pct - 100) < 0.01, tab: 'cards' },
-      { label: 'สต็อก', ok: t.stock > 0, tab: 'stock' }
+      { label: 'Name', ok: !!draft.name.trim(), tab: 'info' },
+      { label: 'Cover', ok: !!draft.coverImage, tab: 'info' },
+      { label: 'Price', ok: draft.costTokens !== '' && Number(draft.costTokens) >= 0, tab: 'sale' },
+      { label: 'Cards', ok: draft.items.length > 0 && draft.items.every(i => i.name.trim() && i.imageUrl), tab: 'cards' },
+      { label: 'Rates 100%', ok: draft.items.length > 0 && Math.abs(t.pct - 100) < 0.01, tab: 'cards' },
+      { label: 'Stock', ok: t.stock > 0, tab: 'stock' }
     ];
   }
 
@@ -380,13 +391,13 @@
       <div class="ch-row">
         <div class="ch-cover ${draft.coverImage ? 'has' : ''}" ${cover}>${draft.coverImage ? '' : '<i class="fa-regular fa-image"></i>'}</div>
         <div class="ch-info">
-          <div class="ch-name">${escapeHtml(draft.name.trim() || 'ยังไม่มีชื่อ')}</div>
+          <div class="ch-name">${escapeHtml(draft.name.trim() || 'Untitled')}</div>
           <div class="ch-sub"><span class="pill ${state}">${STATES[state] || state}</span>
-            ${saved.isLucky ? 'Lucky Box' : `${fmt(draft.items.length)} การ์ด · เหลือ ${fmt(t.stock)}${saved.sold ? ` · ขายแล้ว ${fmt(saved.sold)}` : ''}`}</div>
+            ${saved.isLucky ? 'Lucky Box' : `${fmt(draft.items.length)} cards · ${fmt(t.stock)} left${saved.sold ? ` · ${fmt(saved.sold)} sold` : ''}`}</div>
         </div>
       </div>
       ${ready.length ? `<div class="ready">
-        <span class="ready-title">${ready.every(r => r.ok) ? '<i class="fa-solid fa-circle-check"></i> พร้อมเปิดขาย · เปิดสวิตช์ในแท็บ Sale' : 'ก่อนเปิดขาย'}</span>
+        <span class="ready-title">${ready.every(r => r.ok) ? '<i class="fa-solid fa-circle-check"></i> Ready to sell · turn on sale in the Sale tab' : 'Before going on sale'}</span>
         ${ready.every(r => r.ok) ? '' : ready.map(r => `<button type="button" class="ready-item ${r.ok ? 'ok' : ''}" onclick="setTab('${r.tab}')"><i class="fa-${r.ok ? 'solid fa-circle-check' : 'regular fa-circle'}"></i> ${r.label}</button>`).join('')}
       </div>` : ''}`;
   }
@@ -413,16 +424,16 @@
     const isNew = !saved.collectionId;
     if (leaving) {
       bar.innerHTML = `<div class="save-bar-in">
-          <div class="save-bar-txt"><b>ยังไม่ได้บันทึก</b> · ออกจากหน้านี้เลยไหม?</div>
-          <button class="btn btn-del" onclick="leaveNow()">ออกไม่บันทึก</button>
-          <button class="btn btn-ghost" onclick="leaving = false; renderSaveBar();">อยู่ต่อ</button>
+          <div class="save-bar-txt"><b>Not saved</b> · Leave this page?</div>
+          <button class="btn btn-del" onclick="leaveNow()">Leave without saving</button>
+          <button class="btn btn-ghost" onclick="leaving = false; renderSaveBar();">Stay</button>
         </div>`;
       return;
     }
     bar.innerHTML = `<div class="save-bar-in">
         <div class="save-bar-txt">${err
           ? `<button type="button" class="err-link" onclick="setTab('${err.tab}')"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml(err.msg)} <i class="fa-solid fa-arrow-right"></i></button>`
-          : (isNew ? `<b>New collection</b> · ${draft.on ? 'เปิดขายทันที' : 'บันทึกเป็นร่าง (ยังไม่ขาย)'}` : 'มีการแก้ไขที่ยังไม่บันทึก')}</div>
+          : (isNew ? `<b>New collection</b> · ${draft.on ? 'Goes on sale right away' : 'Saved as draft (not on sale)'}` : 'You have unsaved changes')}</div>
         ${isNew ? '' : '<button class="btn btn-del" onclick="cancelAll()">Cancel</button>'}
         <button class="btn btn-up" id="save-btn" onclick="saveAll()" ${err ? 'disabled' : ''} style="white-space:nowrap;"><i class="fa-solid fa-check"></i> ${isNew ? 'Create' : 'Save'}</button>
       </div>`;
@@ -444,7 +455,7 @@
     const btn = document.getElementById('save-btn');
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...'; }
     const col = {
-      name: draft.name.trim(), description: draft.description.trim(), coverImage: draft.coverImage || null, category: draft.category,
+      name: draft.name.trim(), description: draft.description.trim(), coverImage: draft.coverImage || null, category: composeCategory(draft.group, draft.type), group: draft.group,
       backImage: draft.backImage || null, backStyle: draft.backStyle,
       costTokens: Number(draft.costTokens), costTokensX5: draft.costTokensX5 === '' ? null : Number(draft.costTokensX5), allowX5: draft.allowX5,
       maxDrawsPerAccount: draft.maxDrawsPerAccount === '' ? null : Number(draft.maxDrawsPerAccount),
@@ -460,7 +471,7 @@
       if (!res || res.status !== 'success') {
         renderSaveBar();
         const b = document.getElementById('save-bar');
-        b.querySelector('.save-bar-txt').innerHTML = `<span class="err"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml((res && res.message) || 'บันทึกไม่สำเร็จ')}</span>`;
+        b.querySelector('.save-bar-txt').innerHTML = `<span class="err"><i class="fa-solid fa-circle-exclamation"></i> ${escapeHtml((res && res.message) || 'Could not save')}</span>`;
         return;
       }
       changed = true;
@@ -470,11 +481,11 @@
       }
       window.onbeforeunload = null;
       await load();
-      toast(res.message || 'บันทึกแล้ว');
+      toast(res.message || 'Saved');
     } catch (e) {
       saving = false;
       renderSaveBar();
-      toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่อีกครั้ง');
+      toast('Cannot connect to the server, please try again');
     }
   }
 
@@ -512,39 +523,43 @@
     const isNew = !saved.collectionId;
     const coverStyle = draft.coverImage ? `style="background-image:url('${escapeAttr(draft.coverImage)}')"` : '';
     document.getElementById('pane-info').innerHTML = `
-      ${saved.isLucky ? '<div class="msg ok">Lucky Box สุ่มจากสต็อกของคอลเลกชันเก่า · แก้ได้เฉพาะข้อมูล ราคา และเวลาขาย</div>' : ''}
+      ${saved.isLucky ? '<div class="msg ok">Lucky Box draws from old collections\' stock · only info, price and sale time can be edited</div>' : ''}
       <div class="form-field">
-        <label>รูปปก (แสดงใน Shop)</label>
+        <label>Cover image (shown in Shop)</label>
         <div class="cover-edit">
           <div class="cover-box ${draft.coverImage ? 'has' : ''}" ${coverStyle}>${draft.coverImage ? '' : '<i class="fa-regular fa-image"></i>'}</div>
           <div>
             <button type="button" class="btn-mini" onclick="pickImage('cover')"><i class="fa-solid fa-upload"></i> ${draft.coverImage ? 'Change' : 'Upload'}</button>
-            <div class="note" style="margin-top:6px;">รูปสี่เหลี่ยมจัตุรัส ไม่เกิน 5MB</div>
+            <div class="note" style="margin-top:6px;">Square image, up to 5MB</div>
           </div>
         </div>
       </div>
       ${saved.isLucky ? '' : `<div class="form-field">
-        <label>รูปด้านหลังการ์ด (หน้าดู 3D ตอนกด Flip)</label>
+        <label>Card back image (3D viewer, when flipped)</label>
         <div class="cover-edit">
           <div class="cover-box back-box ${draft.backImage ? 'has' : ''} ${draft.backStyle === 'shape' ? 'is-shape' : ''}" ${draft.backImage ? `style="background-image:url('${escapeAttr(draft.backImage)}')"` : ''}>${draft.backImage ? '' : '<i class="fa-solid fa-rotate"></i>'}</div>
           <div>
             <button type="button" class="btn-mini" onclick="pickImage('back')"><i class="fa-solid fa-upload"></i> ${draft.backImage ? 'Change' : 'Upload'}</button>
-            ${draft.backImage ? `<button type="button" class="btn-mini" onclick="draft.backImage = ''; renderInfo(); renderSaveBar();">ลบ</button>` : ''}
+            ${draft.backImage ? `<button type="button" class="btn-mini" onclick="draft.backImage = ''; renderInfo(); renderSaveBar();">Remove</button>` : ''}
             <div class="seg" style="margin-top:8px;">
-              <button type="button" class="${draft.backStyle !== 'shape' ? 'active' : ''}" onclick="setField('backStyle', 'card'); renderInfo();">การ์ดสี่เหลี่ยม</button>
-              <button type="button" class="${draft.backStyle === 'shape' ? 'active' : ''}" onclick="setField('backStyle', 'shape'); renderInfo();">ตามรูป (PNG พื้นใส)</button>
+              <button type="button" class="${draft.backStyle !== 'shape' ? 'active' : ''}" onclick="setField('backStyle', 'card'); renderInfo();">Rectangle card</button>
+              <button type="button" class="${draft.backStyle === 'shape' ? 'active' : ''}" onclick="setField('backStyle', 'shape'); renderInfo();">Image shape (transparent PNG)</button>
             </div>
-            <div class="note" style="margin-top:4px;">ใช้กับทุกการ์ดในคอลเลกชันนี้ · ไม่ใส่ = ด้านหลังสีเหลืองพร้อมโลโก้</div>
+            <div class="note" style="margin-top:4px;">Used for every card in this collection · empty = yellow back with logo</div>
           </div>
         </div>
       </div>`}
-      <div class="form-field"><label>ชื่อคอลเลกชัน</label><input type="text" maxlength="120" value="${escapeAttr(draft.name)}" oninput="setField('name', this.value, true)"></div>
-      <div class="form-field"><label>คำอธิบาย</label><textarea maxlength="400" oninput="setField('description', this.value, true)">${escapeHtml(draft.description)}</textarea></div>
-      <div class="form-field"><label>หมวดในกระเป๋า (Inventory)</label>
-        <select onchange="setField('category', this.value)">${categoryOptions().map(c =>
-          `<option value="${escapeAttr(c)}"${c === draft.category ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>
+      <div class="form-field"><label>Collection name</label><input type="text" maxlength="120" value="${escapeAttr(draft.name)}" oninput="setField('name', this.value, true)"></div>
+      <div class="form-field"><label>Description</label><textarea maxlength="400" oninput="setField('description', this.value, true)">${escapeHtml(draft.description)}</textarea></div>
+      <div class="form-field"><label>Group</label>
+        <div class="seg">${GROUPS.map(([k, label]) => `<button type="button" class="${draft.group === k ? 'active' : ''}" onclick="setField('group', '${k}'); renderInfo();">${label}</button>`).join('')}</div>
+        <div class="note">${draft.group === 'Both' ? 'Shows under both BLM48 and NPT48 in Inventory and Collection Book' : `Shows under ${draft.group} in Inventory and Collection Book`}</div>
       </div>
-      <div class="field-label">ตัวอย่างใน Shop</div>
+      <div class="form-field"><label>Category</label>
+        <select onchange="setField('type', this.value)">${typeOptions().map(c =>
+          `<option value="${escapeAttr(c)}"${c === draft.type ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>
+      </div>
+      <div class="field-label">Shop preview</div>
       <div id="preview"></div>
       ${!isNew && !saved.isLucky ? `<div class="del-zone" id="del-zone">${delZoneHtml()}</div>` : ''}`;
     renderPreview();
@@ -557,7 +572,7 @@
     el.innerHTML = `<div class="preview">
         <div class="preview-img" ${img}></div>
         <div class="preview-body">
-          <div class="preview-name">${escapeHtml(draft.name || 'ชื่อคอลเลกชัน')}</div>
+          <div class="preview-name">${escapeHtml(draft.name || 'Collection name')}</div>
           <div class="preview-desc">${escapeHtml(draft.description || 'Limited collection - draw for a chance at rare members')}</div>
           <div class="preview-btns"><span><i class="fa-solid fa-coins"></i> ${fmt(draft.costTokens)} · x1</span>${draft.allowX5 ? `<span><i class="fa-solid fa-coins"></i> ${fmt(draft.costTokensX5)} · x5</span>` : ''}</div>
         </div>
@@ -566,7 +581,7 @@
 
   function delZoneHtml() {
     return saved.sold > 0
-      ? `<div class="note">ขายไปแล้ว ${fmt(saved.sold)} ครั้ง ลบไม่ได้ · ถ้าไม่อยากขายต่อ ให้ปิดสวิตช์ "เปิดขาย" ในแท็บ Sale</div>`
+      ? `<div class="note">${fmt(saved.sold)} sold, so it cannot be deleted · to stop selling, turn off "On sale" in the Sale tab</div>`
       : '<button type="button" class="btn-danger" onclick="askDelete()"><i class="fa-solid fa-trash"></i> Delete Collection</button>';
   }
 
@@ -580,34 +595,34 @@
   function renderSale() {
     const startPast = draft.saleStartAt && new Date(draft.saleStartAt) <= new Date();
     let hint;
-    if (!draft.on) hint = 'ปิดอยู่ · แฟนยังไม่เห็นคอลเลกชันนี้ใน Shop';
-    else if (draft.saleStartAt && !startPast) hint = `จะขึ้นใน Shop เป็น "Coming Soon" และเปิดให้สุ่มตอน ${fmtDate(fromLocalInput(draft.saleStartAt))}`;
-    else hint = 'แฟนเห็นและสุ่มได้ทันทีหลังบันทึก' + (draft.saleStartAt ? '' : ' (ระบบจะตั้งเวลาเปิดเป็นตอนนี้ และส่งแจ้งเตือน "เปิดขายแล้ว")');
+    if (!draft.on) hint = 'Off · fans cannot see this collection in Shop yet';
+    else if (draft.saleStartAt && !startPast) hint = `Shows in Shop as "Coming Soon" and opens for draws at ${fmtDate(fromLocalInput(draft.saleStartAt))}`;
+    else hint = 'Fans can see and draw right after saving' + (draft.saleStartAt ? '' : ' (start time is set to now and an "on sale" notification is sent)');
     document.getElementById('pane-sale').innerHTML = `
       <div class="sale-switch">
         <div class="txt">
-          <b>เปิดขาย</b>
+          <b>On sale</b>
           <div class="note" style="margin-top:3px;">${escapeHtml(hint)}</div>
         </div>
-        <button type="button" class="switch ${draft.on ? 'on' : ''}" role="switch" aria-checked="${draft.on}" aria-label="เปิดขาย" onclick="toggleOn()"></button>
+        <button type="button" class="switch ${draft.on ? 'on' : ''}" role="switch" aria-checked="${draft.on}" aria-label="On sale" onclick="toggleOn()"></button>
       </div>
-      <div class="section-title">ราคา (Token)</div>
+      <div class="section-title">Price (Token)</div>
       <div class="row2">
-        <div class="form-field"><label>สุ่ม 1 ครั้ง</label><input type="number" inputmode="numeric" min="0" step="1" value="${escapeAttr(draft.costTokens)}" oninput="setField('costTokens', this.value, true)"></div>
-        <div class="form-field"><label>สุ่ม x5</label><input type="number" inputmode="numeric" min="0" step="1" value="${escapeAttr(draft.costTokensX5)}" ${draft.allowX5 ? '' : 'disabled'} oninput="setField('costTokensX5', this.value, true)"></div>
+        <div class="form-field"><label>Draw x1</label><input type="number" inputmode="numeric" min="0" step="1" value="${escapeAttr(draft.costTokens)}" oninput="setField('costTokens', this.value, true)"></div>
+        <div class="form-field"><label>Draw x5</label><input type="number" inputmode="numeric" min="0" step="1" value="${escapeAttr(draft.costTokensX5)}" ${draft.allowX5 ? '' : 'disabled'} oninput="setField('costTokensX5', this.value, true)"></div>
       </div>
       <label class="note" style="display:flex;align-items:center;gap:8px;font-size:13px;color:#444;margin:-2px 0 12px;">
-        <input type="checkbox" ${draft.allowX5 ? 'checked' : ''} onchange="draft.allowX5 = this.checked; renderSale(); renderPreview(); renderSaveBar();"> เปิดให้สุ่ม x5
-        ${draft.allowX5 && draft.costTokens !== '' ? `<span class="note">(ปกติ 5 ครั้ง = ${fmt(Number(draft.costTokens) * 5)})</span>` : ''}
+        <input type="checkbox" ${draft.allowX5 ? 'checked' : ''} onchange="draft.allowX5 = this.checked; renderSale(); renderPreview(); renderSaveBar();"> Allow x5 draws
+        ${draft.allowX5 && draft.costTokens !== '' ? `<span class="note">(5 single draws = ${fmt(Number(draft.costTokens) * 5)})</span>` : ''}
       </label>
-      <div class="form-field"><label>จำกัดจำนวนครั้งต่อบัญชี</label><input type="number" inputmode="numeric" min="1" step="1" placeholder="ไม่จำกัด" value="${escapeAttr(draft.maxDrawsPerAccount)}" oninput="setField('maxDrawsPerAccount', this.value)"></div>
-      <div class="section-title">เวลาขาย</div>
+      <div class="form-field"><label>Draw limit per account</label><input type="number" inputmode="numeric" min="1" step="1" placeholder="No limit" value="${escapeAttr(draft.maxDrawsPerAccount)}" oninput="setField('maxDrawsPerAccount', this.value)"></div>
+      <div class="section-title">Sale time</div>
       ${['saleStartAt', 'saleEndAt'].map(k => `
       <div class="form-field">
-        <label class="label-row">${k === 'saleStartAt' ? 'เปิดขาย' : 'ปิดขาย'}${draft[k] ? `<button type="button" class="link-btn" onclick="setField('${k}', ''); renderSale();">ล้าง</button>` : ''}</label>
+        <label class="label-row">${k === 'saleStartAt' ? 'Sale start' : 'Sale end'}${draft[k] ? `<button type="button" class="link-btn" onclick="setField('${k}', ''); renderSale();">Clear</button>` : ''}</label>
         <input type="datetime-local" value="${escapeAttr(draft[k])}" onchange="setField('${k}', this.value); renderSale();">
       </div>`).join('')}
-      <div class="note">เว้นว่าง "ปิดขาย" = ขายไปจนกว่าจะปิดเองหรือสต็อกหมด · เวลาเป็นเวลาของเครื่องนี้</div>`;
+      <div class="note">Empty "Sale end" = sells until turned off or sold out · times are in this device's time zone</div>`;
   }
 
   function toggleOn() {
@@ -621,37 +636,37 @@
   function rateSumHtml() {
     const t = totals();
     const pctOk = Math.abs(t.pct - 100) < 0.01;
-    return `<span>${fmt(draft.items.length)} การ์ด · SSR ${fmt(t.ssr)}</span>
-        <span>อัตรารวม <b class="${pctOk ? 'good' : 'bad'}">${t.pct}%</b>${pctOk || !draft.items.length ? '' : ' · ควรรวมได้ 100%'}</span>
-        <span>SSR รวม <b>${t.ssrPct}%</b></span>`;
+    return `<span>${fmt(draft.items.length)} cards · SSR ${fmt(t.ssr)}</span>
+        <span>Total rate <b class="${pctOk ? 'good' : 'bad'}">${t.pct}%</b>${pctOk || !draft.items.length ? '' : ' · should add up to 100%'}</span>
+        <span>SSR total <b>${t.ssrPct}%</b></span>`;
   }
   function setCardFilter(k) { cardFilter = k; renderCards(); }
 
   function renderCards() {
     const t = totals();
     const names = draft.items.map(i => i.name.trim().toLowerCase());
-    const FILTERS = [['all', 'ทั้งหมด', () => true], ['normal', 'ปกติ', i => i.tag !== 'SSR'], ['ssr', 'SSR', i => i.tag === 'SSR']];
+    const FILTERS = [['all', 'All', () => true], ['normal', 'Normal', i => i.tag !== 'SSR'], ['ssr', 'SSR', i => i.tag === 'SSR']];
     if (!t.ssr) cardFilter = 'all';
     const shown = draft.items.filter(FILTERS.find(([k]) => k === cardFilter)[2]);
     document.getElementById('pane-cards').innerHTML = `
       <div class="rate-sum">${rateSumHtml()}</div>
       <div class="tools-row">
-        <button type="button" class="${draft.items.length ? 'btn-mini' : 'btn btn-up'}" onclick="document.getElementById('file-many').click()"><i class="fa-solid fa-images"></i> Upload หลายรูป</button>
-        <button type="button" class="btn-mini" onclick="addCardRow()"><i class="fa-solid fa-plus"></i> เพิ่มการ์ด</button>
+        <button type="button" class="${draft.items.length ? 'btn-mini' : 'btn btn-up'}" onclick="document.getElementById('file-many').click()"><i class="fa-solid fa-images"></i> Upload images</button>
+        <button type="button" class="btn-mini" onclick="addCardRow()"><i class="fa-solid fa-plus"></i> Add card</button>
         <button type="button" class="btn-mini btn-pb-pick" onclick="pickPhotobook(this)"><i class="fa-solid fa-book"></i> Photobook</button>
-        <button type="button" class="btn-mini" onclick="toggleBox('auto-box')" ${draft.items.length ? '' : 'disabled'}><i class="fa-solid fa-percent"></i> ตั้งอัตราอัตโนมัติ</button>
+        <button type="button" class="btn-mini" onclick="toggleBox('auto-box')" ${draft.items.length ? '' : 'disabled'}><i class="fa-solid fa-percent"></i> Auto rates</button>
       </div>
       <div class="auto-box" id="auto-box">
-        <div class="note" style="margin-bottom:8px;">ใส่อัตราออก SSR รวมทั้งหมด ระบบจะแบ่งให้ SSR แต่ละใบเท่ากัน และแบ่งที่เหลือให้การ์ดปกติเท่ากัน</div>
-        <div class="inline-row"><input type="number" id="auto-ssr" min="0" max="100" step="0.01" value="${t.ssr ? (t.ssrPct || 2) : 0}" ${t.ssr ? '' : 'disabled'}><span class="note">% SSR รวม</span>
+        <div class="note" style="margin-bottom:8px;">Enter the total SSR rate. It is split evenly across SSR cards, and the rest is split evenly across normal cards</div>
+        <div class="inline-row"><input type="number" id="auto-ssr" min="0" max="100" step="0.01" value="${t.ssr ? (t.ssrPct || 2) : 0}" ${t.ssr ? '' : 'disabled'}><span class="note">% SSR total</span>
           <button type="button" class="btn btn-up" onclick="autoRates()">Apply</button></div>
-        ${t.ssr ? '' : '<div class="note" style="margin-top:6px;">ยังไม่มีการ์ด SSR · กดปุ่ม SSR ที่การ์ดก่อน ถ้าต้องการ</div>'}
+        ${t.ssr ? '' : '<div class="note" style="margin-top:6px;">No SSR cards yet · tap SSR on a card first if you need one</div>'}
       </div>
       ${t.ssr ? `<div class="seg">${FILTERS.map(([k, label, fn]) => `<button type="button" class="${k === cardFilter ? 'active' : ''}" onclick="setCardFilter('${k}')">${label} <span>${draft.items.filter(fn).length}</span></button>`).join('')}</div>` : ''}
       <div id="card-list">${draft.items.length ? shown.map(i => cardHtml(i, names)).join('')
-        : `<div class="empty-cards"><i class="fa-regular fa-images"></i><b>ยังไม่มีการ์ด</b>
-             เลือกรูปการ์ดทั้งหมดทีเดียวด้วย "Upload หลายรูป" · ชื่อการ์ดจะตั้งจากชื่อไฟล์ และไฟล์ที่ขึ้นต้นด้วย SSR จะติดป้าย SSR ให้</div>`}</div>
-      <div class="note" style="margin-top:10px;">อัตราออกจริงคิดเฉพาะการ์ดที่ยังมีสต็อก ถ้าใบไหนหมด โอกาสของใบที่เหลือจะเพิ่มขึ้นตามสัดส่วน · การ์ดที่ขายไปแล้วลบหรือเปลี่ยนชื่อไม่ได้</div>`;
+        : `<div class="empty-cards"><i class="fa-regular fa-images"></i><b>No cards yet</b>
+             Pick all card images at once with "Upload images" · card names come from file names, and files starting with SSR get the SSR tag</div>`}</div>
+      <div class="note" style="margin-top:10px;">Real rates only count cards with stock left; when a card runs out, the others go up in proportion · sold cards cannot be deleted or renamed</div>`;
   }
 
   function cardHtml(i, names) {
@@ -660,18 +675,18 @@
     const img = i.imageUrl ? `style="background-image:url('${escapeAttr(i.imageUrl)}')"` : '';
     return `
       <div class="card-row ${dup ? 'dup' : ''}" data-key="${i.key}">
-        <div class="card-thumb ${i.imageUrl ? 'has' : ''}" ${img} onclick="pickImage('${i.key}')" title="เปลี่ยนรูป">
+        <div class="card-thumb ${i.imageUrl ? 'has' : ''}" ${img} onclick="pickImage('${i.key}')" title="Change image">
           ${i.imageUrl ? '' : '<i class="fa-regular fa-image"></i>'}${i.tag === 'SSR' ? '<span class="ssr-badge">SSR</span>' : ''}
         </div>
         <div class="card-main">
           <div class="card-top">
-            <input type="text" data-f="name" maxlength="120" placeholder="ชื่อการ์ด เช่น Bumblebee - New Ship" value="${escapeAttr(i.name)}" ${i.sold > 0 ? 'readonly title="ขายไปแล้ว เปลี่ยนชื่อไม่ได้"' : ''} oninput="setCard('${i.key}', 'name', this.value)">
+            <input type="text" data-f="name" maxlength="120" placeholder="Card name, e.g. Bumblebee - New Ship" value="${escapeAttr(i.name)}" ${i.sold > 0 ? 'readonly title="Sold, cannot rename"' : ''} oninput="setCard('${i.key}', 'name', this.value)">
             <button type="button" class="ssr-toggle ${i.tag === 'SSR' ? 'on' : ''}" onclick="toggleSsr('${i.key}')">SSR</button>
-            <button type="button" class="icon-btn" onclick="removeCard('${i.key}')" ${i.sold > 0 ? 'disabled title="ขายไปแล้ว ลบไม่ได้"' : 'title="ลบการ์ด"'} aria-label="ลบการ์ด"><i class="fa-solid fa-trash"></i></button>
+            <button type="button" class="icon-btn" onclick="removeCard('${i.key}')" ${i.sold > 0 ? 'disabled title="Sold, cannot delete"' : 'title="Delete card"'} aria-label="Delete card"><i class="fa-solid fa-trash"></i></button>
           </div>
           <div class="card-fields">
-            <label>อัตรา <input type="number" min="0" step="0.01" inputmode="decimal" value="${escapeAttr(i.pct)}" oninput="setCard('${i.key}', 'pct', this.value)"> %</label>
-            <label>${i.id ? 'คงเหลือ' : 'สต็อก'} <input type="number" min="0" step="1" inputmode="numeric" class="stock-add ${add ? 'changed' : ''}" data-remain="${i.key}" placeholder="0" value="${escapeAttr(remainValue(i))}" oninput="setRemain('${i.key}', this.value)"></label>
+            <label>Rate <input type="number" min="0" step="0.01" inputmode="decimal" value="${escapeAttr(i.pct)}" oninput="setCard('${i.key}', 'pct', this.value)"> %</label>
+            <label>${i.id ? 'Left' : 'Stock'} <input type="number" min="0" step="1" inputmode="numeric" class="stock-add ${add ? 'changed' : ''}" data-remain="${i.key}" placeholder="0" value="${escapeAttr(remainValue(i))}" oninput="setRemain('${i.key}', this.value)"></label>
             ${i.id ? `<span class="stock-now">${stockNowHtml(i)}</span>` : ''}
           </div>
         </div>
@@ -686,7 +701,7 @@
   }
   function stockNowHtml(i) {
     const add = Number(i.add) || 0;
-    return `${add ? `เดิม <b>${fmt(i.stock)}</b> · ${add > 0 ? '+' : ''}${fmt(add)}` : `เหลือ <b>${fmt(i.stock)}</b>`} · ขายแล้ว ${fmt(i.sold)}`;
+    return `${add ? `was <b>${fmt(i.stock)}</b> · ${add > 0 ? '+' : ''}${fmt(add)}` : `<b>${fmt(i.stock)}</b> left`} · ${fmt(i.sold)} sold`;
   }
   function setRemain(key, v) {
     const c = findCard(key);
@@ -734,8 +749,8 @@
   // เพิ่มเล่มจากหน้า Admin Photobook เป็นไอเทม: ใช้รูปปกหน้าของเล่ม (ระบบผูกเล่มด้วยรูปปก) คนที่ได้ไปเปิดอ่านเป็นหนังสือ 3D ได้
   function pickPhotobook(btn) {
     blm48TogglePhotobookPicker(btn, user.username, b => {
-      if (draft.items.some(i => i.imageUrl === b.coverUrl)) return toast('เล่มนี้อยู่ในคอลเลกชันแล้ว');
-      if (!draft.items.length && (!String(draft.category || '').trim() || draft.category === 'Coaster')) { draft.category = 'BLM48 Photobook'; renderInfo(); }
+      if (draft.items.some(i => i.imageUrl === b.coverUrl)) return toast('This photobook is already in the collection');
+      if (!draft.items.length && draft.type === 'Coaster') { draft.type = 'Photobook'; renderInfo(); }
       addCard(b.title, b.coverUrl);
       cardFilter = 'all';
       renderCards(); renderSaveBar();
@@ -762,7 +777,7 @@
     removed = { item: c, idx };
     draft.items.splice(idx, 1);
     renderCards(); renderSaveBar();
-    toast(`ลบ "${c.name || 'การ์ด'}" แล้ว`, 'เอากลับ', undoRemove);
+    toast(`Removed "${c.name || 'card'}"`, 'Undo', undoRemove);
   }
   function undoRemove() {
     if (!removed) return;
@@ -775,12 +790,12 @@
     const ssr = draft.items.filter(i => i.tag === 'SSR');
     const normal = draft.items.filter(i => i.tag !== 'SSR');
     let ssrTotal = ssr.length ? Number(document.getElementById('auto-ssr').value) : 0;
-    if (!(ssrTotal >= 0 && ssrTotal <= 100)) { toast('% SSR ต้องอยู่ระหว่าง 0 - 100'); return; }
+    if (!(ssrTotal >= 0 && ssrTotal <= 100)) { toast('SSR % must be between 0 and 100'); return; }
     if (!normal.length) ssrTotal = 100;
     ssr.forEach(i => { i.pct = round4(ssrTotal / ssr.length); });
     normal.forEach(i => { i.pct = round4((100 - ssrTotal) / normal.length); });
     renderCards(); renderSaveBar();
-    toast('ตั้งอัตราออกแล้ว · กด Save เพื่อบันทึก');
+    toast('Rates set · tap Save to keep them');
   }
 
   // ----- Stock -----
@@ -789,38 +804,38 @@
     const pending = draft.items.filter(i => i.id && Number(i.add));
     document.getElementById('pane-stock').innerHTML = `
       <div class="rate-sum">
-        <span>เหลือรวม <b>${fmt(draft.items.reduce((s, i) => s + i.stock, 0))}</b></span>
-        <span>ขายแล้ว <b>${fmt(saved.sold)}</b></span>
-        ${pending.length ? `<span>หลังบันทึก <b class="good">${fmt(t.stock)}</b></span>` : ''}
+        <span>Total left <b>${fmt(draft.items.reduce((s, i) => s + i.stock, 0))}</b></span>
+        <span>Sold <b>${fmt(saved.sold)}</b></span>
+        ${pending.length ? `<span>After save <b class="good">${fmt(t.stock)}</b></span>` : ''}
       </div>
-      <div class="section-title">เติมสต็อกทุกใบ</div>
+      <div class="section-title">Restock every card</div>
       <div class="inline-row" style="margin-bottom:6px;">
         <input type="number" id="bulk-add" step="1" inputmode="numeric" placeholder="+50">
-        <button type="button" class="btn btn-up" onclick="bulkAdd(false)" ${draft.items.length ? '' : 'disabled'}>ทุกใบ</button>
-        <button type="button" class="btn-mini" onclick="bulkAdd(true)" ${draft.items.some(i => i.tag !== 'SSR') ? '' : 'disabled'}>เฉพาะการ์ดปกติ</button>
+        <button type="button" class="btn btn-up" onclick="bulkAdd(false)" ${draft.items.length ? '' : 'disabled'}>All cards</button>
+        <button type="button" class="btn-mini" onclick="bulkAdd(true)" ${draft.items.some(i => i.tag !== 'SSR') ? '' : 'disabled'}>Normal cards only</button>
       </div>
-      <div class="note">ใส่จำนวนติดลบเพื่อลดสต็อกได้ · มีผลตอนกด Save</div>
-      ${draft.items.length ? `<div class="section-title">คงเหลือรายใบ <span class="note">พิมพ์จำนวนที่ต้องการให้เหลือได้เลย · น้อยไปมาก</span></div>
+      <div class="note">Use a negative number to reduce stock · applies when you tap Save</div>
+      ${draft.items.length ? `<div class="section-title">Stock per card <span class="note">type the amount you want left · lowest first</span></div>
       <div class="stock-list">${draft.items.slice().sort((a, b) => (a.stock + (Number(a.add) || 0)) - (b.stock + (Number(b.add) || 0))).map(i => {
         const after = Math.max(i.stock + (Number(i.add) || 0), 0);
         return `<div class="stock-item ${after === 0 ? 'zero' : ''}">
-          <span class="si-name">${i.tag === 'SSR' ? '<b class="ssr-tag">SSR</b> ' : ''}${escapeHtml(i.name || '(ไม่มีชื่อ)')}</span>
-          <span class="si-num">${Number(i.add) && i.id ? `<s>${fmt(i.stock)}</s> ` : ''}<input type="number" min="0" step="1" inputmode="numeric" class="si-input ${Number(i.add) ? 'changed' : ''}" data-remain="${i.key}" value="${escapeAttr(remainValue(i))}" placeholder="0" oninput="setRemain('${i.key}', this.value); this.classList.toggle('changed', !!Number(findCard('${i.key}').add))" aria-label="คงเหลือ ${escapeAttr(i.name)}"></span>
+          <span class="si-name">${i.tag === 'SSR' ? '<b class="ssr-tag">SSR</b> ' : ''}${escapeHtml(i.name || '(no name)')}</span>
+          <span class="si-num">${Number(i.add) && i.id ? `<s>${fmt(i.stock)}</s> ` : ''}<input type="number" min="0" step="1" inputmode="numeric" class="si-input ${Number(i.add) ? 'changed' : ''}" data-remain="${i.key}" value="${escapeAttr(remainValue(i))}" placeholder="0" oninput="setRemain('${i.key}', this.value); this.classList.toggle('changed', !!Number(findCard('${i.key}').add))" aria-label="Stock left ${escapeAttr(i.name)}"></span>
         </div>`; }).join('')}</div>
-      <div class="note" style="margin-top:6px;">ถ้ามีคนสุ่มระหว่างที่แก้ จำนวนหลังบันทึกจะลดลงตามที่ขายไป</div>` : ''}
-      <div class="section-title">ประวัติสต็อก</div>
+      <div class="note" style="margin-top:6px;">If someone draws while you edit, the saved amount goes down by what was sold</div>` : ''}
+      <div class="section-title">Stock history</div>
       ${(saved.logs || []).length ? saved.logs.map(l => `
         <div class="log-row">
           <div>${escapeHtml(l.itemName || '-')}<div class="log-meta">${escapeHtml(l.by || '')} · ${fmtDate(l.at)}</div></div>
-          <div style="text-align:right;"><span class="${l.delta > 0 ? 'd-plus' : 'd-minus'}">${l.delta > 0 ? '+' : ''}${fmt(l.delta)}</span><div class="log-meta">เหลือ ${fmt(l.stockAfter)}</div></div>
-        </div>`).join('') : '<div class="note">ยังไม่มีประวัติ</div>'}`;
+          <div style="text-align:right;"><span class="${l.delta > 0 ? 'd-plus' : 'd-minus'}">${l.delta > 0 ? '+' : ''}${fmt(l.delta)}</span><div class="log-meta">${fmt(l.stockAfter)} left</div></div>
+        </div>`).join('') : '<div class="note">No history yet</div>'}`;
   }
   function bulkAdd(normalOnly) {
     const n = Number(document.getElementById('bulk-add').value);
-    if (!Number.isInteger(n) || n === 0) { toast('ใส่จำนวนเป็นจำนวนเต็ม เช่น 50'); return; }
+    if (!Number.isInteger(n) || n === 0) { toast('Enter a whole number, e.g. 50'); return; }
     draft.items.filter(i => !normalOnly || i.tag !== 'SSR').forEach(i => { i.add = String((Number(i.add) || 0) + n); });
     renderCards(); renderStock(); renderSaveBar();
-    toast(`${n > 0 ? '+' : ''}${n} ให้ ${normalOnly ? 'การ์ดปกติ' : 'ทุกใบ'} · กด Save เพื่อบันทึก`);
+    toast(`${n > 0 ? '+' : ''}${n} to ${normalOnly ? 'normal cards' : 'all cards'} · tap Save to keep it`);
   }
 
   // ===== อัปโหลดรูป =====
@@ -834,7 +849,7 @@
     const file = e.target.files && e.target.files[0];
     e.target.value = '';
     if (!file) return;
-    if (!file.type.startsWith('image/') || file.size > MAX_IMAGE_BYTES) { toast('กรุณาเลือกไฟล์รูปภาพขนาดไม่เกิน 5MB'); return; }
+    if (!file.type.startsWith('image/') || file.size > MAX_IMAGE_BYTES) { toast('Please choose an image up to 5MB'); return; }
     toast('Uploading...');
     try {
       const url = await blm48UploadImageToBucket('app-assets', prefix(), file);
@@ -843,10 +858,10 @@
       else { const c = findCard(uploadTarget); if (c) c.imageUrl = url; renderCards(); }
       renderSale();
       renderSaveBar();
-      toast('อัปโหลดแล้ว · กด Save เพื่อบันทึก');
+      toast('Uploaded · tap Save to keep it');
     } catch (err) {
       console.error('Collection image upload error:', err);
-      toast('อัปโหลดรูปไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+      toast('Upload failed, please try again');
     }
   });
 
@@ -872,13 +887,13 @@
       }
     }
     renderCards(); renderStock(); renderSaveBar();
-    toast(`เพิ่ม ${done} การ์ด${failed ? ` · ไม่สำเร็จ ${failed}` : ''}${big ? ` · ข้าม ${big} รูปที่ใหญ่เกิน 5MB` : ''}`);
+    toast(`Added ${done} cards${failed ? ` · ${failed} failed` : ''}${big ? ` · skipped ${big} images over 5MB` : ''}`);
   });
 
   // ===== ลบคอลเลกชัน (เฉพาะที่ยังไม่มีคนซื้อ) =====
   function askDelete() {
     document.getElementById('del-zone').innerHTML = `
-      <div class="confirm-box"><b>ลบ “${escapeHtml(saved.name || saved.collectionId)}” และการ์ดทั้งหมดถาวร?</b> ย้อนกลับไม่ได้
+      <div class="confirm-box"><b>Permanently delete “${escapeHtml(saved.name || saved.collectionId)}” and all its cards?</b> This cannot be undone
         <div id="del-msg" style="margin-top:6px;"></div>
         <div class="confirm-actions">
           <button type="button" class="btn-cancel" onclick="document.getElementById('del-zone').innerHTML = delZoneHtml()">Cancel</button>
@@ -897,9 +912,9 @@
         blm48Back(listUrl(), { refresh: true });
         return;
       }
-      document.getElementById('del-msg').textContent = (res && res.message) || 'ลบไม่สำเร็จ';
+      document.getElementById('del-msg').textContent = (res && res.message) || 'Could not delete';
     } catch (e) {
-      document.getElementById('del-msg').textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาลองใหม่อีกครั้ง';
+      document.getElementById('del-msg').textContent = 'Cannot connect to the server, please try again';
     }
     btn.disabled = false;
     btn.textContent = 'Delete';
