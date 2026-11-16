@@ -33,6 +33,10 @@ AS $function$
     where coalesce(c.draw_mode, 'normal') <> 'lucky'
       and c.category not in ('BLM48 Cafe', 'BLM48 Photobook')
       and (c.sale_start_at is null or c.sale_start_at <= now())
+      -- show only collections that have actually gone on sale (opened day 1 onward)
+      and (coalesce(c.status, '') ilike any (array['open', 'active', 'sold out'])
+           or c.open_notified_at is not null
+           or exists (select 1 from public.inventory sv where sv.collection_id = c.collection_id))
   ),
   numbered as (
     select *,
