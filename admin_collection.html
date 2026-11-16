@@ -220,7 +220,14 @@
   let user = null;
   let saved = null;   // ข้อมูลล่าสุดจากเซิร์ฟเวอร์
   let draft = null;   // ค่าที่กำลังแก้ { ...collection, items: [{ key, id, name, imageUrl, pct, tag, stock, sold, add }] }
-  let categories = ['Coaster', 'PhotoCard', 'BLM48 PhotoCard', 'NPT48 Badge', 'NPT48 PhotoCard'];
+  let categories = ['Coaster', 'PhotoCard', 'BLM48 PhotoCard', 'NPT48 Badge', 'NPT48 PhotoCard', 'BLM48 Photobook'];
+  // ตัวเลือกใน Drop Down: หมวดมาตรฐาน + หมวดที่ใช้อยู่แล้วในระบบ + หมวดปัจจุบันของคอลเลกชันนี้ (ไม่ให้หาย)
+  function categoryOptions() {
+    const list = [...categories];
+    const cur = String(draft.category || '').trim();
+    if (cur && !list.includes(cur)) list.push(cur);
+    return [...new Set(list)];
+  }
   let tab = TABS.some(([k]) => k === params.get('tab')) ? params.get('tab') : 'info';
   let changed = false;
   let saving = false;
@@ -291,7 +298,7 @@
       const res = await blm48AdminGetCollection(user.username, collectionId);
       if (!res || res.status !== 'success') { root.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
       saved = res.data;
-      if (Array.isArray(res.categories) && res.categories.length) categories = res.categories;
+      if (Array.isArray(res.categories)) categories = [...new Set([...categories, ...res.categories.filter(Boolean)])];
       draft = toDraft(saved);
       render();
     } catch (e) {
@@ -534,8 +541,8 @@
       <div class="form-field"><label>ชื่อคอลเลกชัน</label><input type="text" maxlength="120" value="${escapeAttr(draft.name)}" oninput="setField('name', this.value, true)"></div>
       <div class="form-field"><label>คำอธิบาย</label><textarea maxlength="400" oninput="setField('description', this.value, true)">${escapeHtml(draft.description)}</textarea></div>
       <div class="form-field"><label>หมวดในกระเป๋า (Inventory)</label>
-        <input type="text" list="cat-list" value="${escapeAttr(draft.category)}" oninput="setField('category', this.value)">
-        <datalist id="cat-list">${categories.map(c => `<option value="${escapeAttr(c)}">`).join('')}</datalist>
+        <select onchange="setField('category', this.value)">${categoryOptions().map(c =>
+          `<option value="${escapeAttr(c)}"${c === draft.category ? ' selected' : ''}>${escapeHtml(c)}</option>`).join('')}</select>
       </div>
       <div class="field-label">ตัวอย่างใน Shop</div>
       <div id="preview"></div>
