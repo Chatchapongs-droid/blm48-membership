@@ -1,0 +1,4 @@
+-- 2026-11-16: Member Score counts 1 Cookie = 1 point (was 10 Cookie = 1).
+-- Applied as migration member_score_cookie_1to1. Only the cookie_pts / total
+-- expressions of member_score_rows() changed: floor(b.cookies / 10) -> floor(b.cookies).
+-- Point Shop member prices (200 P = 1 Token) were left unchanged on purpose.

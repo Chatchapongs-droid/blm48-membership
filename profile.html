@@ -697,7 +697,7 @@ body {
     header.classList.toggle('visible', nameEl.getBoundingClientRect().bottom < 0);
   }, { passive: true });
 
-  // Points ของเมมเบอร์ = Member Score (10 Cookie = 1 / 1 Like = 1 / 1 Post = 10 / 1 Comment จากแฟน = 2 คำนวณใน RPC get_member_score)
+  // Points ของเมมเบอร์ = Member Score (1 Cookie = 1 / 1 Like = 1 / 1 Post = 10 / 1 Comment จากแฟน = 2 คำนวณใน RPC get_member_score)
   async function loadMemberScore() {
     if (!user || !user.username) return;
     try {
