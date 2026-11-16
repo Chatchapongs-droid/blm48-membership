@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<title>BLM48 Membership | System Stats</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        .page-wrapper { max-width: 860px; margin: 0 auto; padding: 14px 12px 60px; }
+        #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
+        #page-content { display: none; }
+        .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
+
+        .updated { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: #767676; margin-bottom: 6px; }
+        .refresh-btn { border: 1px solid #eee; background: #fff; border-radius: 20px; padding: 6px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #555; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+
+        .section { margin-top: 18px; }
+        .section-title { font-size: 14px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+        .section-title i { color: #999; width: 16px; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        @media (min-width: 560px) { .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (min-width: 820px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        .stat { background: #f8f8f8; padding: 12px 10px; min-width: 0; }
+        .stat-num { font-size: 18px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-lbl { font-size: 12px; color: #767676; margin-top: 3px; }
+        .stat-sub { font-size: 11.5px; color: #999; margin-top: 2px; }
+        .stat.hl { background: #fff8e1; }
+    </style>
+    <link rel="stylesheet" href="assets/css/admin-theme.css">
+</head>
+<body>
+
+<div class="top-navigation-bar">
+    <button type="button" class="back-circle-btn" onclick="blm48Back('admin')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="top-bar-title">System Stats</div>
+</div>
+
+<div class="page-wrapper">
+    <div id="access-denied"><i class="fa-solid fa-lock"></i><br>หน้านี้สำหรับ Role Admin เท่านั้นค่ะ</div>
+    <div id="page-content">
+        <div class="updated">
+            <span id="updated-at"></span>
+            <button type="button" class="refresh-btn" onclick="load()"><i class="fa-solid fa-rotate-right"></i> Refresh</button>
+        </div>
+        <div id="stats"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
+    </div>
+</div>
+
+<script>
+  let user = null;
+  let reqSeq = 0;
+
+  function fmt(n) { return Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 1 }); }
+  const ICON = {
+    token: '<i class="fa-solid fa-coins"></i>',
+    ge: '<i class="fa-solid fa-gem"></i>',
+    cookie: '<i class="fa-solid fa-cookie-bite"></i>',
+    heart: '<i class="fa-solid fa-heart" style="color:#ff85a2;font-size:14px"></i>'
+  };
+
+  // [label, value, icon?, sub?, highlight?]
+  function stat(label, value, icon, sub, hl) {
+    return `<div class="stat${hl ? ' hl' : ''}">
+      <div class="stat-num">${icon || ''}${fmt(value)}</div>
+      <div class="stat-lbl">${label}</div>
+      ${sub ? `<div class="stat-sub">${sub}</div>` : ''}
+    </div>`;
+  }
+  function section(icon, title, items) {
+    return `<div class="section"><div class="section-title"><i class="fa-solid ${icon}"></i>${title}</div><div class="grid">${items.join('')}</div></div>`;
+  }
+
+  function render(d) {
+    const a = d.accounts, i = d.idols, p = d.posts, c = d.comments, g = d.gifts, f = d.fans,
+          w = d.wallet, s = d.shop, v = d.votes, t = d.theater, cp = d.campaigns;
+    document.getElementById('stats').innerHTML = [
+      section('fa-heart', 'โพสต์ คอมเมนต์ และใจ', [
+        stat('โพสต์ทั้งหมด', p.total, '', `เมมเบอร์ ${fmt(p.member)} · แฟน ${fmt(p.fan)}`, true),
+        stat('ใจโพสต์', p.postLikes, ICON.heart, '', true),
+        stat('คอมเมนต์ทั้งหมด', c.total, '', `คอมเมนต์ ${fmt(c.topLevel)} · ตอบกลับ ${fmt(c.replies)}`, true),
+        stat('ใจคอมเมนต์', c.commentLikes, ICON.heart, '', true),
+        stat('โพสต์เดือนนี้', p.month, '', `วันนี้ ${fmt(p.today)}`),
+        stat('คอมเมนต์เดือนนี้', c.month, '', `วันนี้ ${fmt(c.today)}`),
+        stat('คุกกี้บนโพสต์', p.postCookies, ICON.cookie),
+        stat('ส่งของขวัญให้เมมเบอร์', g.sends, '', `${fmt(g.qty)} ชิ้น · ${fmt(g.cookies)} Cookie`)
+      ]),
+      section('fa-users', 'บัญชี', [
+        stat('บัญชีทั้งหมด', a.total, '', '', true),
+        stat('แฟนคลับ', a.fans),
+        stat('บัญชีเมมเบอร์', a.members),
+        stat('แอดมิน', a.admins, '', 'รวม CEO และสิทธิ์แอดมินควบ'),
+        stat('ใช้งานอยู่', a.active),
+        stat('รออนุมัติ', a.pending),
+        stat('ถูกระงับ', a.suspended),
+        stat('ปิดบัญชี (ไม่มีรหัสผ่าน)', a.closed)
+      ]),
+      section('fa-star', 'เมมเบอร์', [
+        stat('BLM48 Active', i.blm48Active),
+        stat('BLM48 Graduated', i.blm48Graduated),
+        stat('NPT48', i.npt48, '', 'เฉพาะระบบโหวต')
+      ]),
+      section('fa-fire', 'กิจกรรมแฟนคลับ', [
+        stat('Fan Score รวม', f.fanScore, '', '', true),
+        stat('Oshi', f.oshi),
+        stat('Kami-Oshi', f.kamiOshi),
+        stat('เช็กอินวันนี้', f.checkinsToday, '', `ทั้งหมด ${fmt(f.checkinsTotal)}`),
+        stat('Daily Mission สำเร็จ', f.missionsClaimed, '', `วันนี้ ${fmt(f.missionsToday)}`),
+        stat('ใช้ Redeem Code', f.codesRedeemed)
+      ]),
+      section('fa-wallet', 'ยอดในกระเป๋าเงิน', [
+        stat('Token', w.token, ICON.token),
+        stat('Cookie', w.cookie, ICON.cookie),
+        stat('GE Token', w.geToken, ICON.ge)
+      ]),
+      section('fa-bag-shopping', 'Shop และไอเทม', [
+        stat('คำสั่งซื้อ Shop', s.orders, '', `${fmt(s.orderTokens)} Token`),
+        stat('ไอเทมในคลังทั้งหมด', s.inventory),
+        stat('Coaster (กาชา)', s.coasters),
+        stat('Pre-order', s.preorders),
+        stat('แลก Coaster สำเร็จ', s.tradesDone, '', `เปิดอยู่ ${fmt(s.tradesOpen)}`)
+      ]),
+      section('fa-crown', 'โหวต', [
+        stat('รายการโหวต', v.logs),
+        stat('โหวตด้วย Token', v.token, ICON.token),
+        stat('โหวตด้วย GE Token', v.geToken, ICON.ge),
+        stat('คืนแล้ว (Refund)', v.refunded)
+      ]),
+      section('fa-ticket', 'Theater', [
+        stat('อีเวนต์', t.events),
+        stat('การจอง', t.bookings),
+        stat('บัตรที่ขายได้', t.tickets),
+        stat('รายได้', t.tokens, ICON.token)
+      ]),
+      section('fa-bullhorn', 'Campaign และแจ้งเตือน', [
+        stat('Campaign ทั้งหมด', cp.total, '', `เปิดอยู่ ${fmt(cp.open)}`),
+        stat('คุกกี้ที่ซัพพอร์ต', cp.supportCookies, ICON.cookie),
+        stat('การแจ้งเตือน', cp.notifications)
+      ])
+    ].join('');
+  }
+
+  async function load() {
+    const seq = ++reqSeq;
+    const box = document.getElementById('stats');
+    if (!box.querySelector('.section')) box.innerHTML = '<div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>';
+    try {
+      const { data, error } = await blm48Supabase.rpc('admin_system_stats', { p_admin_username: user.username });
+      if (seq !== reqSeq) return;
+      if (error) throw error;
+      if (!data || data.status !== 'success') { box.innerHTML = `<div class="empty-state">${escapeHtml((data && data.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
+      render(data.data);
+      const t = new Date(data.generatedAt);
+      document.getElementById('updated-at').textContent = 'อัปเดต ' + t.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+    } catch (e) {
+      if (seq !== reqSeq) return;
+      console.error('System stats load error:', e);
+      box.innerHTML = '<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>';
+    }
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    user = getUserSession();
+    if (!user) { window.location.href = 'login'; return; }
+    if (!(user.is_admin === true || (user.role && ['admin','ceo'].includes(user.role.toLowerCase())))) {
+      document.getElementById('access-denied').style.display = 'block';
+      return;
+    }
+    document.getElementById('page-content').style.display = 'block';
+    load();
+  });
+</script>
+</body>
+</html>
