@@ -1,0 +1,4 @@
+-- 2026-11-16: member Point Shop rate 1,000 P = 1 Token (was 200), applied as
+-- migration point_shop_member_price_1000. Member Score had just become 1 Cookie = 1 P.
+-- Member packs (Token and Cookie): 1,000 / 10,000 / 50,000 / 100,000 P,
+-- same amounts and bonus (+0/10/20/30%). Fan/admin packs unchanged.
