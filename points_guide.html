@@ -20,7 +20,7 @@
     <script src="assets/js/common.js"></script>
     <style>
         /* หน้าอธิบายวิธีได้รับ Points (เปิดจากปุ่ม i มุมขวาบนของ Point Shop) — กติกาตรงกับฟังก์ชันฝั่ง Supabase:
-           Fan Score: give_cookie / send_member_gift (1 Cookie = 1 P), like_post / like_comment / add_comment (+9, เฉพาะโพสต์เมมเบอร์)
+           Fan Score: give_cookie / send_member_gift (1 Cookie = 1 P), like_post / like_comment / add_comment (+9, เฉพาะโพสต์เมมเบอร์, ลิมิต 30 ครั้ง/วัน + คอมเมนต์นับครั้งแรกต่อโพสต์ต่อวัน: _fan_free_award)
            Member Score: member_score_rows() (1 Cookie = 1 P, Like = 1, Post = 10, Comment จากผู้อื่น = 2)
            ตารางแลกดึงจาก get_point_shop ของบัญชีนี้ จึงตรงกับราคาจริงเสมอ */
         :root { --pg-ink: #222; --pg-muted: #6b6b6b; --pg-line: #efefef; --pg-gold-soft: #fff6d6; --pg-gold-ink: #6b4e00; }
@@ -108,7 +108,7 @@
         { icon: 'fa-cookie-bite', title: 'มอบคุกกี้ให้เมมเบอร์', desc: 'ทุกคุกกี้ที่มอบให้เมมเบอร์จะได้รับ Points เท่ากับจำนวนคุกกี้', pts: '1 Cookie = 1 P' },
         { icon: 'fa-gift', title: 'ส่งของขวัญให้เมมเบอร์', desc: 'ได้รับ Points เท่ากับราคาคุกกี้ของของขวัญที่ส่ง', pts: 'ตามราคา' },
         { icon: 'fa-heart', title: 'กดถูกใจโพสต์ของเมมเบอร์', desc: 'ได้รับต่อการกดถูกใจ 1 ครั้ง', pts: '+9 P' },
-        { icon: 'fa-comment', title: 'แสดงความคิดเห็นหรือตอบกลับในโพสต์ของเมมเบอร์', desc: 'ได้รับต่อความคิดเห็นหรือการตอบกลับ 1 ครั้ง', pts: '+9 P' },
+        { icon: 'fa-comment', title: 'แสดงความคิดเห็นหรือตอบกลับในโพสต์ของเมมเบอร์', desc: 'นับเฉพาะความคิดเห็นแรกของแต่ละโพสต์ในแต่ละวัน', pts: '+9 P' },
         { icon: 'fa-thumbs-up', title: 'กดถูกใจความคิดเห็นในโพสต์ของเมมเบอร์', desc: 'ได้รับต่อการกดถูกใจความคิดเห็น 1 ครั้ง', pts: '+9 P' },
     ];
     const MEMBER_RULES = [
@@ -143,6 +143,7 @@
                 <p class="pg-lead">สะสมจากการสนับสนุนและร่วมกิจกรรมกับเมมเบอร์</p>
                 ${rulesHtml(FAN_RULES)}
                 <div class="pg-note">คะแนนจากการกดถูกใจและการแสดงความคิดเห็น นับเฉพาะกิจกรรมบนโพสต์ของเมมเบอร์ ไม่รวมโพสต์ในหน้า Fan Post</div>
+                <div class="pg-note">การกดถูกใจและการแสดงความคิดเห็นได้รับ Points รวมไม่เกิน 30 ครั้งต่อวัน (สูงสุด 270 P ต่อวัน เริ่มนับใหม่ทุกวันเวลา 00:00 น.) หลังจากนั้นยังกดถูกใจและแสดงความคิดเห็นได้ตามปกติ และเมมเบอร์ยังได้รับคุกกี้ตามเดิม</div>
                 <div class="pg-note gold">Fan Score ยังใช้กำหนดระดับสมาชิก: Gold ตั้งแต่ 10,000 / Silver ตั้งแต่ 5,000 / Copper ต่ำกว่า 5,000 ซึ่งได้รับคุกกี้ Membership ประจำเดือน 1,000 / 500 / 150 คุกกี้ตามลำดับ</div>
             </div>`;
         const member = `
