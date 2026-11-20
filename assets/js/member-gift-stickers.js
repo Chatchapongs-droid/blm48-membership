@@ -592,6 +592,46 @@
         ${[3, 9, 15, 21, 27, 33, 39, 45].map(t => `@keyframes ga-gn-drop${t} { 0%,${t}% { transform: translateY(-72.1%) rotate(-30deg) scale(.7); opacity: 0; } ${t + 1}% { opacity: 1; }
           ${t + 9}% { transform: translateY(0) rotate(0deg) scale(1.18,.85); opacity: 1; } ${t + 11}% { transform: translateY(-1.55%) scale(.92,1.08); } ${t + 13}% { transform: translateY(0) scale(1); }
           86% { transform: scale(1); opacity: 1; } 91% { transform: scale(1.15); opacity: 1; } 96%,100% { transform: scale(0); opacity: 0; } }`).join('\n        ')}`
+    },
+    { // โทโมะ — Hana (gift_040): สาวหมวกสานประดับดอกไม้ถือช่อดอกไม้ ตัวเด้ง ดอกไม้บนหมวก/ช่อดอกไม้ขยับ ประกายแก้มวิบวับ ดาว/หัวใจรอบตัว
+      gifts: ['gift_040'], match: [], ratio: 1, dur: 1.6, label: 'โทโมะใส่หมวกสานประดับดอกไม้ ถือช่อดอกไม้ ดอกไม้และประกายบนแก้มขยับวิบวับ',
+      layers: [
+        { viewBox: '0 0 900 900', svg: [
+          ['star', 0, '<path d="M120 176 L126.7 193.3 L144 200 L126.7 206.7 L120 224 L113.3 206.7 L96 200 L113.3 193.3Z" fill="#FFD86B"'],
+          ['star', -0.7, '<path d="M790 140 L795.6 154.4 L810 160 L795.6 165.6 L790 180 L784.4 165.6 L770 160 L784.4 154.4Z" fill="#9CC8EE"'],
+          ['star', -1.3, '<path d="M800 578 L806.2 593.8 L822 600 L806.2 606.2 L800 622 L793.8 606.2 L778 600 L793.8 593.8Z" fill="#FFD86B"'],
+          ['star', -0.4, '<path d="M100 624 L104.5 635.5 L116 640 L104.5 644.5 L100 656 L95.5 644.5 L84 640 L95.5 635.5Z" fill="#F7B8C8"'],
+          ['star', -1.0, '<path d="M470 44 L474.5 55.5 L486 60 L474.5 64.5 L470 76 L465.5 64.5 L454 60 L465.5 55.5Z" fill="#9CC8EE"'],
+          ['star', -0.2, '<circle cx="240" cy="100" r="6" fill="#F7B8C8"'],
+          ['star', -0.9, '<circle cx="720" cy="380" r="5" fill="#9CC8EE"'],
+          ['star', -1.6, '<circle cx="70" cy="420" r="5" fill="#FFD86B"'],
+          ['heart', 0, '<path d="M730 290 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#F7B8C8"'],
+          ['heart', -1.1, '<path d="M170 360 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#FFD86B"'],
+          ['heart', -2.0, '<path d="M770 470 c-6 -8 -18 -3 -14 6 c3 6 14 12 14 12 c0 0 11 -6 14 -12 c4 -9 -8 -14 -14 -6z" fill="#9CC8EE"']
+        ].map(([c, d, el]) => `${el} class="ga-tm-${c}" style="animation-delay:${d}s"></${el.slice(1, el.indexOf(' '))}>`).join('') },
+        // ตัวละคร 606x813 วางที่ (147, 47) ในเวที 900x900
+        { anim: 'ga-tm-bod', origin: '50% 97%', pos: [16.333, 5.222, 67.333, 90.333], layers: [
+          { src: GA + 'tomo/body.png' },
+          { src: GA + 'tomo/leaf.png', anim: 'ga-tm-leaf', origin: '77.9% 13%' },
+          { src: GA + 'tomo/flower-big.png', anim: 'ga-tm-big', k: 1.5, origin: '82.3% 19.7%' },
+          { src: GA + 'tomo/flower-1.png', anim: 'ga-tm-sm', origin: '16.7% 23%' },
+          { src: GA + 'tomo/flower-2.png', anim: 'ga-tm-sm', origin: '64.8% 16.7%', delay: -0.5 },
+          { src: GA + 'tomo/sunflower.png', anim: 'ga-tm-sun', origin: '22.7% 83.4%', delay: -0.3 },
+          { src: GA + 'tomo/bouquet-1.png', anim: 'ga-tm-bq', k: 0.5, origin: '55.1% 57.4%' },
+          { src: GA + 'tomo/bouquet-2.png', anim: 'ga-tm-bq', k: 0.5, origin: '54.2% 65.2%', delay: -0.25 },
+          ...['21.7% 46%', '26.1% 43.7%', '76% 43%', '77.2% 47.1%', '27.1% 47.2%', '72.4% 45.4%'].map((o, i) =>
+            ({ src: GA + 'tomo/cheek-' + (i + 1) + '.png', anim: 'ga-tm-ck', k: 0.5, origin: o, delay: -0.09 * i }))] }],
+      css: `@keyframes ga-tm-bod { 0%,100% { transform: translateY(0) scale(1.02,.98) rotate(-1deg); } 50% { transform: translateY(-1.48%) scale(.99,1.02) rotate(1deg); } }
+        @keyframes ga-tm-leaf { 0%,100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+        @keyframes ga-tm-big { 0%,100% { transform: rotate(-6deg) scale(1.02); } 50% { transform: rotate(6deg) scale(1.07); } }
+        @keyframes ga-tm-sm { 0%,100% { transform: rotate(-10deg) scale(1); } 50% { transform: rotate(10deg) scale(1.18); } }
+        @keyframes ga-tm-bq { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        @keyframes ga-tm-sun { 0%,100% { transform: rotate(-6deg) scale(1.02); } 50% { transform: rotate(6deg) scale(1.06); } }
+        @keyframes ga-tm-ck { 0%,100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+        .gift-art .ga-tm-star { transform-box: fill-box; transform-origin: center; animation: ga-tm-twinkle 2.4s ease-in-out infinite; }
+        .gift-art .ga-tm-heart { transform-box: fill-box; transform-origin: center; animation: ga-tm-float 2.4s ease-out infinite; }
+        @keyframes ga-tm-twinkle { 0%,100% { transform: scale(.3) rotate(0deg); opacity: 0; } 40% { transform: scale(1) rotate(20deg); opacity: 1; } 70% { transform: scale(.85) rotate(35deg); opacity: .8; } }
+        @keyframes ga-tm-float { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateY(-90px); opacity: 0; } }`
     }
   ];
   function giftArt(url) {
