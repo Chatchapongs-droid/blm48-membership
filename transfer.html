@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BLM48 | Transfer</title>
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Quicksand', 'Kanit', sans-serif;
+            color: #222; margin: 0; padding: 0; padding-top: 60px;
+        }
+        body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
+
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .top-navbar .back-btn {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+            background: none; border: none; color: #333; font-size: 20px; cursor: pointer;
+        }
+        .top-navbar h1 { margin: 0; font-size: 17px; font-weight: 600; color: #222; }
+
+        .page-wrapper { max-width: 520px; margin: 0 auto; padding: 28px 12px 120px; }
+        .page-wrapper h2 { font-size: 20px; font-weight: 700; margin: 0 0 18px; }
+
+        .type-card {
+            display: block; width: 100%; text-align: left; text-decoration: none; color: inherit;
+            background: #fff; border-radius: 12px; padding: 22px 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06); position: relative;
+            transition: transform 0.15s;
+        }
+        .type-card:active { transform: scale(0.98); }
+        .type-icon {
+            width: 46px; height: 46px; border-radius: 50%; background: #ffd75e; color: #333;
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
+        }
+        .type-title { font-size: 22px; font-weight: 700; margin: 14px 0 6px; }
+        .type-sub { font-size: 13px; color: #666; padding-right: 30px; }
+        .type-card .chev { position: absolute; right: 20px; bottom: 24px; color: #333; font-size: 16px; }
+    </style>
+</head>
+<body class="glass-mesh-bg">
+
+<div class="top-navbar">
+    <button class="back-btn" type="button" onclick="blm48Back('majorvote')" aria-label="ย้อนกลับ"><i class="fas fa-chevron-left"></i></button>
+    <h1>Transfer</h1>
+</div>
+
+<div class="page-wrapper">
+    <h2>Choose transfer type</h2>
+    <a class="type-card" href="transfer_wallet">
+        <div class="type-icon"><i class="far fa-credit-card"></i></div>
+        <div class="type-title">To BLM48 users</div>
+        <div class="type-sub">Transfer Token by using BLM48 Wallet Code</div>
+        <i class="fas fa-chevron-right chev"></i>
+    </a>
+</div>
+
+<script>
+    if (!getUsernameFromSession()) {
+        alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+        window.location.href = 'login';
+    }
+</script>
+</body>
+</html>

@@ -126,12 +126,12 @@
             display: flex; justify-content: center; align-items: center;
             font-size: 22px; color: #333;
         }
-        .btn-receive .circle-icon { background-color: #ddf5ec; }
-        .btn-redeem-code .circle-icon { background-color: #e0edfb; }
-        .btn-inventory .circle-icon { background-color: #fde9ec; }
+        .btn-transfer .circle-icon { background-color: #ddf5ec; }
+        .btn-receive .circle-icon { background-color: #e0edfb; }
+        .btn-redeem-code .circle-icon { background-color: #fde9ec; }
         .btn-history-log .circle-icon { background-color: #fdf1bf; }
         .circle-action-btn .circle-label {
-            font-size: 13px; font-weight: 500; color: #333; margin-top: 10px;
+            font-size: 13px; font-weight: 500; color: #333; margin-top: 10px; white-space: nowrap;
             font-family: 'Quicksand', 'Kanit', sans-serif;
         }
 
@@ -319,18 +319,18 @@
     </div>
 
 <div class="wallet-actions-container">
+    <button onclick="window.location.href='transfer'" class="circle-action-btn btn-transfer" type="button">
+        <div class="circle-icon"><i class="fas fa-right-left"></i></div>
+        <span class="circle-label">Transfer</span>
+    </button>
     <button onclick="window.location.href='my_wallet'" class="circle-action-btn btn-receive" type="button">
-        <div class="circle-icon"><i class="fas fa-qrcode"></i></div>
+        <div class="circle-icon"><i class="fas fa-wallet"></i></div>
         <span class="circle-label">Receive</span>
     </button>
     <button onclick="window.location.href='redeem'" class="circle-action-btn btn-redeem-code" type="button">
         <div class="circle-icon"><i class="fas fa-gift"></i></div>
         <span class="circle-label">Redeem</span>
     </button>
-    <a href="inventory" class="circle-action-btn btn-inventory">
-        <div class="circle-icon"><i class="fas fa-briefcase"></i></div>
-        <span class="circle-label">Inventory</span>
-    </a>
     <a href="history?tab=vote" class="circle-action-btn btn-history-log">
         <div class="circle-icon"><i class="far fa-clock"></i></div>
         <span class="circle-label">Transactions</span>

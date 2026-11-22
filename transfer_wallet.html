@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+        <script src="assets/js/back-nav.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BLM48 | Transfer Token</title>
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Quicksand', 'Kanit', sans-serif;
+            color: #222; margin: 0; padding: 0; padding-top: 60px;
+        }
+        body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
+
+        .top-navbar {
+            position: fixed; top: 0; left: 0; width: 100%; height: 60px;
+            background: #ffffff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .top-navbar .back-btn {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+            background: none; border: none; color: #333; font-size: 20px; cursor: pointer;
+        }
+        .top-navbar h1 { margin: 0; font-size: 17px; font-weight: 600; color: #222; }
+
+        .page-wrapper { max-width: 520px; margin: 0 auto; padding: 24px 12px 140px; }
+        .step { display: none; }
+        .step.active { display: block; }
+
+        /* การ์ดยอดคงเหลือ */
+        .bal-card {
+            max-width: 340px; margin: 0 auto 28px; background: #f5f5f5;
+            border: 1.5px solid #222; border-radius: 14px; padding: 20px 22px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .bal-card .bal-title { font-size: 20px; font-weight: 700; }
+        .bal-card .bal-sub { font-size: 12px; color: #666; margin-top: 2px; }
+        .bal-card .bal-amount { font-size: 38px; font-weight: 700; margin-top: 8px; line-height: 1; }
+        .bal-card .bal-amount small { font-size: 16px; font-weight: 600; margin-left: 4px; }
+        .bal-logo {
+            width: 76px; height: 76px; border-radius: 50%; background: #fff1c9; color: #f59f00;
+            display: flex; align-items: center; justify-content: center; font-size: 34px; flex-shrink: 0;
+        }
+
+        .field-label { font-size: 17px; font-weight: 700; margin: 0; }
+        .field-sub { font-size: 13px; color: #666; margin: 4px 0 10px; }
+        .field-box {
+            display: flex; align-items: center; border: 1px solid #ddd; border-radius: 4px;
+            background: #fff; margin-bottom: 22px;
+        }
+        .field-box:focus-within { border-color: #ffc107; }
+        .field-box input {
+            flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+            padding: 16px 14px; font-family: inherit; font-size: 16px; color: #222;
+        }
+        .field-box button {
+            flex: 0 0 auto; border: none; background: none; padding: 0 16px; height: 52px;
+            font-family: inherit; font-size: 14px; font-weight: 700; color: #222; cursor: pointer;
+        }
+        .field-box .scan-btn { font-size: 18px; }
+        .hint { font-size: 13px; color: #666; margin: -12px 0 6px; }
+        .err { font-size: 13px; color: #d6336c; margin: -14px 0 16px; min-height: 0; }
+
+        .summary { margin-top: 28px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 15px; color: #666; margin-bottom: 8px; }
+        .summary-row b { color: #222; }
+
+        .notice { margin-top: 26px; background: #f7f7f7; border-radius: 10px; padding: 14px 16px; }
+        .notice-title { font-size: 14px; font-weight: 700; color: #c92a2a; display: flex; align-items: center; gap: 6px; }
+        .notice ul { margin: 8px 0 0; padding-left: 18px; }
+        .notice li { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 2px; }
+
+        .bottom-bar {
+            position: fixed; left: 0; right: 0; bottom: 0;
+            padding: 12px 12px calc(16px + env(safe-area-inset-bottom)); background: #fff;
+            display: flex; justify-content: center; gap: 10px;
+        }
+        .bottom-bar button {
+            flex: 1; max-width: 260px; border: none; border-radius: 30px; padding: 14px;
+            background: #ffc107; color: #222; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer;
+        }
+        .bottom-bar button:disabled { background: #cfcfcf; color: #555; cursor: default; }
+        .bottom-bar button.ghost { background: #f1f1f1; }
+
+        /* ขั้นยืนยัน / สำเร็จ */
+        .confirm-card { text-align: center; padding-top: 10px; }
+        .confirm-card img {
+            width: 92px; height: 92px; border-radius: 50%; object-fit: cover;
+            border: 3px solid #ffde5b; background: #fff;
+        }
+        .confirm-card .to-label { font-size: 13px; color: #666; margin-top: 14px; }
+        .confirm-card .to-name { font-size: 20px; font-weight: 700; margin-top: 2px; word-break: break-word; }
+        .confirm-card .to-code { font-size: 14px; color: #444; margin-top: 2px; }
+        .confirm-amount { font-size: 40px; font-weight: 700; margin: 26px 0 4px; }
+        .confirm-amount small { font-size: 17px; font-weight: 600; margin-left: 4px; }
+        .detail-box { margin-top: 22px; border-top: 1px solid #eee; padding-top: 16px; text-align: left; }
+        .warn { margin-top: 18px; font-size: 13px; color: #666; text-align: center; }
+        .done-icon {
+            width: 76px; height: 76px; border-radius: 50%; background: #e6f8ee; color: #2f9e44;
+            display: flex; align-items: center; justify-content: center; font-size: 34px; margin: 10px auto 12px;
+        }
+        .done-title { font-size: 20px; font-weight: 700; text-align: center; }
+
+        /* สแกน QR เต็มจอ */
+        #scan-layer {
+            position: fixed; inset: 0; background: #000; z-index: 2000; display: none;
+            flex-direction: column; align-items: center; justify-content: center;
+        }
+        #scan-layer.open { display: flex; }
+        #scan-reader { width: 100%; max-width: 420px; }
+        #scan-layer .scan-text { color: #fff; font-size: 14px; margin-top: 16px; text-align: center; padding: 0 20px; }
+        #scan-layer .scan-close {
+            position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px;
+            width: 42px; height: 42px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15);
+            color: #fff; font-size: 18px; cursor: pointer;
+        }
+    </style>
+</head>
+<body class="glass-mesh-bg">
+
+<div class="top-navbar">
+    <button class="back-btn" type="button" onclick="goBack()" aria-label="ย้อนกลับ"><i class="fas fa-chevron-left"></i></button>
+    <h1>Transfer</h1>
+</div>
+
+<div class="page-wrapper">
+    <!-- ขั้น 1: กรอก Wallet Code + จำนวน -->
+    <div class="step active" id="step-form">
+        <div class="bal-card">
+            <div>
+                <div class="bal-title">BLM48 Token</div>
+                <div class="bal-sub">Available balance</div>
+                <div class="bal-amount"><span id="bal-amount">-</span><small>Token</small></div>
+            </div>
+            <div class="bal-logo"><i class="fas fa-coins"></i></div>
+        </div>
+
+        <p class="field-label">To BLM48 Wallet Code</p>
+        <p class="field-sub">Type in recipient's Wallet Code</p>
+        <div class="field-box">
+            <input id="code-input" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" placeholder="BLM-0000000000">
+            <button type="button" class="scan-btn" onclick="openScanner()" aria-label="สแกน QR"><i class="fas fa-qrcode"></i></button>
+        </div>
+        <div class="err" id="code-err"></div>
+
+        <p class="field-label">Amount</p>
+        <div class="field-box" style="margin-top:10px;">
+            <input id="amount-input" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+            <button type="button" onclick="fillMax()">MAX</button>
+        </div>
+        <div class="err" id="amount-err"></div>
+        <p class="hint">Your total balance: <span id="bal-hint">-</span> Token</p>
+        <p class="hint" style="margin-top:14px;">Minimum transfer: 1 Token</p>
+
+        <div class="summary">
+            <div class="summary-row"><span>Transaction fee</span><b>0 Token</b></div>
+            <div class="summary-row"><span>Received amount</span><b id="recv-amount">0 Token</b></div>
+        </div>
+
+        <div class="notice">
+            <div class="notice-title"><i class="fas fa-circle-exclamation"></i> ข้อควรทราบก่อนโอน</div>
+            <ul>
+                <li>Token ใช้สำหรับกิจกรรมภายในแอป BLM48 เท่านั้น และไม่มีมูลค่าเป็นเงิน</li>
+                <li>ห้ามซื้อ ขาย หรือแลกเปลี่ยน Token กับเงินหรือสิ่งของใด ๆ นอกแอปในทุกกรณี</li>
+                <li>การโอนถือเป็นการให้โดยสมัครใจ เมื่อโอนสำเร็จแล้วไม่สามารถยกเลิกหรือขอคืนได้</li>
+                <li>หากพบการซื้อขาย Token ทีมงานขอสงวนสิทธิ์ระงับบัญชีและเรียกคืน Token ที่เกี่ยวข้อง</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- ขั้น 2: ยืนยันผู้รับ -->
+    <div class="step" id="step-confirm">
+        <div class="confirm-card">
+            <img id="cf-avatar" src="/assets/images/default-avatar.png" alt="">
+            <div class="to-label">Transfer to</div>
+            <div class="to-name" id="cf-name">-</div>
+            <div class="to-code" id="cf-code">-</div>
+            <div class="confirm-amount"><span id="cf-amount">0</span><small>Token</small></div>
+            <div class="detail-box">
+                <div class="summary-row"><span>Transaction fee</span><b>0 Token</b></div>
+                <div class="summary-row"><span>Balance after transfer</span><b id="cf-after">-</b></div>
+            </div>
+            <div class="warn">กรุณาตรวจสอบชื่อผู้รับให้ถูกต้อง การโอนไม่สามารถยกเลิกได้</div>
+        </div>
+    </div>
+
+    <!-- ขั้น 3: สำเร็จ -->
+    <div class="step" id="step-done">
+        <div class="confirm-card">
+            <div class="done-icon"><i class="fas fa-check"></i></div>
+            <div class="done-title">Transfer successful</div>
+            <div class="confirm-amount"><span id="dn-amount">0</span><small>Token</small></div>
+            <div class="detail-box">
+                <div class="summary-row"><span>To</span><b id="dn-name">-</b></div>
+                <div class="summary-row"><span>Wallet Code</span><b id="dn-code">-</b></div>
+                <div class="summary-row"><span>Date</span><b id="dn-date">-</b></div>
+                <div class="summary-row"><span>Your balance</span><b id="dn-balance">-</b></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-bar" id="bar-form">
+    <button type="button" id="next-btn" onclick="goConfirm()" disabled>Confirm</button>
+</div>
+<div class="bottom-bar" id="bar-confirm" style="display:none;">
+    <button type="button" class="ghost" onclick="showStep('form')">Edit</button>
+    <button type="button" id="send-btn" onclick="sendTransfer()">Transfer</button>
+</div>
+<div class="bottom-bar" id="bar-done" style="display:none;">
+    <button type="button" class="ghost" onclick="location.href='history'">Transactions</button>
+    <button type="button" onclick="blm48Replace('majorvote')">Done</button>
+</div>
+
+<div id="scan-layer">
+    <button type="button" class="scan-close" onclick="closeScanner()" aria-label="ปิด"><i class="fas fa-xmark"></i></button>
+    <div id="scan-reader"></div>
+    <div class="scan-text">สแกน QR จากหน้า My Wallet ของผู้รับ</div>
+</div>
+
+<script>
+    const username = getUsernameFromSession();
+    let balance = null;
+    let recipient = null;
+    let amount = 0;
+    let sending = false;
+    let scanner = null;
+
+    const $ = (id) => document.getElementById(id);
+    const fmt = (n) => Number(n || 0).toLocaleString();
+
+    function goBack() {
+        if ($('step-confirm').classList.contains('active')) { showStep('form'); return; }
+        if ($('step-done').classList.contains('active')) { blm48Replace('majorvote'); return; }
+        blm48Back('transfer');
+    }
+
+    function showStep(name) {
+        ['form', 'confirm', 'done'].forEach(s => {
+            $('step-' + s).classList.toggle('active', s === name);
+            $('bar-' + s).style.display = s === name ? 'flex' : 'none';
+        });
+        window.scrollTo(0, 0);
+    }
+
+    function setBalance(v) {
+        balance = Number(v || 0);
+        $('bal-amount').textContent = fmt(balance);
+        $('bal-hint').textContent = fmt(balance);
+        validate();
+    }
+
+    async function loadBalance() {
+        try {
+            const cached = JSON.parse(localStorage.getItem('bnl_vote_wallet_cache') || 'null');
+            if (cached && cached.token !== undefined) setBalance(cached.token);
+        } catch (e) {}
+        const w = await blm48GetWallet(username);
+        if (w && w.token !== undefined) {
+            setBalance(w.token);
+            try { localStorage.setItem('bnl_vote_wallet_cache', JSON.stringify(w)); } catch (e) {}
+        }
+    }
+
+    function codeDigits() { return $('code-input').value.replace(/[^0-9]/g, ''); }
+
+    function validate() {
+        const digits = codeDigits();
+        const raw = $('amount-input').value.trim();
+        amount = /^\d+$/.test(raw) ? parseInt(raw, 10) : 0;
+        let amountErr = '';
+        if (raw && !/^\d+$/.test(raw)) amountErr = 'กรอกเป็นจำนวนเต็มเท่านั้น';
+        else if (raw && amount < 1) amountErr = 'ขั้นต่ำ 1 Token';
+        else if (balance !== null && amount > balance) amountErr = 'Token ไม่พอ';
+        $('amount-err').textContent = amountErr;
+        $('recv-amount').textContent = fmt(amountErr ? 0 : amount) + ' Token';
+        $('next-btn').disabled = !(digits.length === 10 && amount >= 1 && !amountErr && balance !== null);
+    }
+
+    function fillMax() {
+        if (balance === null) return;
+        $('amount-input').value = String(Math.floor(balance));
+        validate();
+    }
+
+    async function goConfirm() {
+        const btn = $('next-btn');
+        btn.disabled = true;
+        $('code-err').textContent = '';
+        const res = await blm48LookupWalletRecipient(username, codeDigits());
+        if (!res || res.status !== 'success') {
+            $('code-err').textContent = (res && res.message) || 'ไม่พบ Wallet Code นี้';
+            validate();
+            return;
+        }
+        recipient = res.data;
+        $('cf-avatar').src = recipient.profile_img ? (typeof getImg === 'function' ? getImg(recipient.profile_img) : recipient.profile_img) : '/assets/images/default-avatar.png';
+        $('cf-name').textContent = recipient.name || '-';
+        $('cf-code').textContent = 'BLM-' + recipient.walletCode;
+        $('cf-amount').textContent = fmt(amount);
+        $('cf-after').textContent = fmt(balance - amount) + ' Token';
+        validate();
+        showStep('confirm');
+    }
+
+    async function sendTransfer() {
+        if (sending || !recipient) return;
+        sending = true;
+        const btn = $('send-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        const res = await blm48TransferTokenByWallet(username, recipient.walletCode, amount);
+        sending = false;
+        btn.disabled = false;
+        btn.textContent = 'Transfer';
+        if (!res || res.status !== 'success') {
+            Swal.fire({ icon: 'error', title: 'โอนไม่สำเร็จ', text: (res && res.message) || 'กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ffc107' });
+            return;
+        }
+        setBalance(res.balance);
+        try {
+            const cached = JSON.parse(localStorage.getItem('bnl_vote_wallet_cache') || 'null') || {};
+            cached.token = res.balance;
+            localStorage.setItem('bnl_vote_wallet_cache', JSON.stringify(cached));
+        } catch (e) {}
+        $('dn-amount').textContent = fmt(res.amount);
+        $('dn-name').textContent = res.recipient.name || '-';
+        $('dn-code').textContent = 'BLM-' + res.recipient.walletCode;
+        $('dn-date').textContent = new Date(res.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false });
+        $('dn-balance').textContent = fmt(res.balance) + ' Token';
+        $('code-input').value = '';
+        $('amount-input').value = '';
+        recipient = null;
+        validate();
+        showStep('done');
+    }
+
+    // สแกน QR ของหน้า My Wallet (เก็บ "BLM-" + เลข 10 หลัก) - โหลดไลบรารีเฉพาะตอนกดสแกน
+    function loadScannerLib() {
+        if (window.Html5Qrcode) return Promise.resolve();
+        return new Promise((resolve, reject) => {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+        });
+    }
+
+    async function openScanner() {
+        try { await loadScannerLib(); } catch (e) {
+            Swal.fire({ icon: 'error', title: 'เปิดกล้องไม่ได้', text: 'กรุณากรอก Wallet Code เองค่ะ', confirmButtonColor: '#ffc107' });
+            return;
+        }
+        $('scan-layer').classList.add('open');
+        scanner = new Html5Qrcode('scan-reader');
+        try {
+            await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 240 }, (text) => {
+                const digits = String(text).replace(/[^0-9]/g, '');
+                if (digits.length === 10) {
+                    $('code-input').value = 'BLM-' + digits;
+                    $('code-err').textContent = '';
+                    validate();
+                    closeScanner();
+                }
+            });
+        } catch (e) {
+            closeScanner();
+            Swal.fire({ icon: 'error', title: 'เปิดกล้องไม่ได้', text: 'กรุณาอนุญาตการใช้กล้อง หรือกรอก Wallet Code เองค่ะ', confirmButtonColor: '#ffc107' });
+        }
+    }
+
+    async function closeScanner() {
+        $('scan-layer').classList.remove('open');
+        if (scanner) {
+            try { await scanner.stop(); } catch (e) {}
+            try { scanner.clear(); } catch (e) {}
+            scanner = null;
+        }
+    }
+
+    $('code-input').addEventListener('input', () => { $('code-err').textContent = ''; validate(); });
+    $('amount-input').addEventListener('input', validate);
+
+    if (!username) {
+        alert('กรุณาเข้าสู่ระบบก่อนใช้งาน');
+        window.location.href = 'login';
+    } else {
+        // รองรับลิงก์ transfer_wallet?code=BLM-xxxxxxxxxx
+        const pre = new URLSearchParams(location.search).get('code');
+        if (pre) $('code-input').value = pre;
+        loadBalance();
+    }
+</script>
+</body>
+</html>

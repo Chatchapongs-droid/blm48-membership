@@ -768,6 +768,13 @@ function blm48AdminTransferWallet(adminUsername, targetUsername, token, cookie, 
 function blm48GetMyWallet(username) {
   return blm48Rpc('get_my_wallet', { p_username: username });
 }
+// User-to-user Token transfer by Wallet Code (transfer_wallet.html). Accepts "BLM-1234567890" or digits.
+function blm48LookupWalletRecipient(username, walletCode) {
+  return blm48Rpc('lookup_wallet_recipient', { p_username: username, p_wallet_code: walletCode });
+}
+function blm48TransferTokenByWallet(username, walletCode, amount) {
+  return blm48Rpc('transfer_token_by_wallet', { p_username: username, p_wallet_code: walletCode, p_amount: amount });
+}
 // Global audit log of every admin's wallet transfers (newest first), used by the "ประวัติการโอน" list.
 function blm48AdminGetTransferHistory(adminUsername, limit) {
   return blm48Rpc('admin_get_transfer_history', { p_admin_username: adminUsername, p_limit: limit || 100 });
