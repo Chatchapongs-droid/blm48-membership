@@ -4415,13 +4415,26 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       loadLoginStreakStatus();
     }).catch(e => console.error('blm48RecordDailyLogin error:', e));
-    setInterval(async () => {
-      if (localStorage.getItem('bnl_session')) {
+    // Background sync: skipped while the tab is hidden (no DB calls from tabs nobody is looking at),
+    // and run once right away when the user comes back if the last sync is older than 45s.
+    let lastBgSync = Date.now();
+    let bgSyncRunning = false;
+    const bgSync = async () => {
+      if (bgSyncRunning || document.hidden || !localStorage.getItem('bnl_session')) return;
+      bgSyncRunning = true;
+      lastBgSync = Date.now();
+      try {
         await syncUserData();
         await loadDailyMissions();
         await loadLoginStreakStatus();
+      } finally {
+        bgSyncRunning = false;
       }
-    }, 45000);
+    };
+    setInterval(bgSync, 60000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && Date.now() - lastBgSync > 45000) bgSync();
+    });
 
     // 🔴 Realtime: ยอด Token/Cookie/GEToken เปลี่ยนที่ไหนก็ตาม -> อัปเดต session ทันทีไม่ต้องรอ poll 45s
     if (window.BLM48Realtime) {

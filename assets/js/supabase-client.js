@@ -503,12 +503,38 @@ function blm48UpdateMemberCoverImage(username, memberName, imageUrl) {
 
 // Live-updates whenever likes/comments change on any post. onChange gets no arguments -
 // caller decides what to re-fetch/re-render (mirrors blm48SubscribeRanking's pattern).
+//
+// Load protection: one like/comment fires this on EVERY open tab at once, so without limits
+// N viewers = N simultaneous feed re-fetches. So:
+//  - random jitter spreads the re-fetches out instead of all hitting the DB in the same ms
+//  - at most one re-fetch per POSTS_MIN_GAP_MS per tab (a burst of likes = 1 re-fetch)
+//  - hidden tabs don't re-fetch at all; they catch up once when the user comes back
+// The user's own like/comment is already optimistic on screen, so the delay isn't visible to them.
 function blm48SubscribePosts(onChange, debounceMs) {
+  const POSTS_MIN_GAP_MS = 8000;
+  const JITTER_MS = 3000;
   let timer = null;
-  const trigger = () => {
-    clearTimeout(timer);
-    timer = setTimeout(onChange, debounceMs || 400);
+  let lastRun = 0;
+  let pendingWhileHidden = false;
+  const run = () => {
+    timer = null;
+    if (document.hidden) { pendingWhileHidden = true; return; }
+    lastRun = Date.now();
+    onChange();
   };
+  const trigger = () => {
+    if (document.hidden) { pendingWhileHidden = true; return; }
+    if (timer) return; // a re-fetch is already scheduled and will pick this change up
+    const sinceLast = Date.now() - lastRun;
+    const wait = Math.max((debounceMs || 400), POSTS_MIN_GAP_MS - sinceLast) + Math.random() * JITTER_MS;
+    timer = setTimeout(run, wait);
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && pendingWhileHidden) {
+      pendingWhileHidden = false;
+      trigger();
+    }
+  });
   return blm48Supabase
     .channel('posts-feed-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, trigger)
