@@ -333,6 +333,10 @@
 
             // บันทึกลง localStorage ในคีย์ bnl_session เพื่อให้อินเด็กซ์เอาไปแกะใช้งานต่อได้
             localStorage.setItem('bnl_session', JSON.stringify(sessionData));
+            // แคชยอด Token/GE Token ไม่ได้แยกตาม username: ล้างทิ้งทุกครั้งที่ล็อกอิน
+            // กันไม่ให้หน้า Token Wallet / Transfer โชว์ยอดของบัญชีก่อนหน้าบนเครื่องเดียวกัน
+            localStorage.removeItem('bnl_vote_wallet_cache');
+            localStorage.removeItem('bnl_user_data_cache');
 
             Swal.fire({
               icon: 'success',

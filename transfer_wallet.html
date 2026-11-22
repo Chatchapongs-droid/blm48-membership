@@ -274,6 +274,12 @@
     let amount = 0;
     let sending = false;
     let locked = false;
+    let requestId = null; // สุ่มใหม่ทุกครั้งที่เข้าขั้นยืนยัน ใช้ซ้ำตอนกดโอนอีกครั้งหลัง timeout
+
+    function newRequestId() {
+        if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+        return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    }
 
     // บัญชีอายุไม่ถึง 1 เดือน: ล็อกฟอร์ม (เซิร์ฟเวอร์เช็กซ้ำตอนโอนจริงอยู่แล้ว)
     async function loadTransferStatus() {
@@ -355,6 +361,7 @@
             return;
         }
         recipient = res.data;
+        requestId = newRequestId();
         $('cf-avatar').src = recipient.profile_img ? (typeof getImg === 'function' ? getImg(recipient.profile_img) : recipient.profile_img) : '/assets/images/default-avatar.png';
         $('cf-name').textContent = recipient.name || '-';
         $('cf-code').textContent = 'BLM-' + recipient.walletCode;
@@ -370,12 +377,23 @@
         const btn = $('send-btn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        const res = await blm48TransferTokenByWallet(username, recipient.walletCode, amount);
+        const res = await blm48TransferTokenByWallet(username, recipient.walletCode, amount, requestId);
         sending = false;
         btn.disabled = false;
         btn.textContent = 'Transfer';
         if (!res || res.status !== 'success') {
-            Swal.fire({ icon: 'error', title: 'โอนไม่สำเร็จ', text: (res && res.message) || 'กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ffc107' });
+            // networkError = ไม่ได้คำตอบจากเซิร์ฟเวอร์ (เช่น timeout) การโอนอาจสำเร็จไปแล้วก็ได้
+            // requestId เดิมยังอยู่ กด Transfer อีกครั้งได้อย่างปลอดภัย เซิร์ฟเวอร์จะไม่หักซ้ำ
+            const unknown = !res || res.networkError;
+            Swal.fire({
+                icon: unknown ? 'warning' : 'error',
+                title: unknown ? 'ไม่ทราบผลการโอน' : 'โอนไม่สำเร็จ',
+                text: unknown
+                    ? 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ระหว่างโอน กด Transfer อีกครั้งเพื่อตรวจสอบผล ระบบจะไม่โอนซ้ำ'
+                    : ((res && res.message) || 'กรุณาลองใหม่อีกครั้ง'),
+                confirmButtonColor: '#ffc107'
+            });
+            loadBalance();
             return;
         }
         setBalance(res.balance);
@@ -392,6 +410,7 @@
         $('code-input').value = '';
         $('amount-input').value = '';
         recipient = null;
+        requestId = null;
         validate();
         showStep('done');
     }

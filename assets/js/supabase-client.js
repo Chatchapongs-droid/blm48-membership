@@ -802,8 +802,9 @@ function blm48LookupWalletRecipient(username, walletCode) {
 function blm48GetTransferStatus(username) {
   return blm48Rpc('get_transfer_status', { p_username: username });
 }
-function blm48TransferTokenByWallet(username, walletCode, amount) {
-  return blm48Rpc('transfer_token_by_wallet', { p_username: username, p_wallet_code: walletCode, p_amount: amount });
+// requestId: กดโอนซ้ำด้วย id เดิม (เช่นหลัง timeout) เซิร์ฟเวอร์คืนผลครั้งแรก ไม่หัก Token ซ้ำ
+function blm48TransferTokenByWallet(username, walletCode, amount, requestId) {
+  return blm48Rpc('transfer_token_by_wallet', { p_username: username, p_wallet_code: walletCode, p_amount: amount, p_request_id: requestId || null });
 }
 // Global audit log of every admin's wallet transfers (newest first), used by the "ประวัติการโอน" list.
 function blm48AdminGetTransferHistory(adminUsername, limit) {
