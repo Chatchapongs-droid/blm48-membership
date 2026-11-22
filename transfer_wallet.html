@@ -125,8 +125,18 @@
             flex-direction: column; align-items: center; justify-content: center;
         }
         #scan-layer.open { display: flex; }
-        #scan-reader { width: 100%; max-width: 420px; }
+        .scan-view { position: relative; width: 100%; max-width: 420px; aspect-ratio: 1 / 1; overflow: hidden; background: #000; }
+        #scan-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .scan-frame {
+            position: absolute; left: 50%; top: 50%; width: 64%; aspect-ratio: 1 / 1; transform: translate(-50%, -50%);
+            border: 2px solid #ffc107; border-radius: 14px; box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);
+        }
         #scan-layer .scan-text { color: #fff; font-size: 14px; margin-top: 16px; text-align: center; padding: 0 20px; }
+        #scan-layer .scan-photo {
+            margin-top: 18px; border: 1px solid rgba(255,255,255,0.6); background: none; color: #fff;
+            border-radius: 30px; padding: 10px 20px; font-family: inherit; font-size: 14px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
         #scan-layer .scan-close {
             position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 14px;
             width: 42px; height: 42px; border-radius: 50%; border: none; background: rgba(255,255,255,0.15);
@@ -232,8 +242,13 @@
 
 <div id="scan-layer">
     <button type="button" class="scan-close" onclick="closeScanner()" aria-label="ปิด"><i class="fas fa-xmark"></i></button>
-    <div id="scan-reader"></div>
-    <div class="scan-text">สแกน QR จากหน้า My Wallet ของผู้รับ</div>
+    <div class="scan-view">
+        <video id="scan-video" playsinline webkit-playsinline muted autoplay></video>
+        <div class="scan-frame"></div>
+    </div>
+    <div class="scan-text" id="scan-text">สแกน QR จากหน้า My Wallet ของผู้รับ</div>
+    <button type="button" class="scan-photo" onclick="$('scan-file').click()"><i class="far fa-image"></i> เลือกรูป QR จากอัลบั้ม</button>
+    <input type="file" id="scan-file" accept="image/*" hidden>
 </div>
 
 <script>
@@ -242,7 +257,6 @@
     let recipient = null;
     let amount = 0;
     let sending = false;
-    let scanner = null;
 
     const $ = (id) => document.getElementById(id);
     const fmt = (n) => Number(n || 0).toLocaleString();
@@ -353,48 +367,109 @@
         showStep('done');
     }
 
-    // สแกน QR ของหน้า My Wallet (เก็บ "BLM-" + เลข 10 หลัก) - โหลดไลบรารีเฉพาะตอนกดสแกน
-    function loadScannerLib() {
-        if (window.Html5Qrcode) return Promise.resolve();
+    // สแกน QR ของหน้า My Wallet (เก็บ "BLM-" + เลข 10 หลัก)
+    // ใช้ <video playsinline muted> + jsQR เอง (html5-qrcode เดิมจอดำบน iPhone)
+    let scanStream = null;
+    let scanLoop = 0;
+    const scanCanvas = document.createElement('canvas');
+    const scanCtx = scanCanvas.getContext('2d', { willReadFrequently: true });
+
+    function loadJsQR() {
+        if (window.jsQR) return Promise.resolve();
         return new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+            s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
             s.onload = resolve; s.onerror = reject;
             document.head.appendChild(s);
         });
     }
 
-    async function openScanner() {
-        try { await loadScannerLib(); } catch (e) {
-            Swal.fire({ icon: 'error', title: 'เปิดกล้องไม่ได้', text: 'กรุณากรอก Wallet Code เองค่ะ', confirmButtonColor: '#ffc107' });
-            return;
-        }
-        $('scan-layer').classList.add('open');
-        scanner = new Html5Qrcode('scan-reader');
-        try {
-            await scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 240 }, (text) => {
-                const digits = String(text).replace(/[^0-9]/g, '');
-                if (digits.length === 10) {
-                    $('code-input').value = 'BLM-' + digits;
-                    $('code-err').textContent = '';
-                    validate();
-                    closeScanner();
-                }
-            });
-        } catch (e) {
-            closeScanner();
-            Swal.fire({ icon: 'error', title: 'เปิดกล้องไม่ได้', text: 'กรุณาอนุญาตการใช้กล้อง หรือกรอก Wallet Code เองค่ะ', confirmButtonColor: '#ffc107' });
-        }
+    function decodeFrom(source, w, h) {
+        const scale = Math.min(1, 720 / Math.max(w, h));
+        const cw = Math.round(w * scale), ch = Math.round(h * scale);
+        scanCanvas.width = cw; scanCanvas.height = ch;
+        scanCtx.drawImage(source, 0, 0, cw, ch);
+        const img = scanCtx.getImageData(0, 0, cw, ch);
+        const res = window.jsQR(img.data, cw, ch, { inversionAttempts: 'attemptBoth' });
+        return res ? res.data : null;
     }
 
-    async function closeScanner() {
-        $('scan-layer').classList.remove('open');
-        if (scanner) {
-            try { await scanner.stop(); } catch (e) {}
-            try { scanner.clear(); } catch (e) {}
-            scanner = null;
-        }
+    function acceptScan(text) {
+        const digits = String(text || '').replace(/[^0-9]/g, '');
+        if (digits.length !== 10) return false;
+        $('code-input').value = 'BLM-' + digits;
+        $('code-err').textContent = '';
+        validate();
+        closeScanner();
+        return true;
     }
+
+    async function openScanner() {
+        $('scan-text').textContent = 'สแกน QR จากหน้า My Wallet ของผู้รับ';
+        $('scan-layer').classList.add('open');
+        try { await loadJsQR(); } catch (e) {
+            $('scan-text').textContent = 'โหลดตัวสแกนไม่สำเร็จ กรุณาลองใหม่ หรือกรอก Wallet Code เอง';
+            return;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            $('scan-text').textContent = 'เบราว์เซอร์นี้เปิดกล้องไม่ได้ กรุณาเลือกรูป QR จากอัลบั้ม หรือกรอก Wallet Code เอง';
+            return;
+        }
+        const video = $('scan-video');
+        try {
+            scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+            if (!$('scan-layer').classList.contains('open')) { stopStream(); return; }
+            video.setAttribute('playsinline', '');
+            video.muted = true;
+            video.srcObject = scanStream;
+            await video.play();
+        } catch (e) {
+            stopStream();
+            $('scan-text').textContent = 'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้องในการตั้งค่า หรือเลือกรูป QR จากอัลบั้มแทน';
+            return;
+        }
+        let last = 0;
+        const tick = (t) => {
+            if (!scanStream) return;
+            scanLoop = requestAnimationFrame(tick);
+            if (t - last < 150 || video.readyState < 2 || !video.videoWidth) return;
+            last = t;
+            try {
+                const text = decodeFrom(video, video.videoWidth, video.videoHeight);
+                if (text) acceptScan(text);
+            } catch (e) {}
+        };
+        scanLoop = requestAnimationFrame(tick);
+    }
+
+    function stopStream() {
+        cancelAnimationFrame(scanLoop);
+        if (scanStream) scanStream.getTracks().forEach(tr => tr.stop());
+        scanStream = null;
+        $('scan-video').srcObject = null;
+    }
+
+    function closeScanner() {
+        $('scan-layer').classList.remove('open');
+        stopStream();
+    }
+
+    $('scan-file').addEventListener('change', async (ev) => {
+        const file = ev.target.files && ev.target.files[0];
+        ev.target.value = '';
+        if (!file) return;
+        try { await loadJsQR(); } catch (e) { $('scan-text').textContent = 'โหลดตัวสแกนไม่สำเร็จ'; return; }
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            let text = null;
+            try { text = decodeFrom(img, img.naturalWidth, img.naturalHeight); } catch (e) {}
+            URL.revokeObjectURL(url);
+            if (!acceptScan(text)) $('scan-text').textContent = 'ไม่พบ Wallet Code ในรูปนี้ กรุณาลองรูปอื่น';
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); $('scan-text').textContent = 'เปิดรูปนี้ไม่ได้ กรุณาลองรูปอื่น'; };
+        img.src = url;
+    });
 
     $('code-input').addEventListener('input', () => { $('code-err').textContent = ''; validate(); });
     $('amount-input').addEventListener('input', validate);
