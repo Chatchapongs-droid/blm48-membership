@@ -115,6 +115,8 @@
 
         .gift-modal-recipient { display: flex; flex-direction: column; align-items: center; margin-top: -56px; padding-bottom: 12px; flex-shrink: 0; }
         .gift-modal-avatar { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: #f5f5f5; border: none; box-shadow: 0 0 0 3px var(--frame, #ffde5b), 0 4px 14px rgba(0,0,0,0.12); }
+        /* โหวตเพลง: รูปปกเพลงเป็นสี่เหลี่ยมมุมมน ไม่มีกรอบสีกลุ่ม */
+        body.song-vote .gift-modal-avatar { border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
         .gift-modal-target { font-family: 'Quicksand', 'Kanit', sans-serif; font-weight: 700; font-size: 21px; color: #111; text-transform: uppercase; margin-top: 10px; max-width: 80%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* แท็บหมวดของขวัญ + Backpack (ของที่ซื้อเก็บไว้) อยู่แถวเดียวกัน */
@@ -329,6 +331,9 @@
     // ผู้สมัครแต่ละคนอาจโหวตได้ด้วย Token, GEToken หรือทั้งคู่ (แล้วแต่ว่ามีแถวใน majorVoteCandidates กี่ TokenType)
     // ส่วน Gift เปิด/ปิดได้ทั้งแคมเปญ ผ่านคอลัมน์ EnableGift ในชีต majorVoteCollections — backend ส่ง enableGift กลับมาให้ตรงๆ
     let campaignEnableGift = false;
+    let campaignVoteKind = 'member'; // 'song' = กิจกรรมโหวตเพลง (ผู้สมัครเป็นเพลง ไม่มีแท็บกลุ่ม รูปปกสี่เหลี่ยม)
+    function isSongVote() { return campaignVoteKind === 'song'; }
+    function candFallbackIcon() { return isSongVote() ? 'fa-music' : 'fa-user'; }
     let campaignTokenType = ''; // สกุลเงินหลักที่แคมเปญนี้ใช้โหวตจริง ('token' / 'getoken' / 'gift') ใช้เลือกไอคอนหน้าคะแนนในหน้าสรุปอันดับ
 
     // ไอคอน + สีของคะแนนในหน้าสรุปอันดับ ให้ตรงกับหมวดหมู่ที่แคมเปญนี้ใช้โหวตจริง
@@ -520,6 +525,8 @@
 
                 campaignEnableGift = !!result.enableGift;
                 campaignTokenType = result.tokenType || '';
+                campaignVoteKind = result.voteKind === 'song' ? 'song' : 'member';
+                document.body.classList.toggle('song-vote', isSongVote());
 
                 if (result.campaignTimeStatus === 'open') {
                     setupVotingMode(candidates);
@@ -560,7 +567,9 @@
         tabs.innerHTML = ['All', ...groups].map(g =>
             `<button type="button" class="group-tab ${g === activeGroup ? 'active' : ''}" onclick="selectGroupTab('${escapeAttr(g)}')"><span>${escapeHtml(g)}</span></button>`
         ).join('');
-        tabs.style.display = candidates.length ? 'flex' : 'none';
+        // โหวตเพลงไม่มีแท็บกลุ่ม (ชื่อเพลงไม่ได้ลงท้ายด้วยชื่อวง)
+        if (isSongVote()) activeGroup = 'All';
+        tabs.style.display = candidates.length && !isSongVote() ? 'flex' : 'none';
 
         renderCandidateList();
     }
@@ -587,7 +596,7 @@
             return `
                 <div class="candidate-row">
                     <div class="candidate-img-wrapper">
-                        <i class="fa-solid fa-user cand-avatar-fallback"></i>
+                        <i class="fa-solid ${candFallbackIcon()} cand-avatar-fallback"></i>
                         <img src="${mImg}" class="candidate-img" alt="${escapeAttr(mName)}" onerror="this.style.display='none';">
                     </div>
                     <div class="candidate-name">${escapeHtml(mName)}</div>
@@ -657,8 +666,8 @@
                 <div class="${rank === 1 ? 'rank-winner' : 'rank-row'}" data-candidate="${escapeAttr(mName)}">
                     <div class="rank-side">
                         <div class="rank-img-wrapper">
-                            <i class="fa-solid fa-user cand-avatar-fallback"></i>
-                            <img src="${mImg}" class="rank-img" alt="Member" onerror="this.style.display='none';">
+                            <i class="fa-solid ${candFallbackIcon()} cand-avatar-fallback"></i>
+                            <img src="${mImg}" class="rank-img" alt="${escapeAttr(mName)}" onerror="this.style.display='none';">
                         </div>
                     </div>
                     <div class="rank-info">
@@ -691,6 +700,7 @@
         }
 
         const params = new URLSearchParams({ id: campaignId, candidate: candidateName, type: tokenType, img: candidateImg || '' });
+        if (isSongVote()) params.set('kind', 'song');
         window.location.href = `majorvote_vote?${params.toString()}`;
     }
 

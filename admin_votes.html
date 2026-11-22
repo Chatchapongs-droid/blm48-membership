@@ -100,6 +100,7 @@
         .status-pill.open { background: #e6f9ee; color: #1f9d55; }
         .status-pill.closed { background: #f1f1f1; color: #767676; }
         .status-pill.test { background: #ffc107; color: #222; }
+        .status-pill.song { background: #fff0f4; color: #c2185b; }
         .status-pill.pending { background: #fff3d6; color: #b7791f; }
 
         .cc-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0; }
@@ -277,6 +278,7 @@
               <div class="cc-id">${escapeHtml(TOKEN_LABELS[tokenType] || c.tokenType || '-')}${modeText ? ' · ' + escapeHtml(modeText) : ''}</div>
             </div>
             <div style="display:flex; gap:6px; flex:0 0 auto;">
+              ${c.voteKind === 'song' ? '<span class="status-pill song"><i class="fa-solid fa-music"></i> SONG</span>' : ''}
               ${c.adminOnly ? '<span class="status-pill test">TEST</span>' : ''}
               <span class="status-pill ${open ? 'open' : 'closed'}">${open ? 'OPEN' : 'CLOSED'}</span>
               ${c.ended && !c.resultsPublished ? '<span class="status-pill pending">RESULTS HIDDEN</span>' : ''}

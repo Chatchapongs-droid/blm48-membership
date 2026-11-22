@@ -68,6 +68,8 @@
         .mode-btn.active.burn { background: #fff4cc; border-color: #ffd75e; color: #6b5200; }
         .mode-btn.active.lock { background: #e3f1ff; border-color: #8cc4ff; color: #1c5d99; }
         .mode-btn.active.partial { background: #fff0e0; border-color: #ffb877; color: #8a4b00; }
+        .mode-btn.active.kind { background: #fff4cc; border-color: #ffd75e; color: #6b5200; }
+        .mode-btn i { margin-right: 5px; }
 
         .pct-row { display: none; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; color: #666; }
         .pct-row.show { display: flex; }
@@ -144,6 +146,12 @@
         .sel-cand .sc-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .sel-cand .ty-thumb { width: 30px; height: 40px; object-fit: cover; border-radius: 4px; background: #f4f4f4; display: none; }
         .sel-cand .ty-btn { border: 1px dashed #ffb877; color: #a85d00; background: none; border-radius: 14px; padding: 5px 10px; font-size: 11.5px; font-family: 'Quicksand', 'Kanit', sans-serif; cursor: pointer; white-space: nowrap; }
+        .sel-cand img.av.song { border-radius: 8px; border: 1px solid #eee; }
+        .sel-cand .av-fallback { width: 34px; height: 34px; border-radius: 8px; background: #f4f4f4; color: #c9c9c9; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .song-add { display: flex; gap: 8px; align-items: center; }
+        .song-add input[type=text] { flex: 1 1 auto; min-width: 0; }
+        .song-cover-btn { width: 44px; height: 44px; flex-shrink: 0; border: 1px dashed var(--primary-pink); border-radius: 10px; background: #fff; color: var(--primary-pink); cursor: pointer; padding: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .song-cover-btn img { width: 100%; height: 100%; object-fit: cover; }
         .sel-cand .rm { background: none; border: none; color: #ff5c7a; cursor: pointer; font-size: 15px; }
         .section-heading { font-size: 14px; font-weight: 700; color: #333; margin: 6px 0 10px; }
 
@@ -189,6 +197,10 @@
         <div class="form-card show" id="create-form">
             <div id="form-msg" class="form-msg"></div>
 
+            <div class="form-field">
+                <label>Vote Type</label>
+                <div class="mode-seg" id="ev-kind-seg"></div>
+            </div>
             <div class="form-field">
                 <label>Event Title</label>
                 <input id="ev-title" type="text" maxlength="120" placeholder="e.g. BLM48 Tanabata 2027">
@@ -247,14 +259,25 @@
             </div>
 
             <div class="form-field">
-                <label>Candidates (<span id="ev-cand-count">0</span>)</label>
-                <div class="member-tools">
-                    <input id="ev-member-search" type="text" placeholder="Search members..." oninput="renderMemberPicker()">
-                    <button type="button" class="chip-btn" onclick="selectAllVisibleMembers()">Select All</button>
-                    <button type="button" class="chip-btn" onclick="clearSelectedMembers()">Clear</button>
+                <label><span id="ev-cand-label">Candidates</span> (<span id="ev-cand-count">0</span>)</label>
+                <div id="member-picker-box">
+                    <div class="member-tools">
+                        <input id="ev-member-search" type="text" placeholder="Search members..." oninput="renderMemberPicker()">
+                        <button type="button" class="chip-btn" onclick="selectAllVisibleMembers()">Select All</button>
+                        <button type="button" class="chip-btn" onclick="clearSelectedMembers()">Clear</button>
+                    </div>
+                    <div class="member-pick-list" id="ev-member-list">
+                        <div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+                    </div>
                 </div>
-                <div class="member-pick-list" id="ev-member-list">
-                    <div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+                <div id="song-adder-box" style="display:none;">
+                    <div class="song-add">
+                        <button type="button" class="song-cover-btn" id="song-cover-btn" onclick="document.getElementById('song-cover-file').click()" aria-label="Song cover"><i class="fa-solid fa-image"></i></button>
+                        <input id="song-cover-file" type="file" accept="image/*" style="display:none;" onchange="onSongCoverPicked(this)">
+                        <input id="song-title" type="text" maxlength="120" placeholder="Song title" onkeydown="if(event.key==='Enter'){event.preventDefault();addSong();}">
+                        <button type="button" class="chip-btn" onclick="addSong()"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                    <div class="cp-hint" style="margin-top:6px;">พิมพ์ชื่อเพลง แนบรูปปก (ไม่บังคับ) แล้วกด Add ทีละเพลง</div>
                 </div>
                 <div class="selected-cands" id="ev-selected"></div>
             </div>
@@ -293,6 +316,8 @@
   let selectedCands = [];        // [{ name, profile, tyFile, tyPreview }]
   let coverFile = null;
   let newEventMode = 'burn';
+  let voteKind = 'member';        // 'member' | 'song'
+  let pendingSongCover = null;    // { file, preview } ของเพลงที่กำลังจะเพิ่ม
 
   function showFormError(msg) {
     const el = document.getElementById('form-msg');
@@ -382,12 +407,75 @@
     renderSelectedCands();
   }
 
+  // ประเภทกิจกรรม: Members (เลือกจากรายชื่อเมมเบอร์) / Songs (แอดมินพิมพ์ชื่อเพลงเอง)
+  function renderVoteKind() {
+    document.getElementById('ev-kind-seg').innerHTML = [['member', 'fa-user', 'Members'], ['song', 'fa-music', 'Songs']].map(([k, ic, label]) =>
+      `<button type="button" class="mode-btn ${voteKind === k ? 'active kind' : ''}" onclick="setVoteKind('${k}')"><i class="fa-solid ${ic}"></i>${label}</button>`
+    ).join('');
+    const isSong = voteKind === 'song';
+    document.getElementById('member-picker-box').style.display = isSong ? 'none' : '';
+    document.getElementById('song-adder-box').style.display = isSong ? '' : 'none';
+    document.getElementById('ev-cand-label').textContent = isSong ? 'Songs' : 'Candidates';
+  }
+  function setVoteKind(k) {
+    if (k === voteKind) return;
+    voteKind = k;
+    selectedCands = [];   // เมมเบอร์กับเพลงอยู่กิจกรรมเดียวกันไม่ได้
+    clearFormError();
+    renderVoteKind();
+    renderMemberPicker();
+    renderSelectedCands();
+  }
+
+  async function onSongCoverPicked(input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!validImageFile(file)) return;
+    pendingSongCover = { file, preview: await readPreview(file) };
+    document.getElementById('song-cover-btn').innerHTML = `<img src="${escapeAttr(pendingSongCover.preview)}" alt="">`;
+  }
+
+  function addSong() {
+    clearFormError();
+    const input = document.getElementById('song-title');
+    const name = input.value.trim().replace(/\s+/g, ' ');
+    if (!name) { showFormError('กรุณาพิมพ์ชื่อเพลง'); return; }
+    if (isSelected(name)) { showFormError('มีเพลงนี้ในรายการแล้ว'); return; }
+    selectedCands.push({ name, profile: '', coverFile: pendingSongCover ? pendingSongCover.file : null,
+      coverPreview: pendingSongCover ? pendingSongCover.preview : '', tyFile: null, tyPreview: '' });
+    input.value = '';
+    pendingSongCover = null;
+    document.getElementById('song-cover-btn').innerHTML = '<i class="fa-solid fa-image"></i>';
+    renderSelectedCands();
+    input.focus();
+  }
+
+  async function onSelCoverPicked(i, input) {
+    const file = input.files && input.files[0];
+    input.value = '';
+    if (!validImageFile(file) || !selectedCands[i]) return;
+    selectedCands[i].coverFile = file;
+    selectedCands[i].coverPreview = await readPreview(file);
+    renderSelectedCands();
+  }
+
+  function selCandThumb(c, i) {
+    if (voteKind !== 'song') {
+      return `<img class="av" style="--frame:${groupFrameColor(c.name)}" src="${escapeAttr(c.profile)}" alt="" onerror="this.style.visibility='hidden'">`;
+    }
+    const inner = c.coverPreview
+      ? `<img class="av song" src="${escapeAttr(c.coverPreview)}" alt="">`
+      : `<span class="av-fallback"><i class="fa-solid fa-music"></i></span>`;
+    return `<span style="cursor:pointer;" onclick="document.getElementById('cv-file-${i}').click()" title="Change cover">${inner}</span>
+      <input id="cv-file-${i}" type="file" accept="image/*" style="display:none;" onchange="onSelCoverPicked(${i}, this)">`;
+  }
+
   function renderSelectedCands() {
     document.getElementById('ev-cand-count').textContent = selectedCands.length;
     const box = document.getElementById('ev-selected');
     box.innerHTML = selectedCands.map((c, i) => `
       <div class="sel-cand">
-        <img class="av" style="--frame:${groupFrameColor(c.name)}" src="${escapeAttr(c.profile)}" alt="" onerror="this.style.visibility='hidden'">
+        ${selCandThumb(c, i)}
         <span class="sc-name">${escapeHtml(c.name)}</span>
         <img class="ty-thumb" src="${escapeAttr(c.tyPreview)}" alt="" style="${c.tyPreview ? 'display:block;' : ''}">
         <button type="button" class="ty-btn" onclick="document.getElementById('ty-file-${i}').click()">${c.tyFile ? 'Change' : '+'} Thank You Card</button>
@@ -501,7 +589,7 @@
     if (!title) { showFormError('กรุณากรอกชื่อกิจกรรมโหวต'); return null; }
     if (startRaw && endRaw && new Date(endRaw) <= new Date(startRaw)) { showFormError('วันสิ้นสุดต้องอยู่หลังวันเริ่มกิจกรรม'); return null; }
     if (mechanic === 'partial' && (!Number.isInteger(pct) || pct < 1 || pct > 99)) { showFormError('Partially Burned ต้องกำหนด % ที่คืนเป็นจำนวนเต็ม 1–99'); return null; }
-    if (selectedCands.length === 0) { showFormError('กรุณาเลือกผู้สมัครอย่างน้อย 1 คน'); return null; }
+    if (selectedCands.length === 0) { showFormError(voteKind === 'song' ? 'กรุณาเพิ่มเพลงอย่างน้อย 1 เพลง' : 'กรุณาเลือกผู้สมัครอย่างน้อย 1 คน'); return null; }
     return { title, description, startRaw, endRaw, tokenType, status, isGift, enableGift, mechanic, pct, adminOnly };
   }
 
@@ -513,8 +601,9 @@
     const modeText = f.isGift ? 'Gift (Cookie)' : (f.mechanic === 'partial' ? `Partially Burned (${f.pct}%)` : MODE_LABELS[f.mechanic]);
     const box = document.getElementById('create-confirm');
     box.innerHTML = `<b>Create this event?</b><br><b>${escapeHtml(f.title)}</b><br>` +
+      `${voteKind === 'song' ? 'Song Vote' : 'Member Vote'} · ` +
       `${escapeHtml(TOKEN_LABELS[f.tokenType])} · ${escapeHtml(modeText)} · ${escapeHtml(f.status)}<br>` +
-      `Candidates: ${selectedCands.length}${newEventCheckpoints.length ? ` · Interim results: ${newEventCheckpoints.length}` : ''}` +
+      `${voteKind === 'song' ? 'Songs' : 'Candidates'}: ${selectedCands.length}${newEventCheckpoints.length ? ` · Interim results: ${newEventCheckpoints.length}` : ''}` +
       (f.adminOnly ? '<br>• Test Event: เห็นและโหวตได้เฉพาะแอดมิน' : (f.status === 'Open' ? '<br>• Open: ผู้ใช้เห็นและโหวตได้ทันที' : '')) +
       `<div class="confirm-actions">
          <button type="button" class="btn-cancel" onclick="cancelCreate()">Cancel</button>
@@ -541,7 +630,8 @@
       const candidates = [];
       for (const c of selectedCands) {
         const tyUrl = c.tyFile ? await blm48UploadPostImage(user.username, c.tyFile) : null;
-        candidates.push({ name: c.name, profile: c.profile || null, thankYouCard: tyUrl });
+        const profileUrl = c.coverFile ? await blm48UploadPostImage(user.username, c.coverFile) : (c.profile || null);
+        candidates.push({ name: c.name, profile: profileUrl, thankYouCard: tyUrl });
       }
 
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
@@ -550,7 +640,7 @@
         startTime: f.startRaw ? new Date(f.startRaw).toISOString() : null,
         endTime: f.endRaw ? new Date(f.endRaw).toISOString() : null,
         status: f.status, tokenType: f.tokenType, enableGift: f.enableGift, tokenMechanic: f.mechanic, refundPercent: f.pct,
-        candidates, checkpoints: newEventCheckpoints, adminOnly: f.adminOnly
+        candidates, checkpoints: newEventCheckpoints, adminOnly: f.adminOnly, voteKind
       });
       if (res && res.status === 'success') {
         // สร้างเสร็จ -> ไปหน้ารายละเอียดของกิจกรรมใหม่ (replace เพื่อไม่ให้ย้อนกลับมาฟอร์มเดิม)
@@ -574,6 +664,7 @@
     }
     document.getElementById('page-content').style.display = 'block';
     renderNewEventMode();
+    renderVoteKind();
     onTokenTypeChange();
     loadVoteMembers();
   });

@@ -906,7 +906,8 @@ function blm48AdminCreateVoteEvent(adminUsername, ev) {
     p_admin_username: adminUsername, p_title: ev.title, p_description: ev.description, p_cover_image: ev.coverImage,
     p_start_time: ev.startTime, p_end_time: ev.endTime, p_status: ev.status,
     p_token_type: ev.tokenType, p_enable_gift: ev.enableGift, p_token_mechanic: ev.tokenMechanic, p_refund_percent: ev.refundPercent,
-    p_candidates: ev.candidates, p_checkpoints: ev.checkpoints || null, p_admin_only: !!ev.adminOnly
+    p_candidates: ev.candidates, p_checkpoints: ev.checkpoints || null, p_admin_only: !!ev.adminOnly,
+    p_vote_kind: ev.voteKind === 'song' ? 'song' : 'member'
   });
 }
 // กิจกรรมทดสอบ: true = เห็น/โหวตได้เฉพาะแอดมิน, false = เปิดให้ทุกคน
@@ -970,6 +971,10 @@ function blm48AdminAddVoteCandidates(adminUsername, collectionId, candidates) {
 }
 function blm48AdminUpdateVoteCandidateCard(adminUsername, candidateId, thankYouCard) {
   return blm48Rpc('admin_update_vote_candidate_card', { p_admin_username: adminUsername, p_candidate_id: candidateId, p_thank_you_card: thankYouCard || null });
+}
+// กิจกรรมโหวตเพลง: เปลี่ยน / ลบรูปปกเพลง
+function blm48AdminUpdateVoteCandidateProfile(adminUsername, candidateId, profile) {
+  return blm48Rpc('admin_update_vote_candidate_profile', { p_admin_username: adminUsername, p_candidate_id: candidateId, p_profile: profile || null });
 }
 function blm48AdminRemoveVoteCandidate(adminUsername, candidateId) {
   return blm48Rpc('admin_remove_vote_candidate', { p_admin_username: adminUsername, p_candidate_id: candidateId });
