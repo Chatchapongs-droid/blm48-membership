@@ -1519,7 +1519,18 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-const BLM48_VAPID_PUBLIC_KEY = 'BMmRmzp_a8BerbNj2lvLkAwRRJbyaWE5Ee7ItH3WmXa1D6HDVuGtDSTNT2G8N-GtmS3NUR79HzpvwPY8Nne6x_o';
+const BLM48_VAPID_PUBLIC_KEY = 'BAC489Sheb3pNGvR9oCVOeR-3UsUT7H7dkP_YwWPcPL0xt8IdHX7OFhuahfV_ADGdMjifz3lWxA_FN5RdJmU_CU';
+
+// subscription เก่าที่สมัครด้วย VAPID key ชุดก่อน (ก่อนย้าย Supabase 2026-11) ใช้ส่ง push ไม่ได้แล้ว
+// ถือว่าเป็น "ปิด" และให้สมัครใหม่ด้วย key ปัจจุบัน
+function isCurrentVapidSubscription(subscription) {
+  const key = subscription && subscription.options && subscription.options.applicationServerKey;
+  if (!key) return true; // เบราว์เซอร์ที่ไม่บอก key: ถือว่าใช้ได้ (เหมือนพฤติกรรมเดิม)
+  const a = new Uint8Array(key), b = urlBase64ToUint8Array(BLM48_VAPID_PUBLIC_KEY);
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
 
 // ขอ permission แจ้งเตือน + สมัคร Push subscription ของเบราว์เซอร์/อุปกรณ์นี้ แล้วบันทึกไว้ที่
 // เซิร์ฟเวอร์ผูกกับ username ปัจจุบัน ต้องเรียกจาก user gesture (กดปุ่ม) เท่านั้น เบราว์เซอร์ส่วนใหญ่
@@ -1542,6 +1553,10 @@ async function subscribeToPush(username) {
     await navigator.serviceWorker.ready;
 
     let subscription = await registration.pushManager.getSubscription();
+    if (subscription && !isCurrentVapidSubscription(subscription)) {
+      await subscription.unsubscribe();
+      subscription = null;
+    }
     if (!subscription) {
       subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -1592,7 +1607,7 @@ async function getPushSubscriptionStatus() {
     const registration = await navigator.serviceWorker.getRegistration('/sw.js');
     if (!registration) return 'off';
     const subscription = await registration.pushManager.getSubscription();
-    return subscription ? 'on' : 'off';
+    return subscription && isCurrentVapidSubscription(subscription) ? 'on' : 'off';
   } catch (e) {
     return 'off';
   }
