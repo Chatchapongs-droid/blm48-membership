@@ -9,8 +9,8 @@
 // each of which validates balances and ownership server-side before
 // touching anything. Catalog data (Collections/Items/GiftCatalog/codes)
 // is still edited in Google Sheets by the admin and synced in from there.
-const BLM48_SUPABASE_URL = 'https://xfonixnappsvswwvjlwg.supabase.co';
-const BLM48_SUPABASE_ANON_KEY = 'sb_publishable_0KbJkroXETTFImcjRJkxXA_kWftDGlo';
+const BLM48_SUPABASE_URL = 'https://fgovrwnjvdwvtsjeuhjj.supabase.co';
+const BLM48_SUPABASE_ANON_KEY = 'sb_publishable_LDsTfVOpc2jUP7gIjv51zg_fn-1mQyH';
 
 const blm48Supabase = window.supabase.createClient(BLM48_SUPABASE_URL, BLM48_SUPABASE_ANON_KEY);
 
