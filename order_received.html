@@ -42,6 +42,7 @@
         .received-thumb.is-icon { display: flex; align-items: center; justify-content: center; font-size: 34px; }
         .received-thumb.is-cookie { background: #fbefe3; color: #8b5a3c; }
         .received-thumb.is-gem { background: #dcefff; color: #339af0; }
+        .received-thumb.is-coin { background: #fff6d6; color: #b8860b; }
         .received-thumb.is-ssr { box-shadow: 0 0 0 3px rgba(212,175,55,0.35), 0 0 14px rgba(212,175,55,0.5); }
         .received-info { flex: 1; min-width: 0; }
         .received-name { font-size: 16px; color: #222; line-height: 1.4; margin-bottom: 6px; }
@@ -115,6 +116,11 @@
         key = 'cookie';
         entry = { kind: 'cookie', label: 'Cookie', type: 'Cookie', qty: 0, note: 'Added to your Cookie balance.' };
         entry.add = Number(r.amount) || 0;
+      } else if (r.kind === 'token') {
+        key = 'token';
+        entry = { kind: 'token', label: r.label || 'Token', type: 'Token', qty: 0,
+                  note: 'Pre-order bonus · added to your Token balance.' };
+        entry.add = Number(r.amount) || 0;
       } else if (r.kind === 'ge_token') {
         key = 'ge|' + r.label;
         entry = { kind: 'ge', label: r.label || 'GE Token', type: 'GE Token', qty: 0,
@@ -145,6 +151,7 @@
   function thumb(r) {
     if (r.kind === 'cookie') return '<div class="received-thumb is-icon is-cookie"><i class="fas fa-cookie-bite"></i></div>';
     if (r.kind === 'ge') return '<div class="received-thumb is-icon is-gem"><i class="fas fa-gem"></i></div>';
+    if (r.kind === 'token') return '<div class="received-thumb is-icon is-coin"><i class="fas fa-coins"></i></div>';
     return `<img class="received-thumb${r.isSSR ? ' is-ssr' : ''}" src="${escapeHtml(r.image || '')}" alt="" onerror="this.onerror=null;this.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='">`;
   }
 

@@ -25,6 +25,7 @@
         .status-text { font-size: 15px; }
         .status-text i { margin-right: 6px; }
         .line-status { font-size: 12.5px; margin-top: 4px; }
+        .line-bonus { font-size: 12.5px; margin-top: 3px; color: #2d5bd1; }
         .detail-summary { padding: 14px 12px; border-bottom: 1px solid var(--order-line); }
         .detail-summary .summary-row:not(.is-total) { color: #aaa; }
         .pay-method { display: flex; align-items: center; gap: 14px; }
@@ -77,8 +78,20 @@
       + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   }
 
+  // โบนัสของ Collection พรีออเดอร์: เข้ากระเป๋าแล้ว (ตอนซื้อ) หรือมาพร้อมของ (ตอน Redeem)
+  function lineBonus(l) {
+    const b = l.bonus;
+    if (!b) return '';
+    const txt = [['token', 'Token'], ['geToken', 'GE Token'], ['cookie', 'Cookie']]
+      .filter(([k]) => Number(b[k]) > 0).map(([k, label]) => `+${Number(b[k]).toLocaleString()} ${label}`).join(', ');
+    if (!txt) return '';
+    const when = b.credited ? 'added to your wallet' : (l.status === 'redeemed' ? 'received with your items' : 'arrives with your items');
+    return `<div class="line-bonus"><i class="fa-solid fa-gift"></i> Bonus ${escapeHtml(txt)} · ${when}</div>`;
+  }
+
   function lineStatus(l) {
-    if (l.kind !== 'preorder') return '';
+    if (l.kind !== 'preorder' && !l.isPreorder) return '';
+    if (l.status === 'waiting' && l.deliveryInfo) return `<div class="line-status status-waiting"><i class="fa-solid fa-truck-fast"></i> Waiting for shipment · ${escapeHtml(l.deliveryInfo)}</div>`;
     if (l.status === 'waiting') return '<div class="line-status status-waiting"><i class="fa-solid fa-truck-fast"></i> Waiting for shipment</div>';
     if (l.status === 'ready') return '<div class="line-status status-ready"><i class="fa-solid fa-box"></i> Shipped · Redeemable</div>';
     return '<div class="line-status status-done"><i class="fa-solid fa-circle-check"></i> Redeemed</div>';
@@ -118,6 +131,7 @@
           <div class="order-line-body">
             <div class="order-line-name">${escapeHtml(l.name)}</div>
             ${lineStatus(l)}
+            ${lineBonus(l)}
             <div class="order-line-bottom">
               <div class="order-line-qty">${Number(l.unitPrice).toLocaleString()} Tokens</div>
               <div class="order-line-qty">X${l.quantity}</div>

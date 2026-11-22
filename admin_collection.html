@@ -30,7 +30,9 @@
         .loading-state, .empty-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
 
         .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
-        .filter-tab { flex: 1; border-radius: 20px; padding: 9px 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .filter-tab { flex: 1; border-radius: 20px; padding: 9px 6px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .tabs { gap: 6px; }
+        @media (max-width: 420px) { .filter-tab { padding: 9px 2px; font-size: 12.5px; } .tabs .filter-tab[data-tab="preorder"] { flex: 1.35; } }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
 
@@ -182,6 +184,24 @@
         .si-num s { color: #aaa; font-weight: 500; }
         .ssr-tag { color: #b8860b; font-size: 11px; }
 
+        /* Pre-order */
+        .pill.pre { background: #e8f0ff; color: #2d5bd1; }
+        .bonus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .bonus-field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: #666; min-width: 0; }
+        .bonus-field input { width: 100%; padding: 10px 12px; border: 1px solid #e6e6e6; border-radius: 10px; font-family: inherit; font-size: 14px; font-variant-numeric: tabular-nums; }
+        .pre-opts { display: grid; gap: 8px; margin-bottom: 12px; }
+        .pre-opt { display: flex; align-items: flex-start; gap: 10px; text-align: left; border: 1px solid #eee; background: #fff; border-radius: 14px; padding: 12px 14px; font-family: inherit; cursor: pointer; color: #444; }
+        .pre-opt > i { margin-top: 2px; color: #bbb; font-size: 16px; }
+        .pre-opt b { display: block; font-size: 13.5px; color: #333; margin-bottom: 2px; }
+        .pre-opt.active { border-color: #ffc107; background: #fffaf0; }
+        .pre-opt.active > i { color: #e0a800; }
+        .pre-preview { font-size: 12.5px; color: #555; background: #fafafa; border-radius: 12px; padding: 10px 12px; line-height: 1.6; }
+        .pre-preview b { color: #333; }
+        .btn-wide { width: 100%; padding: 11px; font-size: 14px; }
+        .confirm-box.ship { background: #fffaf0; border-color: #ffe08a; color: #6b4e00; }
+        .btn-ship { background: #ffc107; color: #222; }
+        @media (max-width: 380px) { .bonus-grid { grid-template-columns: 1fr; } }
+
         /* โฟกัสชัดเจน + ปุ่มแตะง่ายบนมือถือ */
         input:focus, select:focus, textarea:focus { outline: none; border-color: #ffc107 !important; box-shadow: 0 0 0 3px rgba(255, 193, 7, .22); }
         button:focus-visible, a:focus-visible { outline: 2px solid #ffc107; outline-offset: 2px; }
@@ -214,7 +234,8 @@
 <script>
   const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
   const STATES = { open: 'On sale', scheduled: 'Scheduled', soldout: 'Sold out', off: 'Off sale', draft: 'Draft', ended: 'Ended' };
-  const TABS = [['info', 'Info'], ['sale', 'Sale'], ['cards', 'Cards'], ['stock', 'Stock']];
+  const TABS = [['info', 'Info'], ['sale', 'Sale'], ['cards', 'Cards'], ['stock', 'Stock'], ['preorder', 'Pre-order']];
+  const BONUS_FIELDS = [['bonusToken', 'Token', 'fa-coins'], ['bonusGeToken', 'GE Token', 'fa-gem'], ['bonusCookie', 'Cookie', 'fa-cookie-bite']];
   const params = new URLSearchParams(location.search);
   let collectionId = params.get('id');
   let user = null;
@@ -283,7 +304,12 @@
   function emptyCollection() {
     return { collectionId: null, name: '', description: '', coverImage: '', backImage: '', backStyle: 'card', category: 'Coaster', on: false, state: 'off',
       costTokens: 10, costTokensX5: 45, allowX5: true, maxDrawsPerAccount: null, saleStartAt: null, saleEndAt: null,
-      isLucky: false, sold: 0, items: [], logs: [] };
+      isLucky: false, sold: 0, items: [], logs: [], preorder: null };
+  }
+  function toPreorderDraft(p) {
+    p = p || {};
+    return { on: !!p.on, bonusToken: p.bonusToken ? String(p.bonusToken) : '', bonusGeToken: p.bonusGeToken ? String(p.bonusGeToken) : '',
+      bonusCookie: p.bonusCookie ? String(p.bonusCookie) : '', timing: p.timing === 'purchase' ? 'purchase' : 'ship', deliveryInfo: p.deliveryInfo || '' };
   }
 
   function toDraft(c) {
@@ -292,6 +318,7 @@
       backImage: c.backImage || '', backStyle: c.backStyle === 'shape' ? 'shape' : 'card',
       on: !!c.on, costTokens: c.costTokens ?? '', costTokensX5: c.costTokensX5 ?? '', allowX5: c.allowX5 !== false,
       maxDrawsPerAccount: c.maxDrawsPerAccount ?? '', saleStartAt: toLocalInput(c.saleStartAt), saleEndAt: toLocalInput(c.saleEndAt),
+      preorder: toPreorderDraft(c.preorder),
       items: (c.items || []).map(i => ({ key: 'k' + (++keySeq), id: i.id, name: i.name || '', imageUrl: i.imageUrl || '',
         pct: rateToPct(i.rate), tag: i.tag === 'SSR' ? 'SSR' : null, stock: Number(i.stock || 0), sold: Number(i.sold || 0), add: '' }))
     };
@@ -346,6 +373,11 @@
     if (draft.maxDrawsPerAccount !== '' && !(Number.isInteger(Number(draft.maxDrawsPerAccount)) && Number(draft.maxDrawsPerAccount) >= 1)) return e('Limit per account must be 1 or more, or left empty', 'sale');
     if (draft.saleStartAt && draft.saleEndAt && new Date(draft.saleEndAt) <= new Date(draft.saleStartAt)) return e('Sale end must be after sale start', 'sale');
     if (!saved.isLucky) {
+      for (const [k, label] of BONUS_FIELDS) {
+        const v = draft.preorder[k];
+        if (v !== '' && !(Number.isInteger(Number(v)) && Number(v) >= 0 && Number(v) <= 1000000)) return e(`${label} bonus must be a whole number from 0 to 1,000,000`, 'preorder');
+      }
+      if (!draft.preorder.on && saved.preorder && saved.preorder.on && saved.preorder.waitingLines > 0) return e('Some pre-orders are still waiting to ship. Ship them before turning pre-order off', 'preorder');
       const names = new Set();
       for (const i of draft.items) {
         if (!i.name.trim()) return e('Every card needs a name', 'cards');
@@ -392,7 +424,7 @@
         <div class="ch-cover ${draft.coverImage ? 'has' : ''}" ${cover}>${draft.coverImage ? '' : '<i class="fa-regular fa-image"></i>'}</div>
         <div class="ch-info">
           <div class="ch-name">${escapeHtml(draft.name.trim() || 'Untitled')}</div>
-          <div class="ch-sub"><span class="pill ${state}">${STATES[state] || state}</span>
+          <div class="ch-sub"><span class="pill ${state}">${STATES[state] || state}</span>${draft.preorder && draft.preorder.on ? '<span class="pill pre">Pre-order</span>' : ''}
             ${saved.isLucky ? 'Lucky Box' : `${fmt(draft.items.length)} cards · ${fmt(t.stock)} left${saved.sold ? ` · ${fmt(saved.sold)} sold` : ''}`}</div>
         </div>
       </div>
@@ -461,6 +493,11 @@
       maxDrawsPerAccount: draft.maxDrawsPerAccount === '' ? null : Number(draft.maxDrawsPerAccount),
       saleStartAt: fromLocalInput(draft.saleStartAt), saleEndAt: fromLocalInput(draft.saleEndAt), on: draft.on
     };
+    if (!saved.isLucky) {
+      const p = draft.preorder;
+      col.preorder = { on: p.on, timing: p.timing, deliveryInfo: p.deliveryInfo.trim(),
+        bonusToken: Number(p.bonusToken) || 0, bonusGeToken: Number(p.bonusGeToken) || 0, bonusCookie: Number(p.bonusCookie) || 0 };
+    }
     const items = saved.isLucky ? null : draft.items.map(i => ({
       id: i.id || null, name: i.name.trim(), imageUrl: i.imageUrl, rate: round4(Number(i.pct) || 0) / 100,
       tag: i.tag, addStock: Number(i.add) || 0
@@ -495,6 +532,7 @@
     if (saved.collectionId) history.replaceState(history.state, '', 'admin_collection?id=' + encodeURIComponent(saved.collectionId) + '&tab=' + k);
     document.querySelectorAll('.tabs .filter-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === k));
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + k));
+    if (k === 'preorder') refreshShipZone();
     const tabs = document.querySelector('.tabs');
     if (tabs && tabs.getBoundingClientRect().top < 0) window.scrollTo({ top: tabs.offsetTop - 70 });
   }
@@ -504,6 +542,7 @@
     document.getElementById('page-title').textContent = isNew ? 'New Collection' : 'Edit Collection';
     document.title = 'BLM48 Membership | ' + (isNew ? 'New Collection' : (saved.name || 'Collection'));
     const tabs = saved.isLucky ? TABS.filter(([k]) => k === 'info' || k === 'sale') : TABS;
+    shipConfirm = false;
     if (!tabs.some(([k]) => k === tab)) tab = 'info';
     document.getElementById('root').innerHTML = `
       <div class="col-head" id="col-head"></div>
@@ -511,10 +550,11 @@
       <div class="tab-pane ${tab === 'info' ? 'active' : ''}" id="pane-info"></div>
       <div class="tab-pane ${tab === 'sale' ? 'active' : ''}" id="pane-sale"></div>
       <div class="tab-pane ${tab === 'cards' ? 'active' : ''}" id="pane-cards"></div>
-      <div class="tab-pane ${tab === 'stock' ? 'active' : ''}" id="pane-stock"></div>`;
+      <div class="tab-pane ${tab === 'stock' ? 'active' : ''}" id="pane-stock"></div>
+      <div class="tab-pane ${tab === 'preorder' ? 'active' : ''}" id="pane-preorder"></div>`;
     renderInfo();
     renderSale();
-    if (!saved.isLucky) { renderCards(); renderStock(); }
+    if (!saved.isLucky) { renderCards(); renderStock(); renderPreorder(); }
     renderSaveBar();
   }
 
@@ -836,6 +876,123 @@
     draft.items.filter(i => !normalOnly || i.tag !== 'SSR').forEach(i => { i.add = String((Number(i.add) || 0) + n); });
     renderCards(); renderStock(); renderSaveBar();
     toast(`${n > 0 ? '+' : ''}${n} to ${normalOnly ? 'normal cards' : 'all cards'} · tap Save to keep it`);
+  }
+
+  // ----- Pre-order -----
+  // ของสุ่มตอนซื้อ (จองสต๊อกแล้ว) แต่รอจัดส่งพร้อมกัน · โบนัสต่อการสุ่ม 1 ครั้ง (×5 = 5 เท่า)
+  let shipConfirm = false;
+  let shipping = false;
+
+  function bonusSummary(p) {
+    const parts = BONUS_FIELDS.filter(([k]) => Number(p[k]) > 0).map(([k, label]) => `+${fmt(p[k])} ${label}`);
+    return parts.join(', ');
+  }
+  function preorderPreviewHtml() {
+    const p = draft.preorder;
+    const b = bonusSummary(p);
+    return `<b>Buyers see:</b> Pre-order${p.deliveryInfo.trim() ? ` · ${escapeHtml(p.deliveryInfo.trim())}` : ''}${b
+      ? ` · bonus ${escapeHtml(b)} per draw, ${p.timing === 'purchase' ? 'in the wallet right after purchase' : 'in the wallet when the order ships'}`
+      : ' · no bonus'}`;
+  }
+
+  function renderPreorder() {
+    const el = document.getElementById('pane-preorder');
+    if (!el) return;
+    const p = draft.preorder;
+    const s = saved.preorder || {};
+    const opt = (k, title, sub) => `
+      <button type="button" class="pre-opt ${p.timing === k ? 'active' : ''}" role="radio" aria-checked="${p.timing === k}" onclick="setPre('timing', '${k}'); renderPreorder();">
+        <i class="fa-${p.timing === k ? 'solid fa-circle-dot' : 'regular fa-circle'}"></i>
+        <span><b>${title}</b><span class="note">${sub}</span></span>
+      </button>`;
+    el.innerHTML = `
+      <div class="sale-switch">
+        <div class="txt">
+          <b>Sell as pre-order</b>
+          <div class="note" style="margin-top:3px;">${p.on
+            ? 'Draws happen at purchase and stock is reserved · the goods wait in My Order and ship together when you tap "Mark all as shipped"'
+            : 'Off · items go to the buyer right after they Redeem, like a normal collection'}</div>
+        </div>
+        <button type="button" class="switch ${p.on ? 'on' : ''}" role="switch" aria-checked="${p.on}" aria-label="Sell as pre-order" onclick="setPre('on', !draft.preorder.on); renderPreorder();"></button>
+      </div>
+      ${p.on ? `
+      <div class="form-field"><label>Delivery (shown to buyers)</label>
+        <input type="text" maxlength="120" placeholder="e.g. Ships 25 Dec 2026" value="${escapeAttr(p.deliveryInfo)}" oninput="setPre('deliveryInfo', this.value)"></div>
+      <div class="section-title">Bonus with every draw</div>
+      <div class="bonus-grid">${BONUS_FIELDS.map(([k, label, icon]) => `
+        <label class="bonus-field"><span><i class="fas ${icon}"></i> ${label}</span>
+          <input type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${escapeAttr(p[k])}" oninput="setPre('${k}', this.value)" aria-label="${label} bonus per draw"></label>`).join('')}</div>
+      <div class="note" style="margin:-4px 0 12px;">Per draw · Draw ×5 gives 5 times the bonus · leave empty for no bonus</div>
+      <div class="section-title">When buyers get the bonus</div>
+      <div class="pre-opts" role="radiogroup" aria-label="When buyers get the bonus">
+        ${opt('purchase', 'Right after purchase', 'Goes into the wallet at checkout · the goods still wait to ship')}
+        ${opt('ship', 'With the shipment', 'Goes into the wallet together with the goods when the buyer Redeems after you ship')}
+      </div>
+      <div class="pre-preview" id="pre-preview">${preorderPreviewHtml()}</div>` : ''}
+      ${saved.collectionId && (s.on || s.waitingLines > 0 || s.shippedLines > 0) ? `
+      <div class="section-title">Shipping</div>
+      <div class="rate-sum">
+        <span>Waiting <b>${fmt(s.waitingOrders)}</b> orders</span>
+        <span>Buyers <b>${fmt(s.waitingBuyers)}</b></span>
+        <span>Draws <b>${fmt(s.waitingDraws)}</b></span>
+        ${s.shippedLines ? `<span>Shipped <b class="good">${fmt(s.shippedLines)}</b> lines</span>` : ''}
+      </div>
+      ${s.shippedAt ? `<div class="note" style="margin-bottom:8px;">Last shipped ${fmtDate(s.shippedAt)}</div>` : ''}
+      <div id="ship-zone">${shipZoneHtml()}</div>` : ''}`;
+  }
+
+  function shipZoneHtml() {
+    const s = saved.preorder || {};
+    if (!s.waitingLines) return '<div class="note">No orders waiting to ship</div>';
+    if (isDirty()) return '<div class="note">Save or cancel your changes first, then mark as shipped</div>';
+    if (shipConfirm) return `
+      <div class="confirm-box ship"><b>Mark ${fmt(s.waitingOrders)} orders (${fmt(s.waitingDraws)} draws) as shipped?</b>
+        Buyers get a notification and can Redeem their items${(saved.preorder.timing === 'ship' && bonusSummary(toPreorderDraft(saved.preorder))) ? ' and bonus' : ''} right away · this cannot be undone
+        <div id="ship-msg" style="margin-top:6px;"></div>
+        <div class="confirm-actions">
+          <button type="button" class="btn-cancel" onclick="shipConfirm = false; refreshShipZone();">Cancel</button>
+          <button type="button" class="btn-ship" id="ship-btn" onclick="shipAll()">Ship now</button>
+        </div>
+      </div>`;
+    return `<button type="button" class="btn btn-up btn-wide" onclick="shipConfirm = true; refreshShipZone();"><i class="fa-solid fa-truck-fast"></i> Mark all as shipped</button>`;
+  }
+  function refreshShipZone() {
+    const z = document.getElementById('ship-zone');
+    if (z) z.innerHTML = shipZoneHtml();
+  }
+
+  // พิมพ์ในช่อง -> ไม่วาดใหม่ทั้งแท็บ (โฟกัสไม่หลุด)
+  function setPre(k, v) {
+    draft.preorder[k] = v;
+    const pv = document.getElementById('pre-preview');
+    if (pv) pv.innerHTML = preorderPreviewHtml();
+    renderSaveBar();
+    refreshShipZone();
+  }
+
+  async function shipAll() {
+    if (shipping) return;
+    shipping = true;
+    const btn = document.getElementById('ship-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    try {
+      const res = await blm48AdminShipCollectionPreorder(user.username, saved.collectionId);
+      shipping = false;
+      if (res && res.status === 'success') {
+        shipConfirm = false;
+        changed = true;
+        await load();
+        toast(res.message || 'Shipped');
+        return;
+      }
+      document.getElementById('ship-msg').textContent = (res && res.message) || 'Could not ship';
+    } catch (e) {
+      shipping = false;
+      document.getElementById('ship-msg').textContent = 'Cannot connect to the server, please try again';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Ship now';
   }
 
   // ===== อัปโหลดรูป =====

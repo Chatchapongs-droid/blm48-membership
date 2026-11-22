@@ -958,6 +958,10 @@ function blm48AdminGetCollection(adminUsername, collectionId) {
 function blm48AdminSaveCollection(adminUsername, collectionId, col, items) {
   return blm48Rpc('admin_save_collection', { p_admin_username: adminUsername, p_collection_id: collectionId || null, p_col: col, p_items: items || null });
 }
+// Collection pre-order: ship every waiting order of this collection (buyers can Redeem after this)
+function blm48AdminShipCollectionPreorder(adminUsername, collectionId) {
+  return blm48Rpc('admin_ship_collection_preorder', { p_admin_username: adminUsername, p_collection_id: collectionId });
+}
 function blm48AdminDeleteCollection(adminUsername, collectionId) {
   return blm48Rpc('admin_delete_collection', { p_admin_username: adminUsername, p_collection_id: collectionId });
 }

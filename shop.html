@@ -1442,7 +1442,7 @@
             order: 1; width: 100%; margin: 0 !important;
             font-size: 15px !important; font-weight: 500; color: #555; min-height: calc(1.3em * 2) !important;
         }
-        .merch-category, .merch-badge, .merch-badge-bestseller, .merch-badge-comingsoon, .merch-badge-soldout {
+        .merch-category, .merch-badge, .merch-badge-bestseller, .merch-badge-comingsoon, .merch-badge-soldout, .merch-badge-preorder {
             order: 2; margin: 0 !important; transform: none; box-shadow: none;
             display: inline-flex; align-items: center; gap: 4px;
             font-size: 12px !important; font-weight: 600; letter-spacing: 0; line-height: 1.2;
@@ -1452,6 +1452,7 @@
         .merch-badge-bestseller { color: #e08e2e; }
         .merch-badge-comingsoon { color: #a89686; }
         .merch-badge-soldout { color: #8b7d99; }
+        .merch-badge-preorder { color: #3d8bfd; }
         .merch-subtitle, .card-subtitle { order: 3; width: 100%; margin: 0 !important; font-size: 12.5px !important; color: #999; }
         .merch-button, .card-action, .merch-gacha-actions { order: 4; margin-top: 6px !important; }
 
@@ -1768,7 +1769,7 @@ function addGachaToCart(collectionId, pullCount) {
     const cost = col.IsLucky ? luckyDrawCost(col, pullCount) : (pullCount === 5 ? (col.CostTokensX5 || col.CostTokens * 5) : col.CostTokens);
     blm48Cart.add({
         kind: 'gacha', refId: collectionId, variant: pullCount,
-        name: col.CollectionName, label: `Merchandise · Draw ×${pullCount}`,
+        name: col.CollectionName, label: `${col.IsPreorder ? 'Pre-order' : 'Merchandise'} · Draw ×${pullCount}`,
         image: col.CoverImage, unitPrice: cost
     }, 1);
     showCartToast(`Draw ×${pullCount} added to cart`);
@@ -2030,7 +2031,9 @@ async function loadGachaCollections() {
 
       const subtitle = (isComingSoon && col.SaleStartAt)
         ? `Opens ${new Date(col.SaleStartAt).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}`
-        : (col.Description || 'Limited collection - draw for a chance at rare members');
+        : (col.IsPreorder ? (col.PreorderDeliveryInfo || 'order today · ship later') : (col.Description || 'Limited collection - draw for a chance at rare members'));
+      // Collection พรีออเดอร์: ป้าย Pre-order (ถ้ายังไม่มีป้ายสถานะอื่น)
+      if (col.IsPreorder && !badgeHTML) badgeHTML = '<span class="merch-badge-preorder"><i class="fas fa-truck-fast"></i> Pre-order</span>';
 
       let drawsInfoHTML = (!isComingSoon && !isSoldOut && hasDrawCap)
         ? `<p class="merch-subtitle" style="color:#c53f5a;">${limitReached ? 'You have used all your draws for this collection.' : `Draws remaining: ${drawsRemaining} / ${col.MaxDrawsPerAccount}`}</p>`

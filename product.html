@@ -51,6 +51,8 @@
         .pd-price { font-size: 17px; font-weight: 700; color: #222; }
         .pd-price .free { color: #e8262e; }
         .pd-note { margin-top: 6px; font-size: 12.5px; color: #c53f5a; }
+        .pd-pre { margin-top: 10px; font-size: 13px; color: #2d5bd1; background: #eef4ff; border-radius: 10px; padding: 8px 12px; line-height: 1.7; }
+        .pd-pre i { width: 18px; }
 
         /* ตัวเลือก Draw ×1 / ×5 (เฉพาะ Merchandise แบบสุ่ม) */
         .pd-variants { display: flex; gap: 10px; margin-top: 14px; }
@@ -186,6 +188,12 @@
         return total;
     }
 
+    function preorderBonusText(b) {
+        b = b || {};
+        return [['token', 'Token'], ['geToken', 'GE Token'], ['cookie', 'Cookie']]
+            .filter(([k]) => Number(b[k]) > 0).map(([k, l]) => '+' + Number(b[k]).toLocaleString() + ' ' + l).join(', ');
+    }
+
     async function loadProduct() {
         if (KIND === 'cookie' || KIND === 'cafe') {
             const p = (STATIC_PRODUCTS[KIND] || {})[REF];
@@ -208,16 +216,25 @@
             if (!col) return null;
             const status = col.Status;
             const hasCap = col.MaxDrawsPerAccount !== null && col.MaxDrawsPerAccount !== undefined && col.DrawsRemaining !== null && col.DrawsRemaining !== undefined;
+            // Collection พรีออเดอร์: สุ่มตอนซื้อ ของรอส่งพร้อมกัน + โบนัสต่อการสุ่ม 1 ครั้ง
+            const pre = !!col.IsPreorder;
+            const bonus = pre ? preorderBonusText(col.PreorderBonus) : '';
+            const descLines = [col.Description || 'Limited collection - draw for a chance at rare members'];
+            if (pre) {
+                descLines.push('Pre-order · สุ่มได้ทันที ของทุกชิ้นจัดส่งพร้อมกันภายหลัง' + (col.PreorderDeliveryInfo ? '\nจัดส่ง : ' + col.PreorderDeliveryInfo : ''));
+                if (bonus) descLines.push('โบนัสทุกการสุ่ม 1 ครั้ง : ' + bonus
+                    + (col.PreorderBonusTiming === 'purchase' ? '\nเข้ากระเป๋าทันทีหลังสั่งซื้อ' : '\nเข้ากระเป๋าพร้อมของเมื่อจัดส่งแล้ว (กด Redeem ในหน้า My Order)'));
+            }
             return {
-                col, hasCap,
+                col, hasCap, pre, bonus,
                 name: col.CollectionName,
-                tag: 'Merchandise',
-                tagColor: '#c53f5a',
+                tag: pre ? 'Pre-order' : 'Merchandise',
+                tagColor: pre ? '#3d8bfd' : '#c53f5a',
                 images: [col.CoverImage].filter(Boolean),
-                desc: col.Description || 'Limited collection - draw for a chance at rare members',
+                desc: descLines.join('\n\n'),
                 available: status !== 'Closed' && status !== 'Sold Out' && status !== 'Coming Soon',
                 statusText: status === 'Sold Out' ? 'Sold Out' : status === 'Coming Soon' ? 'Coming Soon' : status === 'Closed' ? 'Closed' : '',
-                cartLine: () => ({ kind: 'gacha', refId: REF, variant, name: col.CollectionName, label: `Merchandise · Draw ×${variant}`,
+                cartLine: () => ({ kind: 'gacha', refId: REF, variant, name: col.CollectionName, label: `${pre ? 'Pre-order' : 'Merchandise'} · Draw ×${variant}`,
                                    image: col.CoverImage, unitPrice: Math.round(gachaTotal(col, variant, qty) / qty) })
             };
         }
@@ -273,6 +290,11 @@
             variantsHTML = `<div class="pd-variants">${opt(1)}${allowX5 ? opt(5) : ''}</div>`;
             if (col.IsLucky && col.FreeRemaining !== null && col.FreeRemaining !== undefined) noteHTML = `<div class="pd-note">Free draws left: ${col.FreeRemaining} / ${col.FreeDraws}</div>`;
             else if (remaining !== null) noteHTML = `<div class="pd-note">Draws remaining: ${remaining} / ${col.MaxDrawsPerAccount}</div>`;
+            if (product.pre) {
+                const b = product.bonus;
+                noteHTML += `<div class="pd-pre"><div><i class="fas fa-truck-fast"></i> Pre-order · ${escapeHtml(col.PreorderDeliveryInfo || 'ships later')}</div>${b
+                    ? `<div><i class="fas fa-gift"></i> Bonus ${escapeHtml(b)} per draw · ${col.PreorderBonusTiming === 'purchase' ? 'in your wallet right after purchase' : 'arrives with your items'}</div>` : ''}</div>`;
+            }
         }
 
         document.getElementById('pd-root').innerHTML = `
