@@ -285,7 +285,7 @@
                 const cost = gachaCost(col, pull, free);
                 const disabled = (pull === 5 && !allowX5) || (remaining !== null && remaining < pull);
                 return `<button type="button" class="pd-variant${variant === pull ? ' active' : ''}" ${disabled ? 'disabled' : `onclick="selectVariant(${pull})"`}>
-                          <b>Draw ×${pull}</b><span>${cost === 0 ? 'FREE' : cost.toLocaleString() + ' Tokens'}</span></button>`;
+                          <b>Draw ×${pull}${(Number(col.CardsPerDraw) || 1) > 1 ? ` · ${pull * col.CardsPerDraw} cards` : ''}</b><span>${cost === 0 ? 'FREE' : cost.toLocaleString() + ' Tokens'}</span></button>`;
             };
             variantsHTML = `<div class="pd-variants">${opt(1)}${allowX5 ? opt(5) : ''}</div>`;
             if (col.IsLucky && col.FreeRemaining !== null && col.FreeRemaining !== undefined) noteHTML = `<div class="pd-note">Free draws left: ${col.FreeRemaining} / ${col.FreeDraws}</div>`;

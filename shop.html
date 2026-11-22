@@ -2006,14 +2006,16 @@ async function loadGachaCollections() {
           if (!col.IsLucky) return `<i class="fas fa-coins"></i> ${fullPrice} Tokens`;
           return `<span class="lucky-price" data-lucky="${col.CollectionID}" data-pull="${pull}">${luckyPriceHTML(col, pull, freeLeft)}</span>`;
         };
+        const cpd = Number(col.CardsPerDraw) || 1;
+        const tier = (pull) => cpd > 1 ? `Draw ×${pull} · ${pull * cpd} cards` : `Draw ×${pull}`;
         buttonHTML = `<div class="merch-gacha-actions">
                 <button class="merch-button" onclick="addGachaToCart('${col.CollectionID}', 1)">
                   ${priceLabel(1, col.CostTokens)}
-                  <span class="pull-tier">Draw ×1</span>
+                  <span class="pull-tier">${tier(1)}</span>
                 </button>
                 ${allowX5 ? `<button class="merch-button${x5Disabled ? ' merch-button-disabled' : ''}" ${x5Disabled ? 'disabled' : `onclick="addGachaToCart('${col.CollectionID}', 5)"`}>
                   ${priceLabel(5, costX5)}
-                  <span class="pull-tier">Draw ×5</span>
+                  <span class="pull-tier">${tier(5)}</span>
                 </button>` : ''}
               </div>`;
       }

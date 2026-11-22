@@ -303,13 +303,13 @@
 
   function emptyCollection() {
     return { collectionId: null, name: '', description: '', coverImage: '', backImage: '', backStyle: 'card', category: 'Coaster', on: false, state: 'off',
-      costTokens: 10, costTokensX5: 45, allowX5: true, maxDrawsPerAccount: null, saleStartAt: null, saleEndAt: null,
+      costTokens: 10, costTokensX5: 45, allowX5: true, cardsPerDraw: 1, maxDrawsPerAccount: null, saleStartAt: null, saleEndAt: null,
       isLucky: false, sold: 0, items: [], logs: [], preorder: null };
   }
   function toPreorderDraft(p) {
     p = p || {};
     return { on: !!p.on, bonusToken: p.bonusToken ? String(p.bonusToken) : '', bonusGeToken: p.bonusGeToken ? String(p.bonusGeToken) : '',
-      bonusCookie: p.bonusCookie ? String(p.bonusCookie) : '', timing: p.timing === 'purchase' ? 'purchase' : 'ship', deliveryInfo: p.deliveryInfo || '' };
+      bonusCookie: p.bonusCookie ? String(p.bonusCookie) : '', timing: p.timing === 'purchase' ? 'purchase' : 'ship', deliveryInfo: p.deliveryInfo || '', limitStock: p.limitStock !== false };
   }
 
   function toDraft(c) {
@@ -317,7 +317,7 @@
       name: c.name || '', description: c.description || '', coverImage: c.coverImage || '', group: groupOf(c), type: splitCategory(c.category),
       backImage: c.backImage || '', backStyle: c.backStyle === 'shape' ? 'shape' : 'card',
       on: !!c.on, costTokens: c.costTokens ?? '', costTokensX5: c.costTokensX5 ?? '', allowX5: c.allowX5 !== false,
-      maxDrawsPerAccount: c.maxDrawsPerAccount ?? '', saleStartAt: toLocalInput(c.saleStartAt), saleEndAt: toLocalInput(c.saleEndAt),
+      cardsPerDraw: c.cardsPerDraw ?? 1, maxDrawsPerAccount: c.maxDrawsPerAccount ?? '', saleStartAt: toLocalInput(c.saleStartAt), saleEndAt: toLocalInput(c.saleEndAt),
       preorder: toPreorderDraft(c.preorder),
       items: (c.items || []).map(i => ({ key: 'k' + (++keySeq), id: i.id, name: i.name || '', imageUrl: i.imageUrl || '',
         pct: rateToPct(i.rate), tag: i.tag === 'SSR' ? 'SSR' : null, stock: Number(i.stock || 0), sold: Number(i.sold || 0), add: '' }))
@@ -370,7 +370,8 @@
       const c5 = Number(draft.costTokensX5);
       if (draft.costTokensX5 === '' || !Number.isInteger(c5) || c5 < 0) return e('x5 price must be a whole number', 'sale');
     }
-    if (draft.maxDrawsPerAccount !== '' && !(Number.isInteger(Number(draft.maxDrawsPerAccount)) && Number(draft.maxDrawsPerAccount) >= 1)) return e('Limit per account must be 1 or more, or left empty', 'sale');
+    if (!(Number.isInteger(Number(draft.cardsPerDraw)) && Number(draft.cardsPerDraw) >= 1 && Number(draft.cardsPerDraw) <= 10)) return e('Cards per draw must be 1 to 10', 'sale');
+    if (draft.maxDrawsPerAccount !== '' &&!(Number.isInteger(Number(draft.maxDrawsPerAccount)) && Number(draft.maxDrawsPerAccount) >= 1)) return e('Limit per account must be 1 or more, or left empty', 'sale');
     if (draft.saleStartAt && draft.saleEndAt && new Date(draft.saleEndAt) <= new Date(draft.saleStartAt)) return e('Sale end must be after sale start', 'sale');
     if (!saved.isLucky) {
       for (const [k, label] of BONUS_FIELDS) {
@@ -381,7 +382,8 @@
       const names = new Set();
       for (const i of draft.items) {
         if (!i.name.trim()) return e('Every card needs a name', 'cards');
-        if (!i.imageUrl) return e(`Card "${i.name}" has no image`, 'cards');
+        // pre-order: cards may be added without images; images are only needed before Ship (the draw happens then)
+        if (!i.imageUrl && !draft.preorder?.on) return e(`Card "${i.name}" has no image`, 'cards');
         if (!(Number(i.pct) >= 0)) return e(`Rate for "${i.name}" is not valid`, 'cards');
         if (i.add !== '' && !Number.isInteger(Number(i.add))) return e(`Remaining stock for "${i.name}" must be a whole number`, 'cards');
         const n = i.name.trim().toLowerCase();
@@ -391,8 +393,8 @@
     }
     if (draft.on && !saved.isLucky) {
       if (!draft.coverImage) return e('Add a cover image before going on sale', 'info');
-      if (!draft.items.length) return e('Add at least 1 card before going on sale', 'cards');
-      if (!draft.items.some(i => i.stock + (Number(i.add) || 0) > 0 && Number(i.pct) > 0)) return e('Need at least one card with stock and a rate above 0 before going on sale', 'stock');
+      if (!draft.items.length && !draft.preorder?.on) return e('Add at least 1 card before going on sale', 'cards');
+      if (!draft.preorder?.on && !draft.items.some(i => i.stock + (Number(i.add) || 0) > 0 && Number(i.pct) > 0)) return e('Need at least one card with stock and a rate above 0 before going on sale', 'stock');
     }
     return null;
   }
@@ -490,12 +492,13 @@
       name: draft.name.trim(), description: draft.description.trim(), coverImage: draft.coverImage || null, category: composeCategory(draft.group, draft.type), group: draft.group,
       backImage: draft.backImage || null, backStyle: draft.backStyle,
       costTokens: Number(draft.costTokens), costTokensX5: draft.costTokensX5 === '' ? null : Number(draft.costTokensX5), allowX5: draft.allowX5,
+      cardsPerDraw: Number(draft.cardsPerDraw) || 1,
       maxDrawsPerAccount: draft.maxDrawsPerAccount === '' ? null : Number(draft.maxDrawsPerAccount),
       saleStartAt: fromLocalInput(draft.saleStartAt), saleEndAt: fromLocalInput(draft.saleEndAt), on: draft.on
     };
     if (!saved.isLucky) {
       const p = draft.preorder;
-      col.preorder = { on: p.on, timing: p.timing, deliveryInfo: p.deliveryInfo.trim(),
+      col.preorder = { on: p.on, timing: p.timing, deliveryInfo: p.deliveryInfo.trim(), limitStock: p.limitStock,
         bonusToken: Number(p.bonusToken) || 0, bonusGeToken: Number(p.bonusGeToken) || 0, bonusCookie: Number(p.bonusCookie) || 0 };
     }
     const items = saved.isLucky ? null : draft.items.map(i => ({
@@ -655,6 +658,7 @@
         <input type="checkbox" ${draft.allowX5 ? 'checked' : ''} onchange="draft.allowX5 = this.checked; renderSale(); renderPreview(); renderSaveBar();"> Allow x5 draws
         ${draft.allowX5 && draft.costTokens !== '' ? `<span class="note">(5 single draws = ${fmt(Number(draft.costTokens) * 5)})</span>` : ''}
       </label>
+      <div class="form-field"><label>Cards per draw</label><input type="number" inputmode="numeric" min="1" max="10" step="1" value="${escapeAttr(draft.cardsPerDraw)}" oninput="setField('cardsPerDraw', this.value)"><div class="note" style="margin-top:3px;">How many different cards one draw gives (e.g. 2 = random 2 cards per draw)</div></div>
       <div class="form-field"><label>Draw limit per account</label><input type="number" inputmode="numeric" min="1" step="1" placeholder="No limit" value="${escapeAttr(draft.maxDrawsPerAccount)}" oninput="setField('maxDrawsPerAccount', this.value)"></div>
       <div class="section-title">Sale time</div>
       ${['saleStartAt', 'saleEndAt'].map(k => `
@@ -910,12 +914,21 @@
         <div class="txt">
           <b>Sell as pre-order</b>
           <div class="note" style="margin-top:3px;">${p.on
-            ? 'Draws happen at purchase and stock is reserved · the goods wait in My Order and ship together when you tap "Mark all as shipped"'
+            ? 'Buyers pay now · cards are drawn when you tap "Mark all as shipped" · cards, images and stock can be added any time before shipping'
             : 'Off · items go to the buyer right after they Redeem, like a normal collection'}</div>
         </div>
         <button type="button" class="switch ${p.on ? 'on' : ''}" role="switch" aria-checked="${p.on}" aria-label="Sell as pre-order" onclick="setPre('on', !draft.preorder.on); renderPreorder();"></button>
       </div>
       ${p.on ? `
+      <div class="sale-switch">
+        <div class="txt">
+          <b>Limit orders by stock</b>
+          <div class="note" style="margin-top:3px;">${p.limitStock
+            ? `Orders stop (Sold Out) when the card stock runs out${saved.collectionId && s.available !== undefined ? ` · <b>${fmt(Math.max(Number(s.available) || 0, 0))}</b> cards left to sell` : ''}${saved.collectionId && s.on && s.limitStock !== false && !(Number(s.available) > 0) ? ' · add stock in the Cards or Stock tab to start selling' : ''}`
+            : 'Off · no limit, buyers can order even with no cards or stock yet'}</div>
+        </div>
+        <button type="button" class="switch ${p.limitStock ? 'on' : ''}" role="switch" aria-checked="${p.limitStock}" aria-label="Limit orders by stock" onclick="setPre('limitStock', !draft.preorder.limitStock); renderPreorder();"></button>
+      </div>
       <div class="form-field"><label>Delivery (shown to buyers)</label>
         <input type="text" maxlength="120" placeholder="e.g. Ships 25 Dec 2026" value="${escapeAttr(p.deliveryInfo)}" oninput="setPre('deliveryInfo', this.value)"></div>
       <div class="section-title">Bonus with every draw</div>
