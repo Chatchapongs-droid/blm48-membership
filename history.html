@@ -109,6 +109,7 @@
         .txn-icon { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #222; }
         .txn-icon.vote { background: #fff1b8; }
         .txn-icon.redeem { background: #fdecee; }
+        .txn-icon.transfer { background: #ddf5ec; }
         .txn-info { flex: 1; min-width: 0; }
         .txn-amount { font-size: 22px; font-weight: 700; color: #222; line-height: 1.2; }
         .txn-unit { font-size: 14px; color: #8a8a8a; margin-top: 4px; }
@@ -142,6 +143,7 @@
 
 <div class="filter-tabs" id="filter-tabs">
     <button type="button" class="filter-tab active" data-type="all">All</button>
+    <button type="button" class="filter-tab" data-type="transfer">Transfer</button>
     <button type="button" class="filter-tab" data-type="purchase">Shop</button>
     <button type="button" class="filter-tab" data-type="gift">Gift</button>
     <button type="button" class="filter-tab" data-type="vote">Vote</button>
@@ -243,6 +245,36 @@
         };
     }
 
+    // แถวโอนใน wallet_logs:
+    //   ผู้ใช้โอนกันเอง: 'โอน Token ให้' / 'รับ Token จาก', target = "ชื่อ (BLM-xxxxxxxxxx)"
+    //   แอดมินโอน: 'Admin โอน Token|Cookie|GEToken ให้' (ผู้รับ) / '... ออก' (แอดมินผู้โอน), target = username
+    const TRANSFER_RE = /^(?:(โอน|รับ) Token (?:ให้|จาก)|Admin โอน (Token|Cookie|GEToken) (ให้|ออก))$/;
+
+    function buildTransferEntry(log) {
+        const m = String(log.action || '').trim().match(TRANSFER_RE);
+        if (!m) return null;
+        const amt = Math.abs(Number(log.amount) || 0);
+        const target = String(log.target || '');
+        let sent, name, code = '', currency;
+        if (m[1]) {
+            sent = m[1] === 'โอน';
+            currency = 'Token';
+            const cm = target.match(/^(.*)\s\((BLM-\d{10})\)$/);
+            name = cm ? cm[1] : target;
+            code = cm ? cm[2] : '';
+        } else {
+            sent = m[3] === 'ออก';
+            currency = m[2] === 'GEToken' ? 'GE Token' : m[2];
+            name = sent ? target : 'BLM48';
+        }
+        return {
+            type: 'transfer',
+            card: 'transfer',
+            raw: { sent, name: name || '-', code, currency, amount: amt },
+            timestamp: log.timestamp
+        };
+    }
+
     function formatCardDate(ts) {
         const d = safeDate(ts);
         if (!d) return '-';
@@ -260,7 +292,32 @@
         return isNaN(v) ? escapeHtml(n) : v.toLocaleString();
     }
 
+    function renderTransferCard(e, index) {
+        const r = e.raw;
+        return `
+            <div class="txn-row">
+                <div class="txn-head">
+                    <span class="txn-type">Transfer</span>
+                    <span class="txn-status">Successful</span>
+                </div>
+                <div class="txn-main">
+                    <div class="txn-icon transfer"><i class="fa-solid ${r.sent ? 'fa-arrow-up' : 'fa-arrow-down'}"></i></div>
+                    <div class="txn-info">
+                        <div class="txn-amount">${r.sent ? '-' : '+'}${formatAmount(r.amount)}</div>
+                        <div class="txn-unit">${escapeHtml(tokenLabel(r.currency))}</div>
+                        <div class="txn-sub">${r.sent ? 'Sent to' : 'Received from'}: ${escapeHtml(r.name)}</div>
+                    </div>
+                    <div class="txn-side">
+                        <button type="button" class="txn-detail-btn" onclick="openDetail(${index})">Detail</button>
+                        <div class="txn-date">${formatCardDate(e.timestamp)}<br>${formatCardTime(e.timestamp)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     function renderTxnCard(e, index) {
+        if (e.card === 'transfer') return renderTransferCard(e, index);
         const isVote = e.card === 'vote';
         const r = e.raw;
         return `
@@ -332,6 +389,14 @@
             rows += detailRow('Token', escapeHtml(tokenLabel(r.tokenType || 'Token')));
             rows += detailRow('Amount', formatAmount(r.amount));
             rows += detailRow('Token mechanic', `<button type="button" class="mech-info" onclick="showMechanicInfo('${escapeAttr(m)}')"><i class="fa-regular fa-circle-question"></i></button>${MECHANIC_LABELS[m] || 'Burned'}${note ? `<br><span class="detail-note">${escapeHtml(note)}</span>` : ''}`);
+        } else if (e.card === 'transfer') {
+            rows += detailRow('Transaction type', 'Transfer');
+            rows += detailRow('Direction', r.sent ? 'Sent' : 'Received');
+            rows += detailRow(r.sent ? 'To' : 'From', escapeHtml(r.name));
+            if (r.code) rows += detailRow('Wallet Code', escapeHtml(r.code));
+            rows += detailRow('Token', escapeHtml(tokenLabel(r.currency)));
+            rows += detailRow('Amount', (r.sent ? '-' : '+') + formatAmount(r.amount));
+            rows += detailRow('Transaction fee', '0');
         } else {
             rows += detailRow('Transaction type', 'Redeem');
             rows += detailRow('Redeem type', 'Token redemption');
@@ -370,6 +435,11 @@
         (res.purchaseHistory || []).forEach(log => {
             if (String(log.action || '').trim().toLowerCase() === 'redeem code') {
                 entries.push(buildRedeemEntry(log));
+                return;
+            }
+            const transfer = buildTransferEntry(log);
+            if (transfer) {
+                entries.push(transfer);
                 return;
             }
             entries.push({
