@@ -712,7 +712,6 @@
                     <img src="${imageSrc}" alt="${escapeHtml(camp.Title || 'Vote')}" style="${hasValidImage ? 'display:block;' : 'display:none;'}" onerror="this.style.display='none';">
                     <div class="card-overlay-top">
                         ${camp.AdminOnly ? `<span class="status-badge status-test">TEST</span>` : ''}
-                        ${camp.VoteKind === 'song' ? `<span class="status-badge status-song"><i class="fa-solid fa-music"></i> Song Vote</span>` : ''}
                         ${endDateText ? `<span class="end-date-pill">End date: ${endDateText}</span>` : ''}
                     </div>
                 </a>
