@@ -772,6 +772,10 @@ function blm48GetMyWallet(username) {
 function blm48LookupWalletRecipient(username, walletCode) {
   return blm48Rpc('lookup_wallet_recipient', { p_username: username, p_wallet_code: walletCode });
 }
+// { eligible, unlockAt } - sending needs an account at least 1 month old (user_wallets.created_at)
+function blm48GetTransferStatus(username) {
+  return blm48Rpc('get_transfer_status', { p_username: username });
+}
 function blm48TransferTokenByWallet(username, walletCode, amount) {
   return blm48Rpc('transfer_token_by_wallet', { p_username: username, p_wallet_code: walletCode, p_amount: amount });
 }

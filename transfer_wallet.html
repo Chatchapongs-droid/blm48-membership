@@ -83,6 +83,13 @@
         .summary-row { display: flex; justify-content: space-between; font-size: 15px; color: #666; margin-bottom: 8px; }
         .summary-row b { color: #222; }
 
+        .locked {
+            display: flex; gap: 12px; align-items: flex-start; background: #fff4e6; border-radius: 10px;
+            padding: 14px 16px; margin: -8px 0 22px; color: #7a4a00; font-size: 13px; line-height: 1.6;
+        }
+        .locked > i { font-size: 18px; margin-top: 2px; color: #e8590c; }
+        .locked b { display: block; font-size: 14px; color: #222; margin-bottom: 2px; }
+        .locked span b { display: inline; font-size: 13px; }
         .notice { margin-top: 26px; background: #f7f7f7; border-radius: 10px; padding: 14px 16px; }
         .notice-title { font-size: 14px; font-weight: 700; color: #c92a2a; display: flex; align-items: center; gap: 6px; }
         .notice ul { margin: 8px 0 0; padding-left: 18px; }
@@ -163,6 +170,14 @@
             <div class="bal-logo"><i class="fas fa-coins"></i></div>
         </div>
 
+        <div class="locked" id="locked-box" style="display:none;">
+            <i class="fas fa-lock"></i>
+            <div>
+                <b>ยังใช้ฟีเจอร์โอนไม่ได้</b>
+                <span>บัญชีต้องมีอายุอย่างน้อย 1 เดือนจึงจะโอน Token ได้ บัญชีของคุณจะใช้ได้ตั้งแต่วันที่ <b id="unlock-date">-</b></span>
+            </div>
+        </div>
+
         <p class="field-label">To BLM48 Wallet Code</p>
         <p class="field-sub">Type in recipient's Wallet Code</p>
         <div class="field-box">
@@ -189,6 +204,7 @@
             <div class="notice-title"><i class="fas fa-circle-exclamation"></i> ข้อควรทราบก่อนโอน</div>
             <ul>
                 <li>Token ใช้สำหรับกิจกรรมภายในแอป BLM48 เท่านั้น และไม่มีมูลค่าเป็นเงิน</li>
+                <li>บัญชีผู้โอนต้องมีอายุอย่างน้อย 1 เดือนนับจากวันสมัคร</li>
                 <li>ห้ามซื้อ ขาย หรือแลกเปลี่ยน Token กับเงินหรือสิ่งของใด ๆ นอกแอปในทุกกรณี</li>
                 <li>การโอนถือเป็นการให้โดยสมัครใจ เมื่อโอนสำเร็จแล้วไม่สามารถยกเลิกหรือขอคืนได้</li>
                 <li>หากพบการซื้อขาย Token ทีมงานขอสงวนสิทธิ์ระงับบัญชีและเรียกคืน Token ที่เกี่ยวข้อง</li>
@@ -257,6 +273,19 @@
     let recipient = null;
     let amount = 0;
     let sending = false;
+    let locked = false;
+
+    // บัญชีอายุไม่ถึง 1 เดือน: ล็อกฟอร์ม (เซิร์ฟเวอร์เช็กซ้ำตอนโอนจริงอยู่แล้ว)
+    async function loadTransferStatus() {
+        const res = await blm48GetTransferStatus(username);
+        if (!res || res.status !== 'success' || res.eligible) return;
+        locked = true;
+        $('unlock-date').textContent = new Date(res.unlockAt).toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: '2-digit', month: 'short', year: 'numeric' });
+        $('locked-box').style.display = 'flex';
+        ['code-input', 'amount-input'].forEach(id => { $(id).disabled = true; });
+        document.querySelectorAll('#step-form .field-box button').forEach(b => { b.disabled = true; });
+        validate();
+    }
 
     const $ = (id) => document.getElementById(id);
     const fmt = (n) => Number(n || 0).toLocaleString();
@@ -306,7 +335,7 @@
         else if (balance !== null && amount > balance) amountErr = 'Token ไม่พอ';
         $('amount-err').textContent = amountErr;
         $('recv-amount').textContent = fmt(amountErr ? 0 : amount) + ' Token';
-        $('next-btn').disabled = !(digits.length === 10 && amount >= 1 && !amountErr && balance !== null);
+        $('next-btn').disabled = locked || !(digits.length === 10 && amount >= 1 && !amountErr && balance !== null);
     }
 
     function fillMax() {
@@ -482,6 +511,7 @@
         const pre = new URLSearchParams(location.search).get('code');
         if (pre) $('code-input').value = pre;
         loadBalance();
+        loadTransferStatus();
     }
 </script>
 </body>
