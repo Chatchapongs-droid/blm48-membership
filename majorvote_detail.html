@@ -106,6 +106,11 @@
         }
         .vote-action-btn { background: #ffd75e; color: #222; }
         .vote-action-btn:active { transform: scale(0.95); }
+        .vote-action-btn:disabled { background: #eeeeee; color: #777; cursor: not-allowed; transform: none; }
+        /* ป้ายเตือนก่อนเปิดโหวต (ขึ้นก่อนเวลาเริ่ม 1 วัน) */
+        .vote-opens-notice { margin: 16px 12px 0; padding: 12px 14px; border-radius: 14px; background: #fff4f8; border: 1px solid #f8c6d8; color: #9c1650; font-size: 13px; line-height: 1.5; display: flex; align-items: center; gap: 10px; }
+        .vote-opens-notice i { font-size: 18px; flex-shrink: 0; }
+        .vote-opens-notice b { font-variant-numeric: tabular-nums; }
 
         /* Gift Sheet (แบบแผงส่งของขวัญของแอป: รูปเมมเบอร์ลอยขอบบน > แท็บขีดเส้นใต้ > กริด 4x2 ปัดเปลี่ยนหน้า > ปุ่มจำนวน > แถบ Send) */
         .gift-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 2000; align-items: flex-end; justify-content: center; }
@@ -250,6 +255,7 @@
     </div>
 
     <!-- โหมดเปิดโหวต: แท็บกลุ่ม + รายชื่อผู้สมัคร -->
+    <div class="vote-opens-notice" id="vote-opens-notice" style="display: none;"></div>
     <div class="group-tabs" id="group-tabs" style="display: none;"></div>
     <div id="voting-view" class="candidate-list" style="display: none;"></div>
 
@@ -528,9 +534,15 @@
                 campaignVoteKind = result.voteKind === 'song' ? 'song' : 'member';
                 document.body.classList.toggle('song-vote', isSongVote());
 
-                if (result.campaignTimeStatus === 'open') {
+                if (result.campaignTimeStatus === 'upcoming') {
+                    // ยังไม่ถึงเวลาเริ่ม: เห็นรายชื่อแต่ปุ่มโหวตล็อกไว้ พอถึงเวลาจะปลดล็อกเอง
+                    setVoteOpensAt(result.startTime);
+                    setupVotingMode(candidates);
+                } else if (result.campaignTimeStatus === 'open') {
+                    setVoteOpensAt(null);
                     setupVotingMode(candidates);
                 } else {
+                    setVoteOpensAt(null);
                     setupRankingMode(candidates);
                 }
             } else if (result && result.code === 'results_pending') {
@@ -547,6 +559,44 @@
 
     let votingCandidates = [];
     let activeGroup = 'All';
+
+    // =========================================================
+    // ⏰ ก่อนเวลาเริ่มโหวต: ล็อกปุ่ม + นับถอยหลัง แล้วปลดล็อกเองเมื่อถึงเวลา
+    // =========================================================
+    let voteOpensAt = null; // ms หรือ null = โหวตได้แล้ว
+    let voteOpensTick = null;
+
+    function isVoteLocked() { return voteOpensAt !== null && Date.now() < voteOpensAt; }
+
+    function setVoteOpensAt(startTime) {
+        const t = startTime ? new Date(startTime).getTime() : NaN;
+        voteOpensAt = isNaN(t) || t <= Date.now() ? null : t;
+        clearInterval(voteOpensTick);
+        voteOpensTick = null;
+        const notice = document.getElementById('vote-opens-notice');
+        if (voteOpensAt === null) { notice.style.display = 'none'; return; }
+        notice.style.display = 'flex';
+        renderVoteOpensNotice();
+        voteOpensTick = setInterval(() => {
+            if (Date.now() >= voteOpensAt) {
+                clearInterval(voteOpensTick);
+                voteOpensTick = null;
+                notice.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>เปิดโหวตแล้ว กำลังโหลด...</span>';
+                fetchCandidatesFromBackend();
+                return;
+            }
+            renderVoteOpensNotice();
+        }, 1000);
+    }
+
+    function renderVoteOpensNotice() {
+        const left = Math.max(0, voteOpensAt - Date.now());
+        const s = Math.floor(left / 1000);
+        const pad = n => String(n).padStart(2, '0');
+        const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+        document.getElementById('vote-opens-notice').innerHTML =
+            `<i class="fa-regular fa-clock"></i><span>เปิดให้โหวต ${escapeHtml(formatPollEndDate(voteOpensAt))} น.<br>อีก <b>${pad(h)}:${pad(m)}:${pad(sec)}</b></span>`;
+    }
 
     // กลุ่มของผู้สมัครเอามาจากคำท้ายชื่อ เช่น "Emmy BLM48" -> "BLM48" (ตาราง major_vote_candidates ไม่มีคอลัมน์กลุ่ม)
     function getCandidateGroup(name) {
@@ -610,6 +660,9 @@
 
     // สร้างปุ่มร่วมสนุกตามที่มีจริงสำหรับผู้สมัครคนนี้ (Token / GEToken มาจาก TokenTypes ที่ backend ส่งมา, Gift มาจากค่าเปิด/ปิดของทั้งแคมเปญ)
     function buildCandidateActionButtons(mName, mImg, tokenTypes) {
+        if (isVoteLocked()) {
+            return `<button class="vote-action-btn" disabled><i class="fa-solid fa-lock"></i> Vote</button>`;
+        }
         const types = Array.isArray(tokenTypes) ? tokenTypes : ['token'];
         let buttons = '';
         if (types.includes('token')) {
@@ -686,6 +739,7 @@
 
     // กด Vote (Token / GE Token) แล้วไปหน้าโหวตแยก (majorvote_vote): เลือกจำนวน > Confirm transaction > Submission completed > Thank you card
     function handleVoteClick(candidateName, tokenType, candidateImg) {
+        if (isVoteLocked()) return;
         tokenType = tokenType === 'GEToken' ? 'GEToken' : 'Token';
 
         if (!getUsername()) {

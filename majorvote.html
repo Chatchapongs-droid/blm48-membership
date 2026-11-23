@@ -170,6 +170,8 @@
             margin-left: auto; padding: 4px 10px; border-radius: 20px; white-space: nowrap;
             background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 11px; font-weight: 500;
         }
+        .end-date-pill.start-pill { background: rgba(194, 24, 91, 0.85); }
+        .end-date-pill.start-pill i { margin-right: 3px; }
         .loading-text { text-align: center; width: 100%; color: #999; padding: 40px 20px; font-size: 14px; }
 
     /* 🧭 Bottom Tab Bar - Major Vote ได้เลื่อนมาเป็นหน้าเมนูหลัก (เดิมเป็นหน้าย่อยเข้าถึงผ่านไอคอนมงกุฎ ไม่มีแถบนี้)
@@ -394,6 +396,8 @@
     const APP_VERSION = '1.0.5';
 
     // วันสิ้นสุดแคมเปญแบบ dd/mm/yyyy HH:MM สำหรับป้ายบนการ์ด Major Vote
+    const VOTE_PREVIEW_MS = 24 * 60 * 60 * 1000; // ป้ายโหวตขึ้นก่อนเวลาเริ่ม 1 วัน
+
     function formatEndDate(endTime) {
         if (!endTime) return '';
         const d = new Date(endTime);
@@ -672,7 +676,8 @@
             if (hasEnded(camp) && !camp.ResultsPublished) return false;
             if (camp.AdminOnly) return true;
             const start = timeOf(camp.StartTime), end = timeOf(camp.EndTime);
-            if (start !== null && start > now) return false;
+            // ป้ายโหวตขึ้นให้เห็นก่อนเริ่ม 1 วัน (ยังโหวตไม่ได้จนถึงเวลาเริ่ม)
+            if (start !== null && start - VOTE_PREVIEW_MS > now) return false;
             const firstYear = bangkokYear(start !== null ? start : (end !== null ? end : now));
             const lastYear = end !== null ? bangkokYear(end) : thisYear;
             return firstYear <= thisYear && lastYear >= thisYear;
@@ -688,7 +693,9 @@
         visible.forEach(camp => {
             const status = (camp.Status || "Closed").trim().toUpperCase();
             // หมดเวลาแล้ว ถือว่าปิด แม้สถานะในตารางยังเป็น Open (ไม่ต้องขึ้นป๊อปอัปเช็ก Token)
-            const isOpen = !hasEnded(camp);
+            const start = timeOf(camp.StartTime);
+            const isUpcoming = !camp.AdminOnly && start !== null && start > now;
+            const isOpen = !hasEnded(camp) && !isUpcoming;
 
             let coverImgUrl = camp.CoverImage || camp["รูปจากไดร์ฟ"] || "";
             
@@ -712,7 +719,9 @@
                     <img src="${imageSrc}" alt="${escapeHtml(camp.Title || 'Vote')}" style="${hasValidImage ? 'display:block;' : 'display:none;'}" onerror="this.style.display='none';">
                     <div class="card-overlay-top">
                         ${camp.AdminOnly ? `<span class="status-badge status-test">TEST</span>` : ''}
-                        ${endDateText ? `<span class="end-date-pill">End date: ${endDateText}</span>` : ''}
+                        ${isUpcoming
+                            ? `<span class="end-date-pill start-pill"><i class="fa-regular fa-clock"></i> Opens: ${formatEndDate(camp.StartTime)}</span>`
+                            : (endDateText ? `<span class="end-date-pill">End date: ${endDateText}</span>` : '')}
                     </div>
                 </a>
             `;
@@ -722,6 +731,21 @@
         if (container.children.length === 0) {
             container.innerHTML = `<div class="loading-text">ไม่มีการกิจกรรมโหวตในขณะนี้</div>`;
         }
+        scheduleVoteBoundaryRerender(campaignsList, now, timeOf);
+    }
+
+    // พอถึงเวลา (ป้ายขึ้นก่อน 1 วัน / เริ่มโหวต) วาดการ์ดใหม่เองโดยไม่ต้องรีเฟรชหน้า
+    let voteBoundaryTimer = null;
+    function scheduleVoteBoundaryRerender(campaignsList, now, timeOf) {
+        clearTimeout(voteBoundaryTimer);
+        let next = Infinity;
+        campaignsList.forEach(camp => {
+            const s = timeOf(camp.StartTime);
+            if (s === null) return;
+            [s - VOTE_PREVIEW_MS, s].forEach(t => { if (t > now && t < next) next = t; });
+        });
+        if (next === Infinity || next - now > 2147483647) return;
+        voteBoundaryTimer = setTimeout(() => renderCampaignCards(campaignsList), next - now + 500);
     }
   
     // 🎟️ ฟังก์ชัน Redeem Code ที่แก้ไขตัวแปรเรียบร้อยแล้วค่ะ
