@@ -160,24 +160,24 @@
     const isSong = () => data && data.voteKind === 'song';
 
     // ===== รอบผล: ผลด่วนที่ประกาศแล้ว (เรียงตามเวลา) + ล่าสุด/Final =====
+    // แสดงเฉพาะผลที่ประกาศแล้วเท่านั้น (ทุกคนเห็นเหมือนกัน รวมแอดมิน):
+    // ผลด่วนที่ยังไม่ publish และอันดับสดระหว่างเปิดโหวต จะไม่แสดง
     function rounds() {
         const list = (data.checkpoints || []).map((c, i) => ({
             key: 'cp:' + c.id,
             label: c.label || ('ผลด่วน ' + (i + 1)),
-            at: c.at, total: Number(c.totalVotes || 0), ranking: c.ranking || [], hidden: c.isPublic === false
-        }));
-        if (data.live) {
+            at: c.at, total: Number(c.totalVotes || 0), ranking: c.ranking || [], isPublic: c.isPublic !== false
+        })).filter(r => r.isPublic);
+        if (data.live && data.timeStatus === 'closed') {
             list.push({
-                key: 'live',
-                label: data.timeStatus === 'closed' ? 'Final' : 'ล่าสุด',
-                at: data.timeStatus === 'closed' && data.endTime ? data.endTime : data.serverTime,
-                total: Number(data.liveTotal || 0), ranking: data.live, isLive: data.timeStatus !== 'closed',
-                // ระหว่างเปิดโหวต server ส่งอันดับสดมาให้แอดมินเท่านั้น
-                hidden: data.timeStatus !== 'closed'
+                key: 'live', label: 'Final',
+                at: data.endTime || data.serverTime,
+                total: Number(data.liveTotal || 0), ranking: data.live
             });
         }
         return list;
     }
+    const hasResults = () => !!data && rounds().length > 0;
 
     function setTab(t) {
         tab = t;
@@ -199,20 +199,15 @@
             view.innerHTML = `<div class="notice"><i class="fa-regular fa-clock"></i><div>กิจกรรมนี้จะเปิดโหวต <b>${escapeHtml(fmtTime(data.startTime))}</b><br>ผลโหวตและสถิติจะแสดงหลังเปิดโหวตค่ะ</div></div>`;
             return;
         }
+        // ยังไม่ประกาศผล: ไม่มีส่วน Results เลย แสดงแค่ Stats
+        if (!hasResults()) tab = 'stats';
         view.innerHTML = tab === 'stats' ? renderStats() : renderResults();
     }
 
     function renderResults() {
         const rs = rounds();
         let html = '';
-        if (data.timeStatus === 'closed' && !data.live) {
-            html += `<div class="notice"><i class="fa-solid fa-hourglass-half"></i><div>ปิดโหวตแล้ว กรุณารอประกาศผล Final นะคะ</div></div>`;
-        }
-        // ยังไม่ปิดโหวต: ไม่แสดงอันดับ (ยกเว้นผลด่วนที่แอดมินประกาศแล้ว)
-        if (data.timeStatus === 'open' && !rs.some(r => !r.hidden)) {
-            html += `<div class="notice"><i class="fa-solid fa-lock"></i><div>ผลอันดับจะประกาศหลังปิดโหวต<br><b>${escapeHtml(fmtTime(data.endTime))}</b><br>ระหว่างนี้ดูยอดคะแนนรวมได้ที่แท็บ Stats ค่ะ</div></div>`;
-        }
-        if (!rs.length) return html || `<div class="notice"><i class="fa-solid fa-chart-simple"></i><div>ยังไม่มีผลโหวตค่ะ</div></div>`;
+        if (!rs.length) return '';
 
         if (!roundKey || !rs.some(r => r.key === roundKey)) roundKey = rs[rs.length - 1].key;
         const idx = rs.findIndex(r => r.key === roundKey);
@@ -220,7 +215,7 @@
         const prev = idx > 0 ? rs[idx - 1] : null;
 
         if (rs.length > 1) {
-            html += `<div class="round-pills">${rs.map(r => `<button type="button" class="round-pill ${r.key === roundKey ? 'active' : ''}" onclick="setRound('${r.key}')">${escapeHtml(r.label)}${r.hidden ? '<span class="hidden-tag">(ยังไม่ประกาศ)</span>' : ''}</button>`).join('')}</div>`;
+            html += `<div class="round-pills">${rs.map(r => `<button type="button" class="round-pill ${r.key === roundKey ? 'active' : ''}" onclick="setRound('${r.key}')">${escapeHtml(r.label)}</button>`).join('')}</div>`;
         }
 
         // สรุปยอดรวม + เพิ่มจากรอบก่อน
@@ -230,7 +225,7 @@
             diffHtml = `<span class="sum-diff">+${fmt(d)} (${(d / prev.total * 100).toFixed(1)}%) จาก${escapeHtml(prev.label)}</span>`;
         }
         html += `<div class="sum-row"><span class="sum-total">${tokenIcon()} ${fmt(cur.total)}</span><span class="sum-label">${tokenName()} รวม</span>${diffHtml}</div>`;
-        html += `<div class="sum-note">${cur.isLive ? 'อัปเดตล่าสุด ' + escapeHtml(hm(cur.at)) + ' น. · คะแนนยังเปลี่ยนแปลงได้' : 'ตัดยอด ' + escapeHtml(fmtTime(cur.at))}${cur.hidden ? ' · <b>แอดมินเห็นเท่านั้น</b>' : ''}</div>`;
+        html += `<div class="sum-note">ตัดยอด ${escapeHtml(fmtTime(cur.at))}</div>`;
 
         // อันดับรอบก่อน ใช้ทำลูกศรขึ้น/ลง
         const prevRank = {};
@@ -343,7 +338,10 @@
                    : '<span class="chip closed"><i class="fa-solid fa-flag-checkered"></i>ปิดโหวตแล้ว</span>';
         const endTxt = data.endTime ? (st === 'closed' ? 'ปิดโหวต ' : 'ปิดโหวต ') + escapeHtml(fmtTime(data.endTime)) : '';
         document.getElementById('ev-meta').innerHTML = chip + (endTxt ? `<span>${endTxt}</span>` : '');
-        document.getElementById('main-tabs').style.display = st === 'upcoming' ? 'none' : 'flex';
+        // แถบ Results/Stats โชว์เฉพาะเมื่อมีผลประกาศแล้ว (ก่อนนั้นมีแต่ Stats)
+        document.getElementById('main-tabs').style.display = (st === 'upcoming' || !hasResults()) ? 'none' : 'flex';
+        if (!hasResults()) tab = 'stats';
+        document.querySelectorAll('.main-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     }
 
     async function load() {
