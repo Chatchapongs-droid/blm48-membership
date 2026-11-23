@@ -418,7 +418,41 @@ function blm48EditComment(username, commentId, text) {
 // so a lost success response never collides with the retry (upsert:false would otherwise error
 // out on an already-existing file). `file` can be a File or Blob; extension is guessed from its
 // MIME type (falls back to jpg since both callers compress/crop to JPEG client-side before calling this).
+// แปลงรูป JPG/PNG เป็น WebP ก่อนอัปโหลด (ไฟล์เล็กลงมาก = ประหยัด egress/storage)
+// ไม่แตะ GIF (อาจเป็นภาพเคลื่อนไหว), วิดีโอ, ไฟล์ที่เป็น webp อยู่แล้ว
+// ถ้าเบราว์เซอร์เข้ารหัส webp ไม่ได้ หรือผลลัพธ์ใหญ่กว่าเดิม -> ใช้ไฟล์เดิม (ไม่ทำให้การอัปโหลดพัง)
+const BLM48_WEBP_QUALITY = 0.85;
+async function blm48ToWebp(file) {
+  try {
+    if (!file || !/^image\/(jpeg|jpg|png)$/i.test(file.type || '')) return file;
+    let src, w, h, revoke = null;
+    if (typeof createImageBitmap === 'function') {
+      src = await createImageBitmap(file);
+      w = src.width; h = src.height;
+    } else {
+      const url = URL.createObjectURL(file); revoke = url;
+      src = await new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = rej; im.src = url; });
+      w = src.naturalWidth; h = src.naturalHeight;
+    }
+    if (!w || !h) return file;
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(src, 0, 0);
+    if (src.close) src.close();
+    if (revoke) URL.revokeObjectURL(revoke);
+    const blob = await new Promise(r => c.toBlob(r, 'image/webp', BLM48_WEBP_QUALITY));
+    // Safari รุ่นเก่าจะคืน PNG แทน webp -> ใช้ไฟล์เดิม
+    if (!blob || blob.type !== 'image/webp' || blob.size >= file.size) return file;
+    return blob;
+  } catch (e) {
+    console.warn('blm48ToWebp: keep original', e);
+    return file;
+  }
+}
+
 async function blm48UploadImageToBucket(bucket, username, file, retries = 2) {
+  // profile-images ตั้งให้รับแค่ jpeg/png -> ไม่แปลง (ไฟล์เล็กอยู่แล้ว)
+  if (bucket !== 'profile-images') file = await blm48ToWebp(file);
   // .mov (QuickTime) เก็บเป็นนามสกุล .mov แต่ส่ง content-type เป็น video/mp4 ให้ Chrome/Android ยอมเล่น (ไส้ในเป็นแบบเดียวกัน)
   const isMov = file.type === 'video/quicktime' || /\.mov$/i.test(file.name || '');
   const type = isMov ? 'video/mp4' : (file.type || (/\.mp4$/i.test(file.name || '') ? 'video/mp4' : 'image/jpeg'));
