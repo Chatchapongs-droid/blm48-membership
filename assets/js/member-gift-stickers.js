@@ -190,7 +190,7 @@
   // scale = ขยายทั้งภาพ (ล้นกรอบได้) สำหรับภาพทรงยาวที่ดูเล็กกว่าชิ้นอื่น
   //        pos = [left, top, width, height] เป็น % ของกรอบ (ชิ้นส่วนที่ไม่เต็มกรอบ) · style = CSS ตั้งต้นเพิ่ม (เช่น opacity:0)
   const GA = 'assets/images/gifts/';
-  const SB = 'https://fgovrwnjvdwvtsjeuhjj.supabase.co/storage/v1/object/public/app-assets/';
+  const SB = 'https://rqhwzbrcgnpxtuaeoxml.supabase.co/storage/v1/object/public/app-assets/';
   const ART = [
     { // Clover Bear — คุณหมี (Emmy, gift_037)
       gifts: ['gift_037'], match: [], ratio: 667 / 640, dur: 1.6, label: 'หมีใส่ชุดฟ้าถือใบโคลเวอร์สี่แฉก',
