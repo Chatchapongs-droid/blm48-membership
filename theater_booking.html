@@ -46,6 +46,7 @@
 
   function statusLine(b) {
     if (b.status === 'cancelled') return `<span class="status-cancel"><i class="fa-solid fa-circle-xmark"></i>Cancelled${b.cancelReason ? ' · ' + escapeHtml(b.cancelReason) : ''} · ${Number(b.total).toLocaleString()} Tokens refunded</span>`;
+    if (b.role === 'friend') return `<span class="status-paid"><i class="fa-solid fa-gift"></i>บัตรจาก ${escapeHtml(b.buyerName || '')}</span>`;
     return `<span class="status-paid"><i class="fa-solid fa-circle-check"></i>${b.source === 'holder' ? 'Included with Concert merchandise' : 'Paid'}</span>`;
   }
 
@@ -69,8 +70,14 @@
 
   function rewardsBlock(b) {
     if (b.status === 'cancelled') return '';
+    if (!b.itemSeats) {
+      const note = b.role === 'friend'
+        ? `ของที่ระลึกของที่นั่งนี้ ${escapeHtml(b.buyerName || 'ผู้ซื้อ')} เป็นผู้รับ`
+        : 'ของที่ระลึกของทุกที่นั่งมอบให้เพื่อนแล้ว';
+      return `<div class="section"><div class="section-heading">Official Souvenir</div><div class="th-zone-note">${note}</div></div>`;
+    }
     const items = theaterRewardsHtml(b.rewards);
-    const stub = `<span class="th-reward"><i class="fa-solid fa-ticket-simple" style="color:#f0a73a"></i>Ticket Stub x${b.quantity}</span>`;
+    const stub = `<span class="th-reward"><i class="fa-solid fa-ticket-simple" style="color:#f0a73a"></i>Ticket Stub x${b.itemSeats}</span>`;
     let action;
     if (b.rewardsRedeemedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Redeemed · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
     else if (b.ticketIssued) action = `<button type="button" class="btn-yellow is-block" id="btn-redeem" style="margin-top:12px" onclick="redeem()">Redeem to Inventory</button>`;
@@ -83,6 +90,7 @@
   // post-show souvenirs: event-wide, claimable once the show has ended
   function souvenirBlock(b) {
     if (b.status === 'cancelled' || !(b.souvenirs || []).length) return '';
+    // (souvenirs is already this viewer's share; empty when every seat's items went to the other person)
     let action;
     if (b.souvenirsClaimedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Received · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
     else if (!b.ticketIssued) action = `<div class="th-zone-note" style="margin-top:10px">รับได้หลังจบการแสดง</div>`;
@@ -104,6 +112,7 @@
     else if (l.claimedAt) action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-circle-check"></i> Received · ดูได้ที่ <a href="inventory">Inventory</a></div>`;
     else action = `<div class="th-zone-note status-paid" style="margin-top:10px"><i class="fa-solid fa-trophy"></i> ยินดีด้วย! คุณคือผู้โชคดี (ที่นั่ง ${l.wonSeats.map(escapeHtml).join(', ')})</div>
       <button type="button" class="btn-yellow is-block" id="btn-lucky" style="margin-top:12px" onclick="claimLucky()">Claim Prize</button>`;
+    if ((l.friendWonSeats || []).length) action += `<div class="th-zone-note" style="margin-top:8px"><i class="fa-solid fa-gift"></i> ที่นั่ง ${l.friendWonSeats.map(escapeHtml).join(', ')} ของเพื่อนได้รับรางวัล เพื่อนเป็นผู้กดรับในบัญชีของตัวเอง</div>`;
     const prize = won ? (l.prize || []).flatMap(r => r.kind === 'item' ? Array(won).fill(r) : [{ ...r, amount: Number(r.amount) * won }]) : l.prize;
     return `<div class="section"><div class="section-heading">Lucky Draw</div>
       <div class="th-rewards">${theaterRewardsHtml(prize)}</div>${action}
@@ -150,6 +159,49 @@
     err.style.display = 'block';
   }
 
+  // seat 1 = buyer; seat 2+ may carry a friend's Wallet Code (set at checkout, or here once per seat)
+  function holdersBlock(b) {
+    if (b.status === 'cancelled' || b.role === 'friend' || (b.holders || []).length < 2) return '';
+    const rows = b.holders.map(h => {
+      if (h.isGift || h.idx === 1 || !b.canAssign) {
+        return `<div class="th-holder"><div class="th-holder-seat">ที่นั่งที่ ${h.idx}${b.tickets && b.tickets[h.idx - 1] ? ' · ' + escapeHtml(b.tickets[h.idx - 1].seat) : ''}</div>
+          <div class="th-holder-me"><div class="grow"><div>${escapeHtml(h.name || '-')}${h.isGift ? '<span class="th-gift-tag">เพื่อน</span>' : ''}</div>
+          <div class="sub">${h.isGift ? theaterWalletLabel(h.walletCode) + (h.giveItems ? ' · ได้ของที่ระลึกด้วย' : ' · คุณเป็นผู้รับของที่ระลึก') : 'คุณ'}</div></div></div></div>`;
+      }
+      return `<div class="th-holder"><div id="holder-${h.idx}">${theaterHolderRowHtml(h.idx)}</div>
+        <div id="holder-save-wrap-${h.idx}" style="display:${theaterHolderPicked[h.idx] ? 'block' : 'none'}">
+          <button type="button" class="btn-yellow is-block" id="holder-save-${h.idx}" style="margin-top:12px" onclick="saveHolder(${h.idx})">ยืนยันชื่อเพื่อนที่นั่งนี้</button>
+          <div class="th-zone-note" style="margin-top:6px;text-align:center">ยืนยันแล้วเปลี่ยนไม่ได้${b.rewardsRedeemedAt ? ' · Official Souvenir ที่คุณ Redeem ไปแล้วจะไม่ย้ายไปให้เพื่อน' : ''}</div>
+        </div></div>`;
+    }).join('');
+    return `<div class="section"><div class="section-heading"><i class="fa-solid fa-user-group"></i> Ticket Holders</div>${rows}
+      ${b.canAssign && b.holders.some(h => h.idx > 1 && !h.isGift) ? '<div class="th-holder-hint">ใส่ Wallet Code ของเพื่อน บัตรที่นั่งนั้นจะขึ้นชื่อเพื่อน ถ้าที่นั่งนั้นได้รางวัล Lucky Draw เพื่อนเป็นผู้รับรางวัล ใส่ได้จนถึงประกาศผล Lucky Draw หรือจบการแสดง</div>' : ''}</div>`;
+  }
+
+  function onTheaterHolderChange() {
+    (booking.holders || []).forEach(h => {
+      const w = document.getElementById('holder-save-wrap-' + h.idx);
+      if (w) w.style.display = theaterHolderPicked[h.idx] ? 'block' : 'none';
+    });
+  }
+
+  async function saveHolder(idx) {
+    const p = theaterHolderPicked[idx];
+    if (!p || redeeming) return;
+    redeeming = true;
+    const btn = document.getElementById('holder-save-' + idx);
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing';
+    const res = await blm48TheaterSetTicketHolder(user.username, Number(bookingId), idx, p.walletCode, p.giveItems);
+    redeeming = false;
+    if (res && res.status === 'success') { delete theaterHolderPicked[idx]; await load(); return; }
+    btn.disabled = false;
+    btn.textContent = 'ยืนยันชื่อเพื่อนที่นั่งนี้';
+    const err = document.getElementById('holder-error-' + idx);
+    err.textContent = (res && res.message) || 'ทำรายการไม่สำเร็จค่ะ';
+    err.style.display = 'block';
+  }
+
   function render() {
     const b = booking;
     let footer = '';
@@ -167,15 +219,18 @@
       <div class="th-status">${statusLine(b)}</div>
       <div class="section" style="border-top:1px solid var(--order-line)">
         <div class="section-heading">Summary</div>
-        <div class="th-kv"><span class="k">${b.quantity} seat${b.quantity > 1 ? 's' : ''}</span><span class="v" style="color:var(--order-accent)">${b.source === 'holder' ? 'Included' : Number(b.total).toLocaleString() + ' Tokens'}</span></div>
+        <div class="th-kv"><span class="k">${b.quantity} seat${b.quantity > 1 ? 's' : ''}</span><span class="v" style="color:var(--order-accent)">${b.role === 'friend' ? 'Gift' : b.source === 'holder' ? 'Included' : Number(b.total).toLocaleString() + ' Tokens'}</span></div>
         ${b.ticketIssued ? `<div class="th-kv"><span class="k">Seat No.</span><span class="v">${b.tickets.map(t => escapeHtml(t.seat)).join(', ')}</span></div>` : ''}
       </div>
       <div class="section">
         <div class="section-heading">Payment Method</div>
-        ${b.source === 'holder'
+        ${b.role === 'friend'
+          ? `<div class="th-kv"><span><i class="fa-solid fa-gift" style="color:#f0a73a"></i> ${escapeHtml(b.buyerName || '')} ซื้อบัตรนี้ให้คุณ</span></div>`
+          : b.source === 'holder'
           ? '<div class="th-kv"><span><i class="fas fa-box-open" style="color:#f0a73a"></i> Included with your Concert merchandise purchase</span></div>'
           : '<div class="th-kv"><span><i class="fas fa-coins"></i> Token Wallet</span></div>'}
       </div>
+      ${holdersBlock(b)}
       ${watchBlock(b)}
       ${rewardsBlock(b)}
       ${luckyBlock(b)}

@@ -97,3 +97,69 @@ function theaterRewardsHtml(rewards) {
     return `<span class="th-reward">${r.imageUrl ? `<img src="${escapeHtml(r.imageUrl)}" alt="">` : '<i class="fas fa-gift" style="color:#f0a73a"></i>'}${escapeHtml(r.label || 'Item')}${count > 1 ? ' x' + count : ''}</span>`;
   }).join('');
 }
+
+// ---- Ticket holders: seat 2+ can be put under a friend's Wallet Code ----
+// The ticket then shows the friend's name, and a Lucky Draw win on that seat goes to the friend.
+// "giveItems" also sends that seat's Official Souvenir, Ticket Stub and after-show souvenir to the friend.
+const BLM48_THEATER_AVATAR = '/assets/images/default-avatar.png';
+const theaterHolderPicked = {};   // idx -> { walletCode, name, profile_img }
+
+function theaterWalletLabel(code) {
+  return code ? 'BLM-' + code : '';
+}
+
+function theaterHolderRowHtml(idx) {
+  const p = theaterHolderPicked[idx];
+  const body = p
+    ? `<div class="th-holder-me">
+         <img src="${escapeHtml(p.profile_img || BLM48_THEATER_AVATAR)}" alt="" onerror="this.onerror=null;this.src='${BLM48_THEATER_AVATAR}'">
+         <div class="grow"><div>${escapeHtml(p.name)}</div><div class="sub">${theaterWalletLabel(p.walletCode)}</div></div>
+         <button type="button" class="th-holder-clear" onclick="theaterHolderClear(${idx})" aria-label="ลบชื่อเพื่อน"><i class="fa-solid fa-xmark"></i></button>
+       </div>
+       <label class="th-holder-give"><input type="checkbox" id="holder-give-${idx}" ${p.giveItems ? 'checked' : ''}
+         onchange="theaterHolderPicked[${idx}].giveItems = this.checked">
+         <span>ให้ของที่ระลึกของที่นั่งนี้กับเพื่อนด้วย<br><span class="th-zone-note">Official Souvenir, Ticket Stub และของที่ระลึกหลังจบการแสดงของที่นั่งนี้จะเข้า Inventory ของเพื่อน</span></span></label>`
+    : `<div class="th-holder-input">
+         <input type="text" id="holder-input-${idx}" inputmode="text" autocomplete="off" placeholder="Wallet Code เพื่อน (BLM-...)"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();theaterHolderCheck(${idx});}">
+         <button type="button" class="btn-yellow" id="holder-check-${idx}" onclick="theaterHolderCheck(${idx})">ตรวจสอบ</button>
+       </div>
+       <div class="th-zone-note" style="margin-top:6px">เว้นว่างไว้ ถ้าที่นั่งนี้เป็นของคุณเอง</div>`;
+  return `<div class="th-holder-seat">ที่นั่งที่ ${idx}</div>${body}<div class="inline-error" id="holder-error-${idx}"></div>`;
+}
+
+function theaterHolderRender(idx) {
+  const el = document.getElementById('holder-' + idx);
+  if (el) el.innerHTML = theaterHolderRowHtml(idx);
+}
+
+function theaterHolderClear(idx) {
+  delete theaterHolderPicked[idx];
+  theaterHolderRender(idx);
+  if (typeof onTheaterHolderChange === 'function') onTheaterHolderChange();
+}
+
+async function theaterHolderCheck(idx) {
+  const input = document.getElementById('holder-input-' + idx);
+  const err = document.getElementById('holder-error-' + idx);
+  const btn = document.getElementById('holder-check-' + idx);
+  const code = (input.value || '').replace(/[^0-9]/g, '');
+  err.style.display = 'none';
+  if (!code) { err.textContent = 'กรุณาใส่ Wallet Code ของเพื่อน'; err.style.display = 'block'; return; }
+  const dup = Object.keys(theaterHolderPicked).find(k => Number(k) !== idx && theaterHolderPicked[k].walletCode === code);
+  if (dup) { err.textContent = 'เพื่อนคนนี้อยู่ที่นั่งที่ ' + dup + ' แล้ว'; err.style.display = 'block'; return; }
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  const user = getUserSession();
+  const res = await blm48TheaterLookupFriend(user && user.username, code);
+  btn.disabled = false;
+  btn.textContent = 'ตรวจสอบ';
+  if (!res || res.status !== 'success') {
+    err.textContent = (res && res.message) || 'ตรวจสอบไม่สำเร็จ ลองใหม่อีกครั้งค่ะ';
+    err.style.display = 'block';
+    return;
+  }
+  theaterHolderPicked[idx] = Object.assign({ giveItems: false }, res.data);
+  theaterHolderRender(idx);
+  if (typeof onTheaterHolderChange === 'function') onTheaterHolderChange();
+}

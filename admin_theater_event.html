@@ -471,6 +471,7 @@
             <div class="bk-sub">${escapeHtml(b.username || '')} · ${escapeHtml(b.zoneName)} · ${b.roundKind === 'express' ? 'Express' : 'Normal'} · ${b.quantity} ที่นั่ง
               · ${b.status === 'cancelled' ? '<span style="color:#d64545">ยกเลิก/คืน Token แล้ว</span>' : (b.seats || []).filter(Boolean).length ? 'ที่นั่ง ' + b.seats.map(escapeHtml).join(', ') : 'รอสุ่มที่นั่ง'}
               ${b.redeemed ? ' · รับของแล้ว' : ''}${b.souvenirClaimed ? ' · รับของที่ระลึกแล้ว' : ''}</div>
+            ${(b.gifts || []).length ? `<div class="bk-sub"><i class="fa-solid fa-gift"></i> ${b.gifts.map(g => `ที่นั่งที่ ${g.idx}${g.seat ? ' (' + escapeHtml(g.seat) + ')' : ''} → ${escapeHtml(g.name)}${g.giveItems ? ' + ของที่ระลึก' : ''}`).join(' · ')}</div>` : ''}
             <div class="bk-sub">${escapeHtml(b.bookingNo)} · ${theaterDateTime(b.createdAt)}</div>
           </div>`).join('') : '<div class="hint">ยังไม่มีการจอง</div>'}
       </div>
@@ -499,7 +500,7 @@
       box.innerHTML = `<div class="rewards-box" style="margin-top:12px;background:#f2fbf5">
           <div class="title" style="color:#1f7a45"><i class="fa-solid fa-trophy"></i> ผู้โชคดี · สุ่มเมื่อ ${theaterDateTime(e.luckyDrawnAt)}</div>
           ${(e.luckyWinners || []).map(w => `<div class="bk-row"><div class="bk-top"><b>${escapeHtml(w.name || w.username || '-')}</b><span>ที่นั่ง ${escapeHtml(w.seat || '-')}</span></div>
-            <div class="bk-sub">${escapeHtml(w.username || '')} · ${escapeHtml(w.zoneName)} · ${escapeHtml(w.bookingNo)} · ${w.claimed ? '<span style="color:#1f9d55">รับรางวัลแล้ว</span>' : 'ยังไม่กดรับ'}</div></div>`).join('')}
+            <div class="bk-sub">${escapeHtml(w.username || '')}${w.isGift ? ' · บัตรที่ ' + escapeHtml(w.buyerName || '') + ' ซื้อให้' : ''} · ${escapeHtml(w.zoneName)} · ${escapeHtml(w.bookingNo)} · ${w.claimed ? '<span style="color:#1f9d55">รับรางวัลแล้ว</span>' : 'ยังไม่กดรับ'}</div></div>`).join('')}
         </div>`;
       return;
     }

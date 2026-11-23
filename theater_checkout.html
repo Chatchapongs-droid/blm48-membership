@@ -77,6 +77,31 @@
     if (msg) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
+  // seat 1 is the buyer; seat 2+ can carry a friend's Wallet Code
+  function holdersSection() {
+    const rows = [];
+    for (let i = 2; i <= qty; i++) rows.push(`<div class="th-holder" id="holder-${i}">${theaterHolderRowHtml(i)}</div>`);
+    return `
+      <div class="section">
+        <div class="section-heading"><i class="fa-solid fa-user-group"></i> Ticket Holders</div>
+        <div class="th-holder">
+          <div class="th-holder-seat">ที่นั่งที่ 1</div>
+          <div class="th-holder-me">
+            <img src="${escapeHtml(user.profile_img || BLM48_THEATER_AVATAR)}" alt="" onerror="this.onerror=null;this.src='${BLM48_THEATER_AVATAR}'">
+            <div class="grow"><div>${escapeHtml(user.name || user.username)}</div><div class="sub">คุณ</div></div>
+          </div>
+        </div>
+        ${rows.join('')}
+        <div class="th-holder-hint">ใส่ Wallet Code ของเพื่อน บัตรที่นั่งนั้นจะขึ้นชื่อเพื่อน และเข้าไปอยู่ใน My Bookings ของเพื่อน ถ้าที่นั่งนั้นได้รางวัล Lucky Draw เพื่อนเป็นผู้รับรางวัล</div>
+      </div>`;
+  }
+
+  function friendsPayload() {
+    return Object.keys(theaterHolderPicked).map(k => ({
+      idx: Number(k), walletCode: theaterHolderPicked[k].walletCode, giveItems: !!theaterHolderPicked[k].giveItems
+    }));
+  }
+
   function render() {
     const balance = Number(user.token || 0);
     const short = balance < total();
@@ -89,6 +114,7 @@
         <div class="th-kv"><span class="k">Zone</span><span class="v">${escapeHtml(zone.name)}</span></div>
       </div>
       ${theaterEventHead(ev)}
+      ${qty > 1 ? holdersSection() : ''}
       <div class="total-band"><span>${qty} seat${qty > 1 ? 's' : ''}</span><b>${total().toLocaleString()} Tokens</b></div>
       ${(zone.rewards || []).length ? `
         <div class="section">
@@ -110,7 +136,7 @@
       <div class="inline-error" id="checkout-error"></div>
       <div class="checkout-note">
         ${round.kind === 'express' ? 'Express round: ได้เลขที่นั่งทันทีหลังชำระ' : 'Normal round: ระบบจะสุ่มที่นั่งหลังปิดรอบขาย (' + theaterDateTime(round.closeAt) + ')'}<br>
-        ตรวจสอบรอบ โซน และจำนวนที่นั่งให้ถูกต้อง หลังกด <b>Place Order</b> แล้วจะยกเลิก เปลี่ยนแปลง หรือโอนบัตรไม่ได้
+        ตรวจสอบรอบ โซน จำนวนที่นั่ง และชื่อผู้ถือบัตรให้ถูกต้อง หลังกด <b>Place Order</b> แล้วจะยกเลิก หรือเปลี่ยนชื่อผู้ถือบัตรไม่ได้
       </div>`;
     document.getElementById('bottom-total').textContent = total().toLocaleString() + ' Tokens';
     document.getElementById('bottom-bar').style.display = '';
@@ -139,7 +165,17 @@
     const btn = document.getElementById('btn-place');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing';
-    const res = await blm48TheaterBook(user.username, Number(roundId), Number(zoneId), qty);
+    // a Wallet Code typed but not checked yet would silently be dropped, so stop and ask
+    const unchecked = [...document.querySelectorAll('[id^="holder-input-"]')].find(el => el.value.trim());
+    if (unchecked) {
+      placing = false;
+      btn.innerHTML = 'Place Order';
+      btn.disabled = false;
+      const idx = unchecked.id.replace('holder-input-', '');
+      showError(`กดปุ่ม "ตรวจสอบ" Wallet Code ของที่นั่งที่ ${idx} ก่อน หรือลบออกถ้าเป็นที่นั่งของคุณเอง`);
+      return;
+    }
+    const res = await blm48TheaterBook(user.username, Number(roundId), Number(zoneId), qty, friendsPayload());
     if (res && res.status === 'success') {
       bookingId = res.bookingId;
       user.token = res.newToken;

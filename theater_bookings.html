@@ -44,9 +44,10 @@
 
   function statusRow(b) {
     if (b.status === 'cancelled') return `<div class="th-status"><span class="status-cancel"><i class="fa-solid fa-circle-xmark"></i>Cancelled · Tokens refunded</span></div>`;
-    if (b.ticketIssued) return `<div class="th-status"><span class="status-paid"><i class="fa-solid fa-circle-check"></i>${b.source === 'holder' ? 'Merch holder' : 'Paid'} · Ticket ready</span>
+    const paidLabel = b.role === 'friend' ? 'จาก ' + escapeHtml(b.buyerName || '') : (b.source === 'holder' ? 'Merch holder' : 'Paid');
+    if (b.ticketIssued) return `<div class="th-status"><span class="status-paid"><i class="fa-solid ${b.role === 'friend' ? 'fa-gift' : 'fa-circle-check'}"></i>${paidLabel} · Ticket ready</span>
       <a class="btn-yellow" href="theater_ticket?id=${b.id}" onclick="event.stopPropagation()">Show Ticket</a></div>`;
-    return `<div class="th-status"><span class="status-wait"><i class="fa-solid fa-hourglass-half"></i>Paid · Waiting for seat draw</span></div>`;
+    return `<div class="th-status"><span class="status-wait"><i class="fa-solid fa-hourglass-half"></i>${paidLabel} · Waiting for seat draw</span></div>`;
   }
 
   function setTab(t) {
@@ -70,7 +71,7 @@
         ${theaterEventHead(b.event)}
         <div class="th-booking-meta">
           <div>Round: ${b.roundKind === 'express' ? 'Express' : 'Normal'}</div>
-          <div>Zone: ${escapeHtml(b.zoneName)} ${b.quantity} seat${b.quantity > 1 ? 's' : ''}</div>
+          <div>Zone: ${escapeHtml(b.zoneName)} ${b.quantity} seat${b.quantity > 1 ? 's' : ''}${b.role === 'friend' ? '<span class="th-gift-tag">บัตรจากเพื่อน</span>' : ''}</div>
         </div>
         ${statusRow(b)}
       </div>`).join('');

@@ -72,8 +72,16 @@ function blm48GetTheaterEvents(username) {
 function blm48GetTheaterEvent(username, eventId) {
   return blm48Rpc('get_theater_event', { p_username: username, p_event_id: eventId });
 }
-function blm48TheaterBook(username, roundId, zoneId, quantity) {
-  return blm48Rpc('theater_book', { p_username: username, p_round_id: roundId, p_zone_id: zoneId, p_quantity: quantity });
+// friends: [{ idx: 2, walletCode: '1234567890', giveItems: true }] - seat 2+ under a friend's Wallet Code
+function blm48TheaterBook(username, roundId, zoneId, quantity, friends) {
+  return blm48Rpc('theater_book', { p_username: username, p_round_id: roundId, p_zone_id: zoneId, p_quantity: quantity, p_friends: friends || [] });
+}
+function blm48TheaterLookupFriend(username, walletCode) {
+  return blm48Rpc('theater_lookup_friend', { p_username: username, p_wallet_code: walletCode });
+}
+// add a friend to seat idx after purchase (one time per seat, until Lucky Draw / end of show)
+function blm48TheaterSetTicketHolder(username, bookingId, idx, walletCode, giveItems) {
+  return blm48Rpc('theater_set_ticket_holder', { p_username: username, p_booking_id: bookingId, p_idx: idx, p_wallet_code: walletCode, p_give_items: !!giveItems });
 }
 function blm48GetMyTheaterBookings(username) {
   return blm48Rpc('get_my_theater_bookings', { p_username: username });
