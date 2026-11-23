@@ -47,6 +47,8 @@
         .ps-goal { margin: 14px auto 0; max-width: 420px; text-align: left; }
         .ps-goal-text { font-size: 13px; color: #444; display: flex; justify-content: space-between; gap: 8px; }
         .ps-goal-text b { color: var(--ps-ink); }
+        .ps-goal-text.ps-debt { line-height: 1.55; }
+        .ps-goal-text.ps-debt b { color: #d6336c; }
         .ps-bar { height: 8px; border-radius: 999px; background: #f1f1f3; overflow: hidden; margin-top: 6px; }
         .ps-bar > span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #ffd43b, #f2b705); }
 
@@ -200,11 +202,18 @@
     }
 
     function renderHero() {
-        document.getElementById('ps-points').textContent = fmt(shop.points);
+        document.getElementById('ps-points').textContent = shop.debt > 0 ? '-' + fmt(shop.debt) : fmt(shop.points);
         const kindEl = document.getElementById('ps-kind');
         kindEl.innerHTML = shop.scoreKind === 'member'
             ? 'จาก Member Score'
             : `จาก Fan Score${shop.tier ? `<span class="ps-tier ${shop.tier}">${cap(shop.tier)}</span>` : ''}`;
+
+        // Points ติดลบ: แลกไปแล้วค่อยถูกหักคืน (เช่น ยกเลิกไลก์) Points ใหม่จะหักส่วนนี้ก่อน
+        if (shop.debt > 0) {
+            document.getElementById('ps-goal').innerHTML = `
+                <div class="ps-goal-text ps-debt"><span><i class="fa-solid fa-circle-info"></i> Points ติดลบ <b>${fmt(shop.debt)} P</b> เพราะมีการหัก Points คืนหลังจากแลกไปแล้ว (เช่น ยกเลิกไลก์) Points ที่ได้ใหม่จะหักส่วนที่ติดลบก่อน ครบแล้วยอดจะเพิ่มตามปกติ</span></div>`;
+            return;
+        }
 
         // เป้าหมายถัดไป: แพ็กที่ใหญ่ขึ้น = โบนัสมากขึ้น ชวนให้สะสมต่อ
         const tiers = [...new Set(shop.packages.map(p => p.points))].sort((a, b) => a - b);
@@ -397,7 +406,7 @@
             document.getElementById('ps-list').innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>${escapeHtml((res && res.message) || 'โหลด Point Shop ไม่สำเร็จ')}</div>`;
             return;
         }
-        shop = { ...res, points: Number(res.points) || 0, packages: res.packages || [] };
+        shop = { ...res, points: Number(res.points) || 0, debt: Number(res.debt) || 0, packages: res.packages || [] };
         renderAll();
     }
 

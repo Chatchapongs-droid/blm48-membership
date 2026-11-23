@@ -702,7 +702,9 @@ body {
     if (!user || !user.username) return;
     try {
       const s = await blm48GetMemberScore(user.username);
-      if (s && s.total !== undefined) document.getElementById('pf-points').innerText = Number(s.total || 0).toLocaleString();
+      // ติดลบ (แลกไปแล้วค่อยถูกหักคืน) โชว์เป็นลบ แทนที่จะค้างที่ 0
+      if (s && s.total !== undefined) document.getElementById('pf-points').innerText =
+        Number(s.debt) > 0 ? '-' + Number(s.debt).toLocaleString() : Number(s.total || 0).toLocaleString();
     } catch (e) { console.error('loadMemberScore error:', e); }
   }
 
