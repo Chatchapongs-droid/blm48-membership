@@ -103,6 +103,28 @@
         .tbl td.plus { color: #1f9d55; font-weight: 700; }
         .tbl td.zero { color: #767676; }
 
+        /* กราฟแท่งคะแนน */
+        .chart-card { margin: 10px 12px 14px; border: 1px solid #f0f0f0; border-radius: 14px; padding: 12px 12px 10px; }
+        .chart-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+        .seg { display: inline-flex; border: 1px solid #e6e6e6; border-radius: 8px; overflow: hidden; }
+        .seg button { border: none; background: #fff; color: #555; font-family: inherit; font-size: 12px; font-weight: 600; padding: 5px 11px; cursor: pointer; }
+        .seg button.active { background: #222; color: #fff; }
+        .chart-unit { font-size: 11.5px; color: #767676; }
+        .chart { position: relative; display: flex; height: 160px; padding-left: 34px; }
+        .chart-grid { position: absolute; left: 34px; right: 0; top: 0; bottom: 0; pointer-events: none; }
+        .chart-grid div { position: absolute; left: 0; right: 0; border-top: 1px dashed #eee; }
+        .chart-grid span { position: absolute; left: -34px; width: 30px; text-align: right; top: -7px; font-size: 10px; color: #999; font-variant-numeric: tabular-nums; }
+        .chart-bars { position: relative; flex: 1; display: flex; align-items: flex-end; gap: 2px; height: 100%; }
+        .chart-bar { flex: 1; min-width: 0; height: 100%; display: flex; align-items: flex-end; cursor: pointer; position: relative; }
+        .chart-bar i { display: block; width: 100%; background: #ffd54f; border-radius: 3px 3px 0 0; min-height: 1px; }
+        .chart-bar.max i { background: #ffc107; }
+        .chart-bar.sel i { background: #f5a300; }
+        .chart-bar .peak { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10.5px; font-weight: 700; color: #111; white-space: nowrap; }
+        .chart-x { display: flex; gap: 2px; padding-left: 34px; margin-top: 4px; }
+        .chart-x span { flex: 1; min-width: 0; text-align: center; font-size: 10px; color: #999; white-space: nowrap; overflow: visible; }
+        .chart-cap { text-align: center; font-size: 12.5px; color: #555; margin-top: 8px; font-variant-numeric: tabular-nums; }
+        .chart-cap b { color: #111; }
+
         .notice { margin: 18px 12px 0; padding: 14px; border-radius: 14px; background: #f7f7f7; color: #666; font-size: 13.5px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
         .notice i { font-size: 18px; margin-top: 2px; color: #767676; }
         .loading-view { text-align: center; color: #767676; padding: 50px 20px; font-size: 14px; }
@@ -189,8 +211,63 @@
     try { if (localStorage.getItem('blm48_vote_stats_view') === 'daily') statsView = 'daily'; } catch (e) {}
     function setStatsView(v) {
         statsView = v;
+        chartSel = null;
         try { localStorage.setItem('blm48_vote_stats_view', v); } catch (e) {}
         render();
+    }
+    let chartMode = 'inc';        // 'inc' เพิ่มขึ้น | 'cum' สะสม
+    let chartSel = null;          // แท่งที่แตะเลือก (null = แท่งล่าสุด)
+    function setChartMode(m) { chartMode = m; render(); }
+    function selBar(i) { chartSel = i; render(); }
+
+    // ตัวเลขแกน Y แบบย่อ (1.2K, 3.4M)
+    function shortNum(n) {
+        const a = Math.abs(n);
+        if (a >= 1e6) return (n / 1e6).toFixed(a >= 1e7 ? 0 : 1).replace(/\.0$/, '') + 'M';
+        if (a >= 1e3) return (n / 1e3).toFixed(a >= 1e4 ? 0 : 1).replace(/\.0$/, '') + 'K';
+        return String(Math.round(n));
+    }
+    function niceMax(v) {
+        if (v <= 0) return 1;
+        const p = Math.pow(10, Math.floor(Math.log10(v)));
+        const f = v / p;
+        return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+    }
+
+    // rows: [{label, xLabel, inc, cum}]
+    function renderChart(rows) {
+        if (!rows.length) return '';
+        rows = rows.slice().reverse();   // server ส่งใหม่สุดก่อน -> กราฟเรียงเก่า→ใหม่ ซ้าย→ขวา
+        const key = chartMode === 'cum' ? 'cum' : 'inc';
+        const vals = rows.map(r => Math.max(0, Number(r[key] || 0)));
+        const top = niceMax(Math.max(...vals));
+        const maxIdx = vals.indexOf(Math.max(...vals));
+        const sel = chartSel != null && chartSel < rows.length ? chartSel : rows.length - 1;
+        const step = Math.max(1, Math.ceil(rows.length / 6));   // ป้ายแกน X ไม่เกิน ~6 จุด
+
+        let grid = '';
+        [0, 0.5, 1].forEach(f => { grid += `<div style="bottom:${f * 100}%"><span>${shortNum(top * f)}</span></div>`; });
+
+        const bars = rows.map((r, i) => {
+            const h = vals[i] / top * 100;
+            const peak = i === maxIdx && vals[i] > 0 ? `<span class="peak" style="bottom:calc(${h.toFixed(1)}% + 3px)">${fmt(vals[i])}</span>` : '';
+            return `<div class="chart-bar ${i === maxIdx ? 'max' : ''} ${i === sel ? 'sel' : ''}" onclick="selBar(${i})" title="${escapeAttr(r.label)}">${peak}<i style="height:${h.toFixed(2)}%"></i></div>`;
+        }).join('');
+        const xs = rows.map((r, i) => `<span>${i % step === 0 ? escapeHtml(r.xLabel) : ''}</span>`).join('');
+        const s = rows[sel];
+
+        return `<div class="chart-card">
+            <div class="chart-top">
+              <div class="seg">
+                <button type="button" class="${key === 'inc' ? 'active' : ''}" onclick="setChartMode('inc')">เพิ่มขึ้น</button>
+                <button type="button" class="${key === 'cum' ? 'active' : ''}" onclick="setChartMode('cum')">สะสม</button>
+              </div>
+              <span class="chart-unit">${statsView === 'hourly' ? 'ทุก 1 ชั่วโมง' : 'รายวัน'}</span>
+            </div>
+            <div class="chart" style="margin-top:16px;"><div class="chart-grid">${grid}</div><div class="chart-bars">${bars}</div></div>
+            <div class="chart-x">${xs}</div>
+            <div class="chart-cap">${escapeHtml(s.label)}: <b>+${fmt(s.inc)}</b> · สะสม ${fmt(s.cum)}</div>
+        </div>`;
     }
 
     function render() {
@@ -316,12 +393,29 @@
             <button type="button" class="round-pill ${statsView === 'daily' ? 'active' : ''}" onclick="setStatsView('daily')">รายวัน</button>
         </div>`;
         if (statsView === 'hourly') {
-            html += `<div class="sec-hint" style="margin-top:8px;">24 ชั่วโมง${open ? 'ล่าสุด' : 'ก่อนปิดโหวต'}</div>
+            html += `<div class="sec-hint" style="margin-top:8px;">24 ชั่วโมง${open ? 'ล่าสุด' : 'ก่อนปิดโหวต'}</div>`;
+            html += renderChart((s.hourly || []).map(r => {
+                const end = new Date(new Date(r.t).getTime() + 3600000);
+                return {
+                    label: fmtTime(r.t, { day: 'numeric', month: 'short' }) + ' ' + hm(r.t) + '-' + hm(end),
+                    xLabel: hm(r.t), inc: r.inc, cum: r.cum
+                };
+            }));
+            html += `
               <table class="tbl"><thead><tr><th>ชั่วโมง</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
               ${(s.hourly || []).map(r => `<tr><td>${escapeHtml(fmtTime(r.t, { day: 'numeric', month: 'short' }))} ${escapeHtml(hm(r.t))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
               </tbody></table>`;
         } else {
-            html += `<div class="sec-hint" style="margin-top:8px;">ตั้งแต่เปิดโหวต (เวลาไทย)</div>
+            html += `<div class="sec-hint" style="margin-top:8px;">ตั้งแต่เปิดโหวต (เวลาไทย)</div>`;
+            html += renderChart((s.daily || []).map(r => {
+                const d = new Date(r.d + 'T00:00:00+07:00');
+                return {
+                    label: d.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' }),
+                    xLabel: d.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'numeric' }),
+                    inc: r.inc, cum: r.cum
+                };
+            }));
+            html += `
               <table class="tbl"><thead><tr><th>วันที่</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
               ${(s.daily || []).map(r => `<tr><td>${escapeHtml(new Date(r.d + 'T00:00:00+07:00').toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: '2-digit' }))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
               </tbody></table>`;
