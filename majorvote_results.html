@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <script src="assets/js/back-nav.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BLM48 | ผลโหวต</title>
+    <meta name="theme-color" content="#ffc0cb">
+    <meta name="apple-mobile-web-app-title" content="BLM48">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/glassmorphism.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="assets/js/supabase-client.js"></script>
+    <script src="assets/js/common.js"></script>
+
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Quicksand', 'Kanit', sans-serif; color: #333; margin: 0; padding: 60px 0 50px; }
+        body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
+
+        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .nav-back { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: none; border: none; color: #333; font-size: 20px; cursor: pointer; }
+        .nav-title { font-weight: 600; font-size: 17px; color: #222; }
+
+        .wrap { max-width: 640px; margin: 0 auto; }
+
+        .ev-head { padding: 18px 12px 6px; }
+        .ev-title { font-size: 19px; font-weight: 700; color: #111; line-height: 1.35; }
+        .ev-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; font-size: 12.5px; color: #767676; }
+        .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+        .chip.open { background: #e6f9ee; color: #1f9d55; }
+        .chip.closed { background: #f1f1f1; color: #555; }
+        .chip.upcoming { background: #fff4cc; color: #8a6d00; }
+        .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+        .main-tabs { display: flex; gap: 34px; padding: 14px 12px 0; border-bottom: 1px solid #e6e6e6; }
+        .main-tab { background: none; border: none; padding: 0 2px 14px; font-family: inherit; font-size: 15px; font-weight: 600; color: #767676; cursor: pointer; position: relative; }
+        .main-tab span { position: relative; z-index: 1; }
+        .main-tab.active { color: #111; }
+        .main-tab.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 13px; height: 5px; border-radius: 2px; background: #ffc107; }
+
+        .round-pills { display: flex; gap: 8px; padding: 14px 12px 4px; overflow-x: auto; scrollbar-width: none; }
+        .round-pills::-webkit-scrollbar { display: none; }
+        .round-pill { flex: 0 0 auto; border: 1px solid #e6e6e6; background: #fff; color: #555; border-radius: 20px; padding: 7px 14px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .round-pill.active { background: #222; border-color: #222; color: #fff; }
+        .round-pill .hidden-tag { font-size: 10.5px; margin-left: 4px; opacity: .75; }
+
+        .sum-row { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 10px; padding: 12px 12px 2px; }
+        .sum-total { font-size: 22px; font-weight: 700; color: #111; font-variant-numeric: tabular-nums; }
+        .sum-label { font-size: 12.5px; color: #767676; }
+        .sum-diff { font-size: 12.5px; font-weight: 700; color: #1f9d55; }
+        .sum-note { padding: 2px 12px 0; font-size: 12px; color: #767676; }
+
+        .tier-head { display: flex; align-items: center; justify-content: space-between; margin: 20px 12px 6px; padding-bottom: 8px; border-bottom: 2px solid #ffc107; }
+        .tier-name { font-size: 15px; font-weight: 700; color: #111; }
+        .tier-range { font-size: 12px; color: #767676; font-weight: 600; }
+        .tier-head.other { border-bottom-color: #e6e6e6; }
+
+        .rank-list { padding: 0 12px; }
+        .rank-row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f3f3f3; }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-col { flex: 0 0 34px; text-align: center; }
+        .rank-no { font-weight: 700; font-size: 16px; color: #333; font-variant-numeric: tabular-nums; }
+        .rank-row.r1 .rank-no { color: #f5a300; }
+        .rank-row.r2 .rank-no { color: #8c8c8c; }
+        .rank-row.r3 .rank-no { color: #b8732e; }
+        .rank-chg { display: block; font-size: 10.5px; font-weight: 700; margin-top: 1px; white-space: nowrap; }
+        .rank-chg.up { color: #1f9d55; }
+        .rank-chg.down { color: #e03131; }
+        .rank-chg.same { color: #767676; }
+        .rank-chg.new { color: #f08c00; }
+        .rank-img { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; object-fit: cover; background: #f4f4f4; }
+        body.song-vote .rank-img { border-radius: 8px; }
+        .rank-body { flex: 1; min-width: 0; }
+        .rank-name { font-size: 14px; font-weight: 700; color: #111; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rank-bar { height: 5px; border-radius: 3px; background: #f3f3f3; margin-top: 6px; overflow: hidden; }
+        .rank-bar > i { display: block; height: 100%; border-radius: 3px; background: #ffc107; }
+        .rank-sub { font-size: 11.5px; color: #767676; margin-top: 4px; }
+        .rank-votes { flex: 0 0 auto; text-align: right; font-weight: 700; font-size: 14px; color: #111; font-variant-numeric: tabular-nums; }
+        .rank-votes i { font-size: 11px; margin-right: 3px; }
+        .rank-pct { display: block; font-size: 11.5px; color: #767676; font-weight: 600; }
+
+        /* Stats */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 12px 4px; }
+        .stat-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 14px; padding: 12px; }
+        .stat-card.wide { grid-column: 1 / -1; background: #fff8e1; border-color: #ffe9a8; }
+        .stat-k { font-size: 12px; color: #767676; font-weight: 600; }
+        .stat-v { font-size: 19px; font-weight: 700; color: #111; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .stat-card.wide .stat-v { font-size: 26px; }
+        .stat-v.plus { color: #1f9d55; }
+        .sec-title { font-size: 15px; font-weight: 700; color: #111; margin: 22px 12px 4px; }
+        .sec-hint { font-size: 12px; color: #767676; margin: 0 12px 8px; }
+        .tbl { width: calc(100% - 24px); margin: 0 12px; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .tbl th { text-align: left; font-size: 11.5px; color: #767676; font-weight: 600; padding: 8px 4px; border-bottom: 1px solid #eee; }
+        .tbl td { padding: 9px 4px; border-bottom: 1px solid #f5f5f5; color: #333; }
+        .tbl th.r, .tbl td.r { text-align: right; }
+        .tbl td.plus { color: #1f9d55; font-weight: 700; }
+        .tbl td.zero { color: #767676; }
+
+        .notice { margin: 18px 12px 0; padding: 14px; border-radius: 14px; background: #f7f7f7; color: #666; font-size: 13.5px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
+        .notice i { font-size: 18px; margin-top: 2px; color: #767676; }
+        .loading-view { text-align: center; color: #767676; padding: 50px 20px; font-size: 14px; }
+        .updated-at { text-align: center; font-size: 11.5px; color: #767676; padding: 18px 12px 0; }
+    </style>
+</head>
+<body class="glass-mesh-bg force-white-bg">
+
+<div class="top-navbar">
+    <button class="nav-back" type="button" title="กลับ" onclick="goBack()"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="nav-title">ผลโหวต</div>
+</div>
+
+<div class="wrap">
+    <div class="ev-head">
+        <div class="ev-title" id="ev-title">&nbsp;</div>
+        <div class="ev-meta" id="ev-meta"></div>
+    </div>
+
+    <div class="main-tabs" id="main-tabs" style="display:none;">
+        <button type="button" class="main-tab active" data-tab="results" onclick="setTab('results')"><span>Results</span></button>
+        <button type="button" class="main-tab" data-tab="stats" onclick="setTab('stats')"><span>Stats</span></button>
+    </div>
+
+    <div id="view"><div class="loading-view"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
+    <div class="updated-at" id="updated-at"></div>
+</div>
+
+<script>
+    const campaignId = new URLSearchParams(window.location.search).get('id');
+    let data = null;
+    let tab = 'results';
+    let roundKey = null;          // 'live' หรือ 'cp:<id>'
+    let refreshTimer = null;
+    const REFRESH_MS = 60000;     // เปิดโหวตอยู่: รีเฟรชทุก 1 นาที (หยุดเมื่อสลับไปแอปอื่น)
+
+    function goBack() { blm48Back(campaignId ? 'majorvote_detail?id=' + encodeURIComponent(campaignId) : 'majorvote'); }
+    function fmt(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+    function fmtTime(ts, opts) {
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return '-';
+        return d.toLocaleString('th-TH', Object.assign({ timeZone: 'Asia/Bangkok' }, opts || { dateStyle: 'medium', timeStyle: 'short' }));
+    }
+    function hm(ts) { return fmtTime(ts, { hour: '2-digit', minute: '2-digit' }); }
+    function tokenIcon() {
+        const t = String(data && data.tokenType || '').toLowerCase();
+        if (t === 'getoken') return '<i class="fa-solid fa-gem" style="color:#4dabf7"></i>';
+        if (t === 'gift') return '<i class="fa-solid fa-gift" style="color:#ff69b4"></i>';
+        return '<i class="fa-solid fa-coins" style="color:#f5b700"></i>';
+    }
+    function tokenName() {
+        const t = String(data && data.tokenType || '').toLowerCase();
+        return t === 'getoken' ? 'GE Token' : t === 'gift' ? 'Points' : 'Token';
+    }
+    const isSong = () => data && data.voteKind === 'song';
+
+    // ===== รอบผล: ผลด่วนที่ประกาศแล้ว (เรียงตามเวลา) + ล่าสุด/Final =====
+    function rounds() {
+        const list = (data.checkpoints || []).map((c, i) => ({
+            key: 'cp:' + c.id,
+            label: c.label || ('ผลด่วน ' + (i + 1)),
+            at: c.at, total: Number(c.totalVotes || 0), ranking: c.ranking || [], hidden: c.isPublic === false
+        }));
+        if (data.live) {
+            list.push({
+                key: 'live',
+                label: data.timeStatus === 'closed' ? 'Final' : 'ล่าสุด',
+                at: data.timeStatus === 'closed' && data.endTime ? data.endTime : data.serverTime,
+                total: Number(data.liveTotal || 0), ranking: data.live, isLive: data.timeStatus !== 'closed',
+                // ระหว่างเปิดโหวต server ส่งอันดับสดมาให้แอดมินเท่านั้น
+                hidden: data.timeStatus !== 'closed'
+            });
+        }
+        return list;
+    }
+
+    function setTab(t) {
+        tab = t;
+        document.querySelectorAll('.main-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+        render();
+    }
+    function setRound(k) { roundKey = k; render(); }
+    let statsView = 'hourly';     // 'hourly' | 'daily' (จำไว้ในเครื่อง)
+    try { if (localStorage.getItem('blm48_vote_stats_view') === 'daily') statsView = 'daily'; } catch (e) {}
+    function setStatsView(v) {
+        statsView = v;
+        try { localStorage.setItem('blm48_vote_stats_view', v); } catch (e) {}
+        render();
+    }
+
+    function render() {
+        const view = document.getElementById('view');
+        if (data.timeStatus === 'upcoming') {
+            view.innerHTML = `<div class="notice"><i class="fa-regular fa-clock"></i><div>กิจกรรมนี้จะเปิดโหวต <b>${escapeHtml(fmtTime(data.startTime))}</b><br>ผลโหวตและสถิติจะแสดงหลังเปิดโหวตค่ะ</div></div>`;
+            return;
+        }
+        view.innerHTML = tab === 'stats' ? renderStats() : renderResults();
+    }
+
+    function renderResults() {
+        const rs = rounds();
+        let html = '';
+        if (data.timeStatus === 'closed' && !data.live) {
+            html += `<div class="notice"><i class="fa-solid fa-hourglass-half"></i><div>ปิดโหวตแล้ว กรุณารอประกาศผล Final นะคะ</div></div>`;
+        }
+        // ยังไม่ปิดโหวต: ไม่แสดงอันดับ (ยกเว้นผลด่วนที่แอดมินประกาศแล้ว)
+        if (data.timeStatus === 'open' && !rs.some(r => !r.hidden)) {
+            html += `<div class="notice"><i class="fa-solid fa-lock"></i><div>ผลอันดับจะประกาศหลังปิดโหวต<br><b>${escapeHtml(fmtTime(data.endTime))}</b><br>ระหว่างนี้ดูยอดคะแนนรวมได้ที่แท็บ Stats ค่ะ</div></div>`;
+        }
+        if (!rs.length) return html || `<div class="notice"><i class="fa-solid fa-chart-simple"></i><div>ยังไม่มีผลโหวตค่ะ</div></div>`;
+
+        if (!roundKey || !rs.some(r => r.key === roundKey)) roundKey = rs[rs.length - 1].key;
+        const idx = rs.findIndex(r => r.key === roundKey);
+        const cur = rs[idx];
+        const prev = idx > 0 ? rs[idx - 1] : null;
+
+        if (rs.length > 1) {
+            html += `<div class="round-pills">${rs.map(r => `<button type="button" class="round-pill ${r.key === roundKey ? 'active' : ''}" onclick="setRound('${r.key}')">${escapeHtml(r.label)}${r.hidden ? '<span class="hidden-tag">(ยังไม่ประกาศ)</span>' : ''}</button>`).join('')}</div>`;
+        }
+
+        // สรุปยอดรวม + เพิ่มจากรอบก่อน
+        let diffHtml = '';
+        if (prev && prev.total > 0) {
+            const d = cur.total - prev.total;
+            diffHtml = `<span class="sum-diff">+${fmt(d)} (${(d / prev.total * 100).toFixed(1)}%) จาก${escapeHtml(prev.label)}</span>`;
+        }
+        html += `<div class="sum-row"><span class="sum-total">${tokenIcon()} ${fmt(cur.total)}</span><span class="sum-label">${tokenName()} รวม</span>${diffHtml}</div>`;
+        html += `<div class="sum-note">${cur.isLive ? 'อัปเดตล่าสุด ' + escapeHtml(hm(cur.at)) + ' น. · คะแนนยังเปลี่ยนแปลงได้' : 'ตัดยอด ' + escapeHtml(fmtTime(cur.at))}${cur.hidden ? ' · <b>แอดมินเห็นเท่านั้น</b>' : ''}</div>`;
+
+        // อันดับรอบก่อน ใช้ทำลูกศรขึ้น/ลง
+        const prevRank = {};
+        if (prev) prev.ranking.forEach(r => { prevRank[String(r.memberName).toLowerCase()] = Number(r.rank); });
+
+        const ranking = cur.ranking.slice().sort((a, b) => Number(a.rank) - Number(b.rank));
+        const maxVotes = Math.max(1, ...ranking.map(r => Number(r.votes || 0)));
+        const rowHtml = (r, i) => {
+            const rank = Number(r.rank);
+            let chg = '';
+            if (prev) {
+                const p = prevRank[String(r.memberName).toLowerCase()];
+                if (!p) chg = '<span class="rank-chg new">NEW</span>';
+                else if (p > rank) chg = `<span class="rank-chg up"><i class="fa-solid fa-caret-up"></i> ${p - rank}</span>`;
+                else if (p < rank) chg = `<span class="rank-chg down"><i class="fa-solid fa-caret-down"></i> ${rank - p}</span>`;
+                else chg = '<span class="rank-chg same">–</span>';
+            }
+            const above = i > 0 ? ranking[i - 1] : null;
+            const gap = above ? Number(above.votes || 0) - Number(r.votes || 0) : 0;
+            const sub = above && gap > 0 ? `ห่างอันดับ ${escapeHtml(above.rank)} อยู่ ${fmt(gap)}` : (i === 0 && ranking[1] ? `นำอันดับ 2 อยู่ ${fmt(Number(r.votes || 0) - Number(ranking[1].votes || 0))}` : '');
+            const w = Math.max(0, Math.min(100, Number(r.votes || 0) / maxVotes * 100));
+            return `
+              <div class="rank-row ${rank <= 3 ? 'r' + rank : ''}">
+                <div class="rank-col"><span class="rank-no">${escapeHtml(rank)}</span>${chg}</div>
+                <img class="rank-img" src="${escapeAttr(r.profile || '')}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+                <div class="rank-body">
+                  <div class="rank-name">${escapeHtml(r.memberName)}</div>
+                  <div class="rank-bar"><i style="width:${w.toFixed(1)}%"></i></div>
+                  ${sub ? `<div class="rank-sub">${sub}</div>` : ''}
+                </div>
+                <div class="rank-votes">${fmt(r.votes)}<span class="rank-pct">${Number(r.percentage || 0).toFixed(2)}%</span></div>
+              </div>`;
+        };
+
+        // แบ่งตามกลุ่มอันดับของกิจกรรม (ไม่ได้ตั้ง = รายการเดียว)
+        const tiers = (data.tiers || []).filter(t => t && t.name && Number(t.size) > 0);
+        if (!tiers.length) {
+            html += `<div class="rank-list" style="margin-top:10px;">${ranking.map(rowHtml).join('')}</div>`;
+            return html;
+        }
+        let start = 1;
+        const tierOf = rank => {
+            let s = 1;
+            for (let t = 0; t < tiers.length; t++) {
+                const e = s + Number(tiers[t].size) - 1;
+                if (rank >= s && rank <= e) return t;
+                s = e + 1;
+            }
+            return -1;
+        };
+        tiers.forEach((t, ti) => {
+            const end = start + Number(t.size) - 1;
+            const rows = ranking.map((r, i) => ({ r, i })).filter(x => tierOf(Number(x.r.rank)) === ti);
+            html += `<div class="tier-head"><span class="tier-name">${escapeHtml(t.name)}</span><span class="tier-range">${start === end ? '#' + start : '#' + start + '–' + end}</span></div>`;
+            html += `<div class="rank-list">${rows.length ? rows.map(x => rowHtml(x.r, x.i)).join('') : '<div class="rank-sub" style="padding:8px 0;">-</div>'}</div>`;
+            start = end + 1;
+        });
+        const rest = ranking.map((r, i) => ({ r, i })).filter(x => tierOf(Number(x.r.rank)) === -1);
+        if (rest.length) {
+            html += `<div class="tier-head other"><span class="tier-name">อันดับอื่นๆ</span><span class="tier-range">#${start}+</span></div>`;
+            html += `<div class="rank-list">${rest.map(x => rowHtml(x.r, x.i)).join('')}</div>`;
+        }
+        return html;
+    }
+
+    function renderStats() {
+        const s = data.stats;
+        if (!s) return `<div class="notice"><i class="fa-solid fa-hourglass-half"></i><div>สถิติจะแสดงหลังประกาศผลค่ะ</div></div>`;
+        const open = data.timeStatus === 'open';
+        const plus = v => Number(v) > 0 ? '+' + fmt(v) : '0';
+        const cell = v => `<td class="r ${Number(v) > 0 ? 'plus' : 'zero'}">${plus(v)}</td>`;
+
+        let html = `<div class="stat-grid">
+            <div class="stat-card wide"><div class="stat-k">คะแนนรวมทั้งหมด (${tokenName()})</div><div class="stat-v">${tokenIcon()} ${fmt(s.total)}</div></div>`;
+        if (open) {
+            html += `
+            <div class="stat-card"><div class="stat-k">5 นาทีล่าสุด</div><div class="stat-v plus">${plus(s.inc5m)}</div></div>
+            <div class="stat-card"><div class="stat-k">15 นาทีล่าสุด</div><div class="stat-v plus">${plus(s.inc15m)}</div></div>
+            <div class="stat-card"><div class="stat-k">1 ชั่วโมงล่าสุด</div><div class="stat-v plus">${plus(s.inc1h)}</div></div>
+            <div class="stat-card"><div class="stat-k">วันนี้</div><div class="stat-v plus">${plus(s.incToday)}</div></div>`;
+        }
+        html += `</div>`;
+        if (s.lastVoteAt) html += `<div class="sec-hint" style="margin-top:6px;">คะแนนเข้าล่าสุด ${escapeHtml(fmtTime(s.lastVoteAt))}</div>`;
+
+        // เลือกดูตารางรายชั่วโมง หรือ รายวัน
+        html += `<div class="round-pills" style="padding-top:18px;">
+            <button type="button" class="round-pill ${statsView === 'hourly' ? 'active' : ''}" onclick="setStatsView('hourly')">รายชั่วโมง</button>
+            <button type="button" class="round-pill ${statsView === 'daily' ? 'active' : ''}" onclick="setStatsView('daily')">รายวัน</button>
+        </div>`;
+        if (statsView === 'hourly') {
+            html += `<div class="sec-hint" style="margin-top:8px;">24 ชั่วโมง${open ? 'ล่าสุด' : 'ก่อนปิดโหวต'}</div>
+              <table class="tbl"><thead><tr><th>ชั่วโมง</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
+              ${(s.hourly || []).map(r => `<tr><td>${escapeHtml(fmtTime(r.t, { day: 'numeric', month: 'short' }))} ${escapeHtml(hm(r.t))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
+              </tbody></table>`;
+        } else {
+            html += `<div class="sec-hint" style="margin-top:8px;">ตั้งแต่เปิดโหวต (เวลาไทย)</div>
+              <table class="tbl"><thead><tr><th>วันที่</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
+              ${(s.daily || []).map(r => `<tr><td>${escapeHtml(new Date(r.d + 'T00:00:00+07:00').toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: '2-digit' }))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
+              </tbody></table>`;
+        }
+        return html;
+    }
+
+    function renderHead() {
+        document.getElementById('ev-title').textContent = data.title || 'Major Vote';
+        document.body.classList.toggle('song-vote', isSong());
+        const st = data.timeStatus;
+        const chip = st === 'open' ? '<span class="chip open"><span class="dot"></span>กำลังโหวต</span>'
+                   : st === 'upcoming' ? '<span class="chip upcoming"><i class="fa-regular fa-clock"></i>ยังไม่เปิดโหวต</span>'
+                   : '<span class="chip closed"><i class="fa-solid fa-flag-checkered"></i>ปิดโหวตแล้ว</span>';
+        const endTxt = data.endTime ? (st === 'closed' ? 'ปิดโหวต ' : 'ปิดโหวต ') + escapeHtml(fmtTime(data.endTime)) : '';
+        document.getElementById('ev-meta').innerHTML = chip + (endTxt ? `<span>${endTxt}</span>` : '');
+        document.getElementById('main-tabs').style.display = st === 'upcoming' ? 'none' : 'flex';
+    }
+
+    async function load() {
+        try {
+            const res = await blm48GetVoteResults(campaignId);
+            if (!res || res.status !== 'success') {
+                document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-circle-exclamation"></i><div>${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div></div>`;
+                return;
+            }
+            const firstLoad = !data;
+            data = res;
+            // เปิดหน้าครั้งแรกระหว่างโหวต และยังไม่มีผลด่วนประกาศ -> เริ่มที่แท็บ Stats
+            if (firstLoad && location.hash !== '#results' && res.timeStatus === 'open' && !(res.checkpoints || []).some(c => c.isPublic !== false)) {
+                tab = 'stats';
+                document.querySelectorAll('.main-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            }
+            renderHead();
+            render();
+            document.getElementById('updated-at').textContent = 'อัปเดต ' + fmtTime(res.serverTime, { dateStyle: 'medium', timeStyle: 'medium' });
+        } catch (e) {
+            if (!data) document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-wifi"></i><div>เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้งนะคะ</div></div>`;
+        }
+        scheduleRefresh();
+    }
+
+    function scheduleRefresh() {
+        clearTimeout(refreshTimer);
+        if (!data || data.timeStatus === 'closed') return;   // ปิดโหวตแล้ว ผลไม่เปลี่ยน
+        if (document.hidden) return;
+        refreshTimer = setTimeout(load, REFRESH_MS);
+    }
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) clearTimeout(refreshTimer);
+        else if (data && data.timeStatus !== 'closed') load();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!campaignId) { blm48Back('majorvote'); return; }
+        if (location.hash === '#stats') tab = 'stats';
+        document.querySelectorAll('.main-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+        load();
+    });
+</script>
+</body>
+</html>

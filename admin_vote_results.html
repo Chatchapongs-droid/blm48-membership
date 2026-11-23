@@ -82,6 +82,22 @@
         .empty-state i { font-size: 28px; display: block; margin-bottom: 10px; }
         .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 30px 20px; }
 
+        .tier-hint { font-size: 12px; color: #767676; line-height: 1.6; margin-bottom: 10px; }
+        .tier-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .tier-row input { border: 1px solid #e6e6e6; border-radius: 12px; padding: 10px 12px; font-size: 14px; font-family: 'Quicksand', 'Kanit', sans-serif; color: #222; background: #fff; min-width: 0; }
+        .tier-row input:focus { outline: none; border-color: #ffc107; }
+        .tier-row .t-name { flex: 1; }
+        .tier-row .t-size { flex: 0 0 76px; text-align: center; }
+        .tier-row .t-range { flex: 0 0 62px; font-size: 11.5px; color: #767676; text-align: center; }
+        .tier-row .t-del { flex: 0 0 auto; border: none; background: #ffeef0; color: #ff5c7a; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
+        .tier-actions { display: flex; gap: 8px; margin-top: 4px; }
+        .tier-actions button { border: none; border-radius: 20px; padding: 8px 14px; cursor: pointer; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 12.5px; font-weight: 600; }
+        .tier-ok { color: #1f9d55 !important; }
+        .results-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 12.5px; font-weight: 600; color: #8a6d00; text-decoration: none; }
+        .btn-pub { background: #e6f9ee; color: #1f9d55; }
+        .btn-pub.on { background: #1f9d55; color: #fff; }
+        .cp-badge.pub { background: #e7f1ff; color: #1c5d99; margin-left: 6px; }
+
         #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
         #access-denied i { font-size: 40px; display: block; margin-bottom: 14px; }
         #page-content { display: none; }
@@ -111,7 +127,19 @@
 
         <div class="hint">
             <i class="fa-solid fa-lock"></i>
-            <div>ระบบจะเก็บอันดับคะแนน ณ เวลาที่ตั้งไว้ <b>ไว้หลังบ้านเท่านั้น</b> หน้าบ้านจะแสดงแค่ผล Final ตอนปิดโหวต</div>
+            <div>ระบบจะเก็บอันดับคะแนน ณ เวลาที่ตั้งไว้ <b>ไว้หลังบ้านก่อน</b> กด <b>ประกาศ</b> ที่ผลด่วนรอบนั้นเมื่อต้องการให้แฟนเห็นในหน้าผลโหวต</div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">กลุ่มอันดับ</div>
+            <div class="tier-hint">แบ่งอันดับเป็นกลุ่มในหน้าผลโหวต เช่น Senbatsu 12 / Under Girls 12 หรือ เพลงที่ชนะ 1 · ไม่ใส่ = ไม่แบ่งกลุ่ม</div>
+            <div id="tier-rows"></div>
+            <div class="tier-actions">
+                <button type="button" class="btn-view" onclick="addTierRow()"><i class="fas fa-plus"></i> เพิ่มกลุ่ม</button>
+                <button type="button" class="btn-view" id="tier-save-btn" onclick="saveTiers()" style="margin-left:auto;background:#ffc107;color:#222;"><i class="fa-solid fa-floppy-disk"></i> บันทึก</button>
+            </div>
+            <div class="form-msg" id="tier-msg"></div>
+            <a class="results-link" id="results-link" href="#"><i class="fa-solid fa-ranking-star"></i> ดูหน้าผลโหวต (หน้าบ้าน)</a>
         </div>
 
         <div class="card">
@@ -168,6 +196,7 @@
       const res = await blm48AdminListVoteCheckpoints(user.username, eventId);
       if (!res || res.status !== 'success') { box.innerHTML = `<div class="empty-state">${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
       items = res.data || [];
+      if (!tiersLoaded) { tiersLoaded = true; tiers = Array.isArray(res.resultTiers) ? res.resultTiers.map(t => ({ name: t.name, size: t.size })) : []; renderTiers(); }
       render();
     } catch (e) {
       box.innerHTML = `<div class="empty-state">เชื่อมต่อเซิร์ฟเวอร์ไม่ได้</div>`;
@@ -201,11 +230,12 @@
         <div class="card">
           <div class="cp-head">
             <div class="cp-time">${escapeHtml(formatTime(c.scheduledAt))}${c.label ? `<div class="cp-label">${escapeHtml(c.label)}</div>` : ''}</div>
-            <span class="cp-badge ${done ? 'done' : 'wait'}">${done ? 'เก็บผลแล้ว' : 'รอถึงเวลา'}</span>
+            <span><span class="cp-badge ${done ? 'done' : 'wait'}">${done ? 'เก็บผลแล้ว' : 'รอถึงเวลา'}</span>${c.isPublic ? '<span class="cp-badge pub">ประกาศแล้ว</span>' : ''}</span>
           </div>
           ${done && isOpen ? renderRanking(c) : ''}
           <div class="cp-actions">
             ${done ? `<button type="button" class="btn-view" onclick="toggleRanking(${c.id})"><i class="fa-solid ${isOpen ? 'fa-chevron-up' : 'fa-ranking-star'}"></i> ${isOpen ? 'ซ่อนอันดับ' : 'ดูอันดับ'}</button>` : ''}
+            <button type="button" class="btn-pub ${c.isPublic ? 'on' : ''}" onclick="togglePublic(${c.id}, ${!c.isPublic})"><i class="fa-solid ${c.isPublic ? 'fa-eye-slash' : 'fa-bullhorn'}"></i> ${c.isPublic ? 'ซ่อนจากแฟน' : 'ประกาศ'}</button>
             <button type="button" class="btn-del ${confirming ? 'confirming' : ''}" onclick="deleteCheckpoint(${c.id})"><i class="fas fa-trash"></i> ${confirming ? 'กดอีกครั้งเพื่อลบ' : 'ลบ'}</button>
           </div>
         </div>`;
@@ -240,6 +270,79 @@
     btn.disabled = false;
   }
 
+  // ===== ประกาศผลด่วนให้แฟนเห็น =====
+  async function togglePublic(id, makePublic) {
+    const msg = document.getElementById('form-msg');
+    msg.textContent = '';
+    try {
+      const res = await blm48AdminSetVoteCheckpointPublic(user.username, id, makePublic);
+      if (!res || res.status !== 'success') msg.textContent = (res && res.message) || 'บันทึกไม่สำเร็จ';
+    } catch (e) { msg.textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; }
+    loadCheckpoints();
+  }
+
+  // ===== กลุ่มอันดับ =====
+  let tiers = [];
+  let tiersLoaded = false;
+  function renderTiers() {
+    let start = 1;
+    document.getElementById('tier-rows').innerHTML = tiers.map((t, i) => {
+      const size = Math.max(0, parseInt(t.size, 10) || 0);
+      const end = start + size - 1;
+      const range = size > 0 ? (size === 1 ? '#' + start : '#' + start + '–' + end) : '-';
+      if (size > 0) start = end + 1;
+      return `
+        <div class="tier-row">
+          <input class="t-name" type="text" maxlength="40" placeholder="ชื่อกลุ่ม" value="${escapeAttr(t.name || '')}" oninput="tiers[${i}].name=this.value">
+          <input class="t-size" type="number" min="1" max="500" inputmode="numeric" placeholder="จำนวน" value="${escapeAttr(t.size || '')}" oninput="tiers[${i}].size=this.value; updateRanges()">
+          <span class="t-range">${range}</span>
+          <button type="button" class="t-del" aria-label="ลบกลุ่ม" onclick="tiers.splice(${i},1); renderTiers()"><i class="fas fa-xmark"></i></button>
+        </div>`;
+    }).join('');
+  }
+  function updateRanges() {
+    let start = 1;
+    document.querySelectorAll('#tier-rows .t-range').forEach((el, i) => {
+      const size = Math.max(0, parseInt(tiers[i].size, 10) || 0);
+      const end = start + size - 1;
+      el.textContent = size > 0 ? (size === 1 ? '#' + start : '#' + start + '–' + end) : '-';
+      if (size > 0) start = end + 1;
+    });
+  }
+  function addTierRow() {
+    if (tiers.length >= 10) return;
+    tiers.push({ name: '', size: '' });
+    renderTiers();
+    const inputs = document.querySelectorAll('#tier-rows .t-name');
+    if (inputs.length) inputs[inputs.length - 1].focus();
+  }
+  async function saveTiers() {
+    const msg = document.getElementById('tier-msg');
+    msg.classList.remove('tier-ok');
+    msg.textContent = '';
+    const clean = [];
+    for (const t of tiers) {
+      const name = String(t.name || '').trim();
+      const size = parseInt(t.size, 10);
+      if (!name && !t.size) continue;
+      if (!name || !(size >= 1 && size <= 500)) { msg.textContent = 'กรุณาใส่ชื่อกลุ่มและจำนวน (1-500) ให้ครบทุกแถว'; return; }
+      clean.push({ name, size });
+    }
+    const btn = document.getElementById('tier-save-btn');
+    btn.disabled = true;
+    try {
+      const res = await blm48AdminSetVoteResultTiers(user.username, eventId, clean);
+      if (!res || res.status !== 'success') msg.textContent = (res && res.message) || 'บันทึกไม่สำเร็จ';
+      else {
+        tiers = (res.data || []).map(t => ({ name: t.name, size: t.size }));
+        renderTiers();
+        msg.classList.add('tier-ok');
+        msg.textContent = 'บันทึกกลุ่มอันดับแล้ว';
+      }
+    } catch (e) { msg.textContent = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'; }
+    btn.disabled = false;
+  }
+
   async function deleteCheckpoint(id) {
     if (confirmingDeleteId !== id) {
       confirmingDeleteId = id;
@@ -268,6 +371,7 @@
     }
     if (!eventId) { window.location.href = 'admin_votes'; return; }
     document.getElementById('page-content').style.display = 'block';
+    document.getElementById('results-link').href = 'majorvote_results?id=' + encodeURIComponent(eventId);
     loadEventHeader();
     loadCheckpoints();
   });

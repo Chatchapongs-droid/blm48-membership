@@ -1058,6 +1058,19 @@ function blm48AdminAddVoteCheckpoint(adminUsername, collectionId, scheduledAt, l
 function blm48AdminDeleteVoteCheckpoint(adminUsername, checkpointId) {
   return blm48Rpc('admin_delete_vote_checkpoint', { p_admin_username: adminUsername, p_checkpoint_id: checkpointId });
 }
+// ประกาศ/ซ่อนผลด่วนรอบนั้นให้แฟนเห็นในหน้า majorvote_results
+function blm48AdminSetVoteCheckpointPublic(adminUsername, checkpointId, isPublic) {
+  return blm48Rpc('admin_set_vote_checkpoint_public', { p_admin_username: adminUsername, p_checkpoint_id: checkpointId, p_public: !!isPublic });
+}
+// กลุ่มอันดับของกิจกรรม เช่น [{name:'Senbatsu', size:12}, {name:'Under Girls', size:12}] — [] = ไม่แบ่งกลุ่ม
+function blm48AdminSetVoteResultTiers(adminUsername, collectionId, tiers) {
+  return blm48Rpc('admin_set_vote_result_tiers', { p_admin_username: adminUsername, p_collection_id: collectionId, p_tiers: tiers || [] });
+}
+// หน้าผลโหวต + สถิติ (หน้าบ้าน): live ranking, ผลด่วนที่ประกาศแล้ว, กลุ่มอันดับ, ยอดเพิ่มราย 5 นาที/ชั่วโมง/วัน
+function blm48GetVoteResults(collectionId) {
+  const username = typeof getUsername === 'function' ? getUsername() : '';
+  return blm48Rpc('get_vote_results', { p_collection_id: collectionId, p_username: username || null });
+}
 function blm48AdminListCodes(adminUsername) {
   return blm48Rpc('admin_list_codes', { p_admin_username: adminUsername });
 }
