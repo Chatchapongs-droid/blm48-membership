@@ -1,5 +1,7 @@
-// Sends a real OS-level Web Push notification for one personal (recipient_username IS NOT NULL)
-// row inserted into public.notifications. Invoked by a Database Webhook trigger (see the
+// Sends a real OS-level Web Push notification for a row inserted into public.notifications.
+// Personal rows (recipient_username IS NOT NULL) push to that one user's subscriptions.
+// Broadcast rows (recipient_username IS NULL, e.g. notif_type='shop' "product opened" alerts)
+// push to every stored subscription. Invoked by a Database Webhook trigger (see the
 // "notify_push_on_insert" trigger applied via apply_migration) - NOT reachable from the app's
 // anon-key client, since verify_jwt is disabled here and a shared secret is checked instead
 // (this endpoint is a Postgres-to-Edge-Function webhook, not a user-facing API).
@@ -30,14 +32,14 @@ Deno.serve(async (req) => {
   }
 
   const row = payload?.record;
-  if (!row || !row.recipient_username) {
+  if (!row) {
     return new Response("ok", { status: 200 });
   }
 
-  const { data: subs, error } = await supabase
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("username", row.recipient_username);
+  const isBroadcast = !row.recipient_username;
+
+  const query = supabase.from("push_subscriptions").select("id, endpoint, p256dh, auth");
+  const { data: subs, error } = isBroadcast ? await query : await query.eq("username", row.recipient_username);
 
   if (error) {
     console.error("push_subscriptions lookup failed", error);
@@ -47,7 +49,11 @@ Deno.serve(async (req) => {
     return new Response("ok", { status: 200 });
   }
 
-  const url = row.post_id ? `/postdetail?id=${encodeURIComponent(row.post_id)}` : "/notification";
+  const url = row.post_id
+    ? `/postdetail?id=${encodeURIComponent(row.post_id)}`
+    : row.notif_type === "shop"
+    ? "/shop"
+    : "/notification";
   const notifPayload = JSON.stringify({
     id: row.id,
     title: row.writer || "BLM48",
