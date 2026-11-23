@@ -182,6 +182,7 @@
 
     let campaignMechanic = 'burn';
     let campaignRefundPercent = 0;
+    let minVote = 1;              // ขั้นต่ำต่อครั้งของกิจกรรมนี้ (ตั้งได้ต่อกิจกรรม เช่น 0.01) ทศนิยมไม่เกิน 2 ตำแหน่ง
     let isSubmitting = false;
     let pendingThankYouCard = '';
 
@@ -232,6 +233,19 @@
         if (!c) return;
         campaignMechanic = normalizeMechanic(c.TokenMechanic);
         campaignRefundPercent = Number(c.RefundPercent) || 0;
+        if (c.MinVote !== undefined && c.MinVote !== null && Number(c.MinVote) > 0) applyMinVote(Number(c.MinVote));
+    }
+
+    function fmtAmount(n) { return Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+    function applyMinVote(m) {
+        minVote = Math.round(m * 100) / 100;
+        const input = document.getElementById('amount-input');
+        const decimals = minVote < 1 || minVote % 1 !== 0;
+        input.min = String(minVote);
+        input.step = decimals ? '0.01' : '1';
+        input.inputMode = decimals ? 'decimal' : 'numeric';
+        document.querySelector('.min-text').textContent = `Minimum token per vote: ${fmtAmount(minVote)} token`;
+        if (getAmount() < minVote) setAmount(minVote); else updateAmountUI();
     }
 
     function loadCampaignInfo() {
@@ -244,7 +258,7 @@
         blm48GetVoteCollections().then(data => {
             if (!Array.isArray(data)) return;
             const c = data.find(item => String(item.voteCollectionId) === String(campaignId));
-            if (c) applyCampaign({ TokenMechanic: c.tokenMechanic, RefundPercent: c.refundPercent });
+            if (c) applyCampaign({ TokenMechanic: c.tokenMechanic, RefundPercent: c.refundPercent, MinVote: c.minVote });
         }).catch(e => console.error("Campaign Fetch Error:", e));
     }
 
@@ -264,20 +278,24 @@
         } catch (e) { console.error("Wallet Refresh Error:", e); }
     }
 
+    // ปัดลงที่ทศนิยม 2 ตำแหน่ง (ตรงกับที่ server รับ)
+    function round2Down(n) { return Math.floor(Math.round(n * 1000) / 10) / 100; }
+
     function getAmount() {
-        const n = Math.floor(Number(document.getElementById('amount-input').value));
+        const n = round2Down(Number(document.getElementById('amount-input').value));
         return Number.isFinite(n) ? n : 0;
     }
 
     function setAmount(n) {
-        document.getElementById('amount-input').value = n;
+        document.getElementById('amount-input').value = round2Down(n);
         updateAmountUI();
     }
 
+    // ปุ่ม +/- เพิ่มลดทีละ 1 (ไม่ต่ำกว่าขั้นต่ำ ไม่เกินยอดคงเหลือ)
     function stepAmount(delta) {
-        const balance = getUserBalance(tokenType);
-        const next = Math.max(1, getAmount() + delta);
-        setAmount(Math.min(next, Math.max(1, Math.floor(balance))));
+        const balance = round2Down(getUserBalance(tokenType));
+        const next = Math.max(minVote, round2Down(getAmount() + delta));
+        setAmount(Math.min(next, Math.max(minVote, balance)));
     }
 
     function onAmountInput() {
@@ -285,29 +303,29 @@
     }
 
     function normalizeAmount() {
-        setAmount(Math.max(1, getAmount()));
+        setAmount(Math.max(minVote, getAmount()));
     }
 
     function updateAmountUI() {
         const balance = getUserBalance(tokenType);
         const amount = getAmount();
         const balanceEl = document.getElementById('balance-text');
-        balanceEl.textContent = `Total balance: ${balance.toLocaleString()} tokens`;
+        balanceEl.textContent = `Total balance: ${fmtAmount(balance)} tokens`;
         balanceEl.classList.toggle('insufficient', amount > balance);
-        document.getElementById('minus-btn').disabled = amount <= 1;
+        document.getElementById('minus-btn').disabled = amount <= minVote;
         document.getElementById('plus-btn').disabled = amount >= balance;
-        document.getElementById('vote-btn').disabled = isSubmitting || amount < 1 || amount > balance;
+        document.getElementById('vote-btn').disabled = isSubmitting || amount < minVote || amount > balance;
     }
 
     function openConfirm() {
         const amount = getAmount();
         const balance = getUserBalance(tokenType);
-        if (amount < 1) {
-            Swal.fire({ title: 'จำนวนไม่ถูกต้อง', text: `ขั้นต่ำในการโหวตคือ 1 ${TOKEN_TYPE_LABELS[tokenType]}`, icon: 'warning', confirmButtonText: 'ตกลง', confirmButtonColor: 'var(--vote-yellow)' });
+        if (amount < minVote) {
+            Swal.fire({ title: 'จำนวนไม่ถูกต้อง', text: `ขั้นต่ำในการโหวตคือ ${fmtAmount(minVote)} ${TOKEN_TYPE_LABELS[tokenType]}`, icon: 'warning', confirmButtonText: 'ตกลง', confirmButtonColor: 'var(--vote-yellow)' });
             return;
         }
         if (amount > balance) {
-            Swal.fire({ title: `${TOKEN_TYPE_LABELS[tokenType]} ไม่พอ`, text: `คุณมี ${balance.toLocaleString()} แต่ต้องการโหวต ${amount.toLocaleString()}`, icon: 'warning', confirmButtonText: 'ตกลง', confirmButtonColor: 'var(--vote-yellow)' });
+            Swal.fire({ title: `${TOKEN_TYPE_LABELS[tokenType]} ไม่พอ`, text: `คุณมี ${fmtAmount(balance)} แต่ต้องการโหวต ${fmtAmount(amount)}`, icon: 'warning', confirmButtonText: 'ตกลง', confirmButtonColor: 'var(--vote-yellow)' });
             return;
         }
         document.getElementById('confirm-text').innerHTML = getMechanicText(true);
@@ -350,7 +368,7 @@
                 pendingThankYouCard = (res.thankYouCard || '').toString().trim();
                 document.getElementById('done-text').innerHTML = getMechanicText(false);
                 document.getElementById('done-overlay').classList.add('show');
-                setAmount(1);
+                setAmount(minVote);
             } else {
                 Swal.fire({
                     title: 'การลงคะแนนโหวตไม่สำเร็จ',

@@ -536,6 +536,9 @@
                 EndTime: c.endTime, TokenType: c.tokenType,
                 TokenMechanic: c.tokenMechanic, RefundPercent: c.refundPercent
             });
+            // ขั้นต่ำต่อครั้งของกิจกรรมนี้ (เช่น 0.01)
+            const mv = Number(c.minVote);
+            if (mv > 0) document.getElementById('pd-min').textContent = mv.toLocaleString('en-US', { maximumFractionDigits: 2 }) + ' token';
         }).catch(e => console.error("Campaign Header Fetch Error:", e));
     }
 
