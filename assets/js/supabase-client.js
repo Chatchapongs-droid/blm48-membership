@@ -238,8 +238,9 @@ function blm48GetCoasterTradeBoard(username) { return blm48Rpc('get_coaster_trad
 function blm48GetMyTradableCoasters(username) { return blm48Rpc('get_my_tradable_coasters', { p_username: username }); }
 function blm48GetCoasterTradeCatalog() { return blm48Rpc('get_coaster_trade_catalog', {}); }
 function blm48GetMyCoasterTrades(username) { return blm48Rpc('get_my_coaster_trades', { p_username: username }); }
-function blm48CreateCoasterTrade(username, inventoryId, want) {
-  return blm48Rpc('create_coaster_trade', { p_username: username, p_inventory_id: inventoryId, p_want: want || [] });
+function blm48CreateCoasterTrade(username, inventoryId, want, wantGroup, wantType) {
+  return blm48Rpc('create_coaster_trade', { p_username: username, p_inventory_id: inventoryId, p_want: want || [],
+    p_want_group: wantGroup || null, p_want_type: wantType || null });
 }
 function blm48CancelCoasterTrade(username, tradeId) { return blm48Rpc('cancel_coaster_trade', { p_username: username, p_trade_id: tradeId }); }
 // ข้อเสนอแลก: ส่ง/ถอน (ผู้เสนอ), รับ/ปฏิเสธ (เจ้าของประกาศ) — ไม่มีการแลกทันทีแล้ว

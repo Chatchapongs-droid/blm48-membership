@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <script src="assets/js/back-nav.js"></script>
-    <title>BLM48 Membership | Coaster Trade</title>
+    <title>BLM48 Membership | Trading Market</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
     <meta name="theme-color" content="#ffffff">
     <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
@@ -20,7 +20,8 @@
     <script src="assets/js/common.js"></script>
 
     <style>
-        /* 🔁 Coaster Trade — บอร์ดเทรดสาธารณะ "มีใบนี้ อยากได้ใบนั้น" (แรร์เท่ากัน, ฟรี, 3 ครั้ง/วัน, บัญชี 14 วันขึ้นไป) */
+        /* 🔁 Trading Market — ตลาดเทรดสาธารณะ "มีชิ้นนี้ อยากได้ชิ้นนั้น" หลายประเภท (Coaster / PhotoCard / Badge / SSR Photo)
+           ทั้ง BLM48 และ NPT48 (แรร์เท่ากัน, ฟรี, 3 ครั้ง/วัน, บัญชี 14 วันขึ้นไป). ประเภทที่เทรดได้ = ตาราง trade_categories */
         * { box-sizing: border-box; }
         /* lock page horizontally — no side-to-side drag on phones */
         html, body { overflow-x: hidden; overflow-x: clip; max-width: 100%; }
@@ -74,7 +75,8 @@
 
         .expand { margin-top: 12px; border-top: 1px solid #f1f3f5; padding-top: 12px; }
         .expand-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
-        .pick-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .pick-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+        .pick { min-width: 0; }
         .pick { position: relative; border: 2px solid transparent; border-radius: 14px; padding: 0; background: none; cursor: pointer; text-align: left; font-family: inherit; }
         .pick.sel { border-color: #fcc419; }
         .pick .coaster-img { border-radius: 12px; }
@@ -138,6 +140,21 @@
         .pager-arrow.next { right: -6px; }
         @media (hover: hover) and (pointer: fine) { .pager-arrow:not([hidden]) { display: flex; } }
 
+        /* group switch (BLM48 #ffde5b / NPT48 #66cbff) + item meta line */
+        .gtabs { display: flex; gap: 6px; padding: 12px 12px 0; }
+        .gtab { flex: 1; border: 1.5px solid #eee; background: #fff; border-radius: 12px; padding: 8px 0; font-family: inherit; font-size: 13.5px; font-weight: 700; color: #6b6b6b; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .gtab.active { color: #222; border-color: var(--g, #222); background: var(--gbg, #f8f9fa); }
+        .chip-sep { flex-shrink: 0; width: 1px; background: #eee; margin: 4px 2px; }
+        .l-meta { display: flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; color: #555; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .gdot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: #ffde5b; }
+        .gdot.npt { background: #66cbff; }
+        .gdot.both { background: linear-gradient(90deg, #ffde5b 50%, #66cbff 50%); }
+        .field-label { font-size: 12.5px; font-weight: 600; color: #555; margin: 2px 0 6px; }
+        .post-chips { padding: 0 0 10px; }
+        .post-chips .chip { padding: 5px 12px; font-size: 12.5px; }
+        .opt-row.wrap { flex-wrap: wrap; }
+        .opt-row.wrap .opt { flex: 1 1 calc(33% - 8px); padding: 8px 6px; font-size: 13px; }
+
         .state { text-align: center; color: #6b6b6b; padding: 40px 20px; font-size: 14px; line-height: 1.6; }
         .state i { display: block; font-size: 30px; margin-bottom: 10px; color: #fcc419; }
         .hidden { display: none !important; }
@@ -145,14 +162,14 @@
         .toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); background: #222; color: #fff; padding: 10px 18px; border-radius: 22px; font-size: 14px; opacity: 0; transition: .25s; z-index: 100; max-width: calc(100% - 24px); text-align: center; pointer-events: none; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        @media (min-width: 560px) { .pick-grid { grid-template-columns: repeat(5, 1fr); } }
+        @media (min-width: 560px) { .pick-grid { grid-template-columns: repeat(5, minmax(0,1fr)); } }
     </style>
 </head>
 <body>
 <div class="page">
     <div class="top-bar">
         <button type="button" class="back-btn" onclick="blm48Back('inventory')" aria-label="Back"><i class="fa-solid fa-chevron-left"></i></button>
-        <div class="top-title">Coaster Trade</div>
+        <div class="top-title">Trading Market</div>
         <span></span>
     </div>
 
@@ -169,6 +186,7 @@
     </div>
 
     <div id="view-board">
+        <div class="gtabs" id="board-groups"></div>
         <div class="chips" id="board-chips"></div>
         <div id="board-list"><div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div></div>
     </div>
@@ -191,17 +209,38 @@
   let listings = [];
   let myCoasters = [];      // [{ collectionId, collectionName, name, imageUrl, rarity, count, inventoryId }]
   let catalog = null;
-  let boardFilter = 'all';  // all | match | Normal | SSR
+  let types = [];           // ['Coaster','PhotoCard','Badge','SSR Photo'] จาก trade_categories
+  let boardGroup = 'all';   // all | BLM48 | NPT48
+  try { boardGroup = localStorage.getItem('blm48_trade_group') || 'all'; } catch (e) {}
+  let boardType = 'all';    // all | <type>
+  let boardMatch = false;   // แสดงเฉพาะที่ฉันมีของแลกได้
+  let boardSSR = false;
   let openListing = null;   // listing id ที่กางแผงแลกอยู่
   let pickedForListing = null;
   let confirmCancel = null;
   let confirmOffer = null;  // offer id ที่กำลังยืนยันรับ
   let busy = false;
   // ฟอร์มลงประกาศ
-  let post = { offerKey: null, mode: 'any', want: [], coll: '' };
+  const NEW_POST = () => ({ offerKey: null, mode: 'any', want: [], coll: '', wantGroup: '', wantType: '',
+                            pickGroup: 'all', pickType: 'all', mineGroup: 'all', mineType: 'all' });
+  let post = NEW_POST();
 
+  const GROUPS = ['BLM48', 'NPT48'];
+  const GROUP_COLOR = { BLM48: '#ffde5b', NPT48: '#66cbff' };
+  const GROUP_BG = { BLM48: '#fff9db', NPT48: '#e7f5ff' };
   const keyOf = (c) => c.collectionId + '|' + c.name;
+  const inGroup = (it, g) => g === 'all' || !it || it.group === g || it.group === 'Both';
+  const inType = (it, t) => t === 'all' || !it || it.type === t;
   const rarBadge = (r) => r === 'SSR' ? '<span class="rar ssr">SSR</span>' : '<span class="rar">Normal</span>';
+  // "● NPT48 · Badge" ใต้ชื่อชิ้น
+  const metaHtml = (it) => {
+    if (!it) return '';
+    const g = it.group || 'BLM48';
+    const dot = g === 'NPT48' ? ' npt' : g === 'Both' ? ' both' : '';
+    return `<div class="l-meta"><span class="gdot${dot}"></span>${escapeHtml(g === 'Both' ? 'BLM48 · NPT48' : g)}${it.type ? ' · ' + escapeHtml(it.type) : ''}</div>`;
+  };
+  const chip = (on, label, onclick) => `<button type="button" class="chip${on ? ' active' : ''}" onclick="${onclick}">${label}</button>`;
+  const anyLabel = (l) => [l.wantGroup, l.wantType].filter(Boolean).join(' ');
   // ลายน้ำ "BLM48 TRADE" ทับรูปตัวอย่าง (กันเอารูปไปใช้ต่อ) — ชั้นบนรับการแตะแทนรูป
   // 5th Generation coasters are a full-bleed octagon (others are circles/scallops) → shrink a bit so they look the same size
   const SMALLER_COLLS = new Set(['gacha_gen5']);
@@ -245,27 +284,42 @@
   }
   const canAct = () => me && me.eligible && me.usedToday < me.dailyLimit;
 
-  // ใบของฉันที่ใช้แลกประกาศนี้ได้
+  // ชิ้นของฉันที่ใช้แลกประกาศนี้ได้ (แรร์เท่ากัน + ตรงกับที่อยากได้ หรือ ตรงกลุ่ม/ประเภทของ "Any")
   function matchesFor(l) {
     return myCoasters.filter(c => c.rarity === l.rarity
       && !(c.collectionId === l.offer.collectionId && c.name === l.offer.name)
-      && (l.want.length === 0 || l.want.some(w => w.collectionId === c.collectionId && w.name === c.name)));
+      && (l.want.length
+            ? l.want.some(w => w.collectionId === c.collectionId && w.name === c.name)
+            : (!l.wantGroup || c.group === l.wantGroup || c.group === 'Both') && (!l.wantType || c.type === l.wantType)));
   }
 
   // ---------------- Board ----------------
+  function setBoardGroup(g) {
+    boardGroup = g;
+    try { localStorage.setItem('blm48_trade_group', g); } catch (e) {}
+    renderBoard();
+  }
   function renderBoard() {
-    const chips = [['all', 'All'], ['match', 'I can trade'], ['Normal', 'Normal'], ['SSR', 'SSR']];
-    document.getElementById('board-chips').innerHTML = chips.map(([k, label]) =>
-      `<button type="button" class="chip${boardFilter === k ? ' active' : ''}" onclick="boardFilter='${k}';renderBoard()">${label}</button>`).join('');
+    document.getElementById('board-groups').innerHTML = [['all', 'All'], ...GROUPS.map(g => [g, g])].map(([k, label]) =>
+      `<button type="button" class="gtab${boardGroup === k ? ' active' : ''}" style="--g:${GROUP_COLOR[k] || '#222'};--gbg:${GROUP_BG[k] || '#f8f9fa'}"
+         onclick="setBoardGroup('${k}')">${GROUP_COLOR[k] ? `<span class="gdot${k === 'NPT48' ? ' npt' : ''}"></span>` : ''}${label}</button>`).join('');
 
-    let list = listings;
-    if (boardFilter === 'match') list = list.filter(l => !l.mine && matchesFor(l).length);
-    else if (boardFilter !== 'all') list = list.filter(l => l.rarity === boardFilter);
+    document.getElementById('board-chips').innerHTML =
+      chip(boardType === 'all', 'All items', "boardType='all';renderBoard()")
+      + types.map(t => chip(boardType === t, escapeHtml(t), `boardType='${escapeAttr(t)}';renderBoard()`)).join('')
+      + '<span class="chip-sep"></span>'
+      + chip(boardMatch, '<i class="fa-solid fa-check"></i> I can trade', 'boardMatch=!boardMatch;renderBoard()')
+      + chip(boardSSR, 'SSR', 'boardSSR=!boardSSR;renderBoard()');
+
+    let list = listings.filter(l => inGroup(l.offer, boardGroup) && inType(l.offer, boardType));
+    if (boardMatch) list = list.filter(l => !l.mine && matchesFor(l).length);
+    if (boardSSR) list = list.filter(l => l.rarity === 'SSR');
 
     const el = document.getElementById('board-list');
     if (!list.length) {
-      el.innerHTML = `<div class="state"><i class="fa-solid fa-right-left"></i>${boardFilter === 'match'
-        ? 'No listings match the Coasters you have yet' : 'No trade listings yet<br>Be the first to post one!'}</div>`;
+      const filtered = boardMatch || boardSSR || boardType !== 'all' || boardGroup !== 'all';
+      el.innerHTML = `<div class="state"><i class="fa-solid fa-right-left"></i>${boardMatch
+        ? 'No listings match the items you have yet' : filtered ? 'No listings for this filter yet' : 'No trade listings yet<br>Be the first to post one!'}</div>`;
       return;
     }
     el.innerHTML = list.map(listingHtml).join('');
@@ -273,11 +327,12 @@
 
   function wantHtml(l) {
     if (!l.want.length) {
-      return `<div class="want-any"><i class="fa-solid fa-shuffle"></i>Any<br>${rarBadge(l.rarity)}</div>`;
+      const what = anyLabel(l);
+      return `<div class="want-any"><i class="fa-solid fa-shuffle"></i>Any${what ? ' ' + escapeHtml(what) : ''}<br>${rarBadge(l.rarity)}</div>`;
     }
     if (l.want.length === 1) {
       const w = l.want[0];
-      return `${img(w)}<div class="l-name">${escapeHtml(w.name)}</div><div class="l-coll">${escapeHtml(w.collectionName || '')}</div>`;
+      return `${img(w)}<div class="l-name">${escapeHtml(w.name)}</div>${metaHtml(w)}<div class="l-coll">${escapeHtml(w.collectionName || '')}</div>`;
     }
     return `<div class="want-grid" style="grid-template-columns:repeat(${l.want.length},minmax(0,1fr))">${l.want.map(w => `<div>${img(w)}</div>`).join('')}</div>
       <div class="l-name">${l.want.map(w => escapeHtml(w.name)).join(', ')}</div>`;
@@ -292,7 +347,7 @@
       </div>`;
     const body = `<div class="l-body">
         <div><div class="l-side-label">Have ${rarBadge(l.rarity)}</div>${img(l.offer)}
-          <div class="l-name">${escapeHtml(l.offer.name)}</div><div class="l-coll">${escapeHtml(l.offer.collectionName || '')}</div></div>
+          <div class="l-name">${escapeHtml(l.offer.name)}</div>${metaHtml(l.offer)}<div class="l-coll">${escapeHtml(l.offer.collectionName || '')}</div></div>
         <div class="l-arrow"><i class="fa-solid fa-right-left"></i></div>
         <div><div class="l-side-label">Want</div>${wantHtml(l)}</div>
       </div>`;
@@ -306,7 +361,7 @@
           ${offers.map(o => offerRowHtml(l, o)).join('')}
         </div>` : `<div class="hint" style="margin:12px 0 0">No offers yet. You'll get a notification when someone sends one.</div>`;
       actions = offersHtml + (confirmCancel === l.id
-        ? `<div class="confirm-row">Cancel this listing? The Coaster goes back to your Inventory${offers.length ? ' and every offer is returned' : ''}. You get today's trade back if it was posted today.</div>
+        ? `<div class="confirm-row">Cancel this listing? The item goes back to your Inventory${offers.length ? ' and every offer is returned' : ''}. You get today's trade back if it was posted today.</div>
            <div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=null;rerender()">Keep</button>
            <button type="button" class="btn danger" onclick="doCancel(${l.id})"${busy ? ' disabled' : ''}>Cancel listing</button></div>`
         : `<div class="l-actions"><button type="button" class="btn ghost" onclick="confirmCancel=${l.id};confirmOffer=null;rerender()">Cancel listing</button></div>`);
@@ -322,7 +377,7 @@
       const offerBlocked = !canAct() || me.pendingOffers >= me.maxOffers;
       if (openListing !== l.id) {
         actions = `<div class="l-actions"><button type="button" class="btn" onclick="openTrade(${l.id})"${matches.length && !offerBlocked ? '' : ' disabled'}>
-          ${!matches.length ? 'No matching Coaster' : me && me.pendingOffers >= me.maxOffers ? '5 pending offers reached' : 'Make offer'}</button></div>`;
+          ${!matches.length ? 'No matching item' : me && me.pendingOffers >= me.maxOffers ? '5 pending offers reached' : 'Make offer'}</button></div>`;
       } else {
         const sel = matches.find(c => keyOf(c) === pickedForListing);
         // ตัวกรองคอลเลกชัน + หน้า 2 แถว x 5 ปัดซ้าย/ขวา (แบบชีต Gift)
@@ -332,7 +387,7 @@
         const pages = [];
         for (let p = 0; p < shown.length; p += OFFER_PER_PAGE) pages.push(shown.slice(p, p + OFFER_PER_PAGE));
         actions = `<div class="expand">
-            <div class="expand-title">Choose a Coaster to offer (${matches.length})</div>
+            <div class="expand-title">Choose an item to offer (${matches.length})</div>
             ${colls.length > 1 ? `<div class="chips offer-chips">
               <button type="button" class="chip${offerColl === 'all' ? ' active' : ''}" onclick="setOfferColl('all')">All</button>
               ${colls.map(([id, name]) => `<button type="button" class="chip${offerColl === id ? ' active' : ''}" onclick="setOfferColl('${escapeAttr(id)}')">${escapeHtml(shortColl(name))}</button>`).join('')}
@@ -349,7 +404,7 @@
               <button type="button" class="pager-arrow next" onclick="stepOfferPage(1)" aria-label="Next page" hidden><i class="fa-solid fa-chevron-right"></i></button>
             </div>
             <div class="pager-dots">${pages.length > 1 ? pages.map((_, i) => `<button type="button" class="pager-dot" onclick="goOfferPage(${i})" aria-label="Page ${i + 1}"></button>`).join('') : ''}</div>
-            ${sel ? `<div class="confirm-row">Offer <b>${escapeHtml(sel.name)}</b> for <b>${escapeHtml(l.offer.name)}</b>.<br>Your Coaster is held until ${escapeHtml((l.owner && l.owner.name) || 'the owner')} accepts or declines. You can withdraw anytime.</div>` : ''}
+            ${sel ? `<div class="confirm-row">Offer <b>${escapeHtml(sel.name)}</b> for <b>${escapeHtml(l.offer.name)}</b>.<br>Your item is held until ${escapeHtml((l.owner && l.owner.name) || 'the owner')} accepts or declines. You can withdraw anytime.</div>` : ''}
             <div class="l-actions"><button type="button" class="btn ghost" onclick="openListing=null;pickedForListing=null;rerender()">Close</button>
               <button type="button" class="btn" onclick="doOffer(${l.id})"${sel && !busy ? '' : ' disabled'}>Send offer</button></div>
           </div>`;
@@ -369,7 +424,7 @@
           <div class="offer-info">
             <div class="offer-who"><img class="l-avatar" style="width:22px;height:22px" src="${escapeAttr(who.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(who.username)} draggable="false">
               <span${profileLinkAttr(who.username)}>${escapeHtml(who.name || '')}</span></div>
-            <div class="l-name">${escapeHtml(o.item.name)}</div>
+            <div class="l-name">${escapeHtml(o.item.name)}</div>${metaHtml(o.item)}
             <div class="l-coll">${escapeHtml(o.item.collectionName || '')} · ${timeAgo(o.createdAt)}</div>
           </div>
         </div>
@@ -448,26 +503,26 @@
   }
   function doWithdraw(offerId) {
     runAction(() => blm48WithdrawCoasterOffer(username, offerId),
-      () => 'Offer withdrawn. Your Coaster is back in your Inventory', 'Something went wrong. Please try again.');
+      () => 'Offer withdrawn. Your item is back in your Inventory', 'Something went wrong. Please try again.');
   }
   function doDecline(offerId) {
     runAction(() => blm48DeclineCoasterOffer(username, offerId), () => 'Offer declined', 'Something went wrong. Please try again.');
   }
   function doAcceptOffer(offerId) {
     runAction(() => blm48AcceptCoasterOffer(username, offerId),
-      (res) => `Trade complete! You got ${(res.received && res.received.name) || 'the Coaster'}`, 'Trade failed. Please try again.');
+      (res) => `Trade complete! You got ${(res.received && res.received.name) || 'the item'}`, 'Trade failed. Please try again.');
   }
 
   function doCancel(id) {
     runAction(() => blm48CancelCoasterTrade(username, id),
-      () => 'Listing cancelled. The Coaster is back in your Inventory', 'Something went wrong. Please try again.');
+      () => 'Listing cancelled. The item is back in your Inventory', 'Something went wrong. Please try again.');
   }
 
   // ---------------- Post ----------------
   async function renderPost() {
     const el = document.getElementById('view-post');
     if (me && !me.eligible) { el.innerHTML = `<div class="state"><i class="fa-solid fa-lock"></i>${escapeHtml(me.reason)}</div>`; return; }
-    if (!myCoasters.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-box-open"></i>You have no tradable Coasters in your Inventory yet</div>`; return; }
+    if (!myCoasters.length) { el.innerHTML = `<div class="state"><i class="fa-solid fa-box-open"></i>You have no tradable items in your Inventory yet<br><span style="font-size:12.5px">Tradable: ${escapeHtml(types.join(', ') || 'Coaster')} (BLM48 and NPT48)</span></div>`; return; }
     if (post.mode === 'pick' && !catalog) {
       el.innerHTML = `<div class="state"><i class="fa-solid fa-spinner fa-spin"></i>Loading...</div>`;
       const res = await blm48GetCoasterTradeCatalog();
@@ -475,32 +530,67 @@
     }
     const offer = myCoasters.find(c => keyOf(c) === post.offerKey);
 
+    // ขั้น 1: ชิ้นของฉัน — กรองกลุ่ม / ประเภท
+    const myGroups = GROUPS.filter(g => myCoasters.some(c => inGroup(c, g)));
+    const myTypes = types.filter(t => myCoasters.some(c => c.type === t && inGroup(c, post.mineGroup)));
+    if (post.mineType !== 'all' && !myTypes.includes(post.mineType)) post.mineType = 'all';
+    const mineShown = myCoasters.filter(c => inGroup(c, post.mineGroup) && inType(c, post.mineType));
     let html = `<div class="section">
-      <div class="step-title"><span class="step-num">1</span>Your Coaster</div>
-      <div class="pick-grid">${myCoasters.map((c, i) => `
-        <button type="button" class="pick${keyOf(c) === post.offerKey ? ' sel' : ''}" onclick="selectOffer(${i})">
+      <div class="step-title"><span class="step-num">1</span>Your item</div>
+      ${myGroups.length > 1 || myTypes.length > 1 ? `<div class="chips post-chips">
+        ${myGroups.length > 1 ? chip(post.mineGroup === 'all', 'All', "post.mineGroup='all';renderPost()")
+          + myGroups.map(g => chip(post.mineGroup === g, g, `post.mineGroup='${g}';renderPost()`)).join('') + '<span class="chip-sep"></span>' : ''}
+        ${chip(post.mineType === 'all', 'All items', "post.mineType='all';renderPost()")}
+        ${myTypes.map(t => chip(post.mineType === t, escapeHtml(t), `post.mineType='${escapeAttr(t)}';renderPost()`)).join('')}
+      </div>` : ''}
+      <div class="pick-grid">${mineShown.map(c => `
+        <button type="button" class="pick${keyOf(c) === post.offerKey ? ' sel' : ''}" onclick="selectOffer(${myCoasters.indexOf(c)})">
           ${img(c)}<span class="pick-check"><i class="fa-solid fa-check"></i></span>
           ${c.count > 1 ? `<span class="pick-count">x${c.count}</span>` : ''}
           <div class="pick-name">${c.rarity === 'SSR' ? '<span class="rar ssr">SSR</span> ' : ''}${escapeHtml(c.name)}</div>
+          ${metaHtml(c)}
         </button>`).join('')}</div>
     </div>`;
 
     if (offer) {
       html += `<div class="section">
         <div class="step-title"><span class="step-num">2</span>You want ${rarBadge(offer.rarity)}</div>
-        <div class="hint">Only Coasters of the same rarity can be traded (any collection)</div>
+        <div class="hint">Same rarity only. Any type, BLM48 or NPT48.</div>
         <div class="opt-row">
           <button type="button" class="opt${post.mode === 'any' ? ' active' : ''}" onclick="post.mode='any';renderPost()">Any</button>
           <button type="button" class="opt${post.mode === 'pick' ? ' active' : ''}" onclick="post.mode='pick';renderPost()">Choose (max 3)</button>
         </div>`;
+      if (post.mode === 'any') {
+        // "Any" แคบลงได้: กลุ่ม + ประเภท
+        html += `<div class="field-label">Group</div>
+          <div class="opt-row wrap">${[['', 'Any group'], ...GROUPS.map(g => [g, g])].map(([k, label]) =>
+            `<button type="button" class="opt${post.wantGroup === k ? ' active' : ''}" onclick="post.wantGroup='${k}';renderPost()">${label}</button>`).join('')}</div>
+          <div class="field-label">Type</div>
+          <div class="opt-row wrap">${[['', 'Any type'], ...types.map(t => [t, t])].map(([k, label]) =>
+            `<button type="button" class="opt${post.wantType === k ? ' active' : ''}" onclick="post.wantType='${escapeAttr(k)}';renderPost()">${escapeHtml(label)}</button>`).join('')}</div>
+          <div class="hint">Fans can offer any ${offer.rarity} ${escapeHtml([post.wantGroup, post.wantType].filter(Boolean).join(' ') || 'item')}. You choose which offer to accept.</div>`;
+      }
       if (post.mode === 'pick' && catalog) {
         const pool = catalog.filter(c => c.rarity === offer.rarity && keyOf(c) !== post.offerKey);
-        const colls = [...new Map(pool.map(c => [c.collectionId, c.collectionName])).entries()];
+        const pGroups = GROUPS.filter(g => pool.some(c => inGroup(c, g)));
+        if (post.pickGroup !== 'all' && !pGroups.includes(post.pickGroup)) post.pickGroup = 'all';
+        const byGroup = pool.filter(c => inGroup(c, post.pickGroup));
+        const pTypes = types.filter(t => byGroup.some(c => c.type === t));
+        if (post.pickType !== 'all' && !pTypes.includes(post.pickType)) post.pickType = 'all';
+        const byType = byGroup.filter(c => inType(c, post.pickType));
+        const colls = [...new Map(byType.map(c => [c.collectionId, c.collectionName])).entries()];
         if (!colls.some(([id]) => id === post.coll)) post.coll = colls.length ? colls[0][0] : '';
-        const shown = pool.filter(c => c.collectionId === post.coll);
-        html += `<select class="select" onchange="post.coll=this.value;renderPost()">${colls.map(([id, name]) =>
+        const shown = byType.filter(c => c.collectionId === post.coll);
+        html += `<div class="chips post-chips">
+            ${chip(post.pickGroup === 'all', 'All', "post.pickGroup='all';renderPost()")}
+            ${pGroups.map(g => chip(post.pickGroup === g, g, `post.pickGroup='${g}';renderPost()`)).join('')}
+            <span class="chip-sep"></span>
+            ${chip(post.pickType === 'all', 'All items', "post.pickType='all';renderPost()")}
+            ${pTypes.map(t => chip(post.pickType === t, escapeHtml(t), `post.pickType='${escapeAttr(t)}';renderPost()`)).join('')}
+          </div>
+          <select class="select" onchange="post.coll=this.value;renderPost()">${colls.map(([id, name]) =>
             `<option value="${escapeAttr(id)}"${id === post.coll ? ' selected' : ''}>${escapeHtml(name)}</option>`).join('')}</select>
-          <div class="hint">Selected ${post.want.length} / 3</div>
+          <div class="hint">Selected ${post.want.length} / 3${post.want.length ? ': ' + post.want.map(k => escapeHtml(k.slice(k.indexOf('|') + 1))).join(', ') : ''}</div>
           <div class="pick-grid">${shown.map(c => {
             const on = post.want.includes(keyOf(c));
             return `<button type="button" class="pick${on ? ' sel' : ''}" onclick="toggleWant(${catalog.indexOf(c)})">
@@ -513,7 +603,7 @@
       html += `<div class="submit-bar">
         <button type="button" class="btn" style="width:100%" onclick="doPost()"${ready && !blocked && !busy ? '' : ' disabled'}>
           ${me.openCount >= me.maxOpen ? '5 open listings reached' : 'Post listing'}</button>
-        <div class="hint" style="text-align:center;margin:8px 0 0">This Coaster is held while the listing is open. You can cancel anytime.</div>
+        <div class="hint" style="text-align:center;margin:8px 0 0">This item is held while the listing is open. You can cancel anytime.</div>
       </div>`;
     }
     el.innerHTML = html;
@@ -550,11 +640,12 @@
       return { collectionId: k.slice(0, i), name: k.slice(i + 1) };
     });
     busy = true; renderPost();
-    const res = await blm48CreateCoasterTrade(username, offer.inventoryId, want);
+    const res = await blm48CreateCoasterTrade(username, offer.inventoryId, want,
+      post.mode === 'any' ? post.wantGroup : null, post.mode === 'any' ? post.wantType : null);
     busy = false;
     if (res && res.status === 'success') {
       toast('Listing posted!');
-      post = { offerKey: null, mode: 'any', want: [], coll: '' };
+      post = NEW_POST();
       await loadAll();
       setTab('board');
     } else {
@@ -581,8 +672,8 @@
   function myOfferHtml(o) {
     const l = o.listing || {};
     const owner = l.owner || {};
-    const note = o.status === 'returned' ? 'Listing closed, your Coaster came back'
-      : o.status === 'declined' ? 'Your Coaster came back' : o.status === 'pending' ? 'Waiting for the owner' : timeAgo(o.closedAt || o.createdAt);
+    const note = o.status === 'returned' ? 'Listing closed, your item came back'
+      : o.status === 'declined' ? 'Your item came back' : o.status === 'pending' ? 'Waiting for the owner' : timeAgo(o.closedAt || o.createdAt);
     return `<div class="listing"><div class="l-head">
         <img class="l-avatar" src="${escapeAttr(owner.img || DEFAULT_AVATAR)}" alt=""${profileLinkAttr(owner.username)} draggable="false">
         <div class="l-owner">Offer to ${escapeHtml(owner.name || '')}</div>${OFFER_TAG[o.status] || ''}</div>
@@ -634,8 +725,11 @@
     }
     me = board.me;
     listings = board.listings || [];
+    types = Array.isArray(board.types) ? board.types : [];
+    if (boardType !== 'all' && !types.includes(boardType)) boardType = 'all';
+    if (!['all', ...GROUPS].includes(boardGroup)) boardGroup = 'all';
     myCoasters = Array.isArray(coasters) ? coasters : [];
-    if (post.offerKey && !myCoasters.some(c => keyOf(c) === post.offerKey)) post = { offerKey: null, mode: 'any', want: [], coll: '' };
+    if (post.offerKey && !myCoasters.some(c => keyOf(c) === post.offerKey)) post = NEW_POST();
     renderQuota();
     renderBoard();
     if (tab === 'post') renderPost();

@@ -16,7 +16,7 @@
     { value: 'majorvote', label: 'Major Vote', kicker: 'MAJOR VOTE' },
     { value: 'theaters', label: 'Theaters & Concerts', kicker: 'THEATER' },
     { value: 'campaign', label: 'Champ Campaign', kicker: 'CAMPAIGN' },
-    { value: 'coaster_trade', label: 'Coaster Trade', kicker: 'TRADE' },
+    { value: 'coaster_trade', label: 'Trading Market', kicker: 'TRADE' },
     { value: 'specialfansday', label: 'Special Fans Day', kicker: 'SPECIAL DAY' },
     { value: 'musicvideo', label: 'Music Video', kicker: 'MUSIC VIDEO' },
     { value: 'fanpost', label: 'Fan Post', kicker: 'FAN POST' },
