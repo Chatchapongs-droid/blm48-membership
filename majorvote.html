@@ -579,6 +579,7 @@
                     EnableGift: c.enableGift,
                     TokenMechanic: c.tokenMechanic,
                     RefundPercent: c.refundPercent,
+                    MinVote: c.minVote,
                     AdminOnly: !!c.adminOnly,
                     ResultsPublished: !!c.resultsPublished,
                     VoteKind: c.voteKind || 'member'
@@ -595,10 +596,13 @@
     }
 
     // =========================================================
-    // 🚪 ป๊อปอัปก่อนเข้ากิจกรรมโหวตที่เปิดอยู่ (ต้องมี Token อย่างน้อย 1 ถึงจะโหวตได้)
+    // 🚪 ป๊อปอัปก่อนเข้ากิจกรรมโหวตที่เปิดอยู่ (ต้องมี Token อย่างน้อยเท่าขั้นต่ำของกิจกรรม เช่น 1 หรือ 0.01)
     // แคมเปญที่ใช้ Gift อย่างเดียว ไม่ต้องผ่านป๊อปอัปนี้ เพราะใช้ Cookie ราคาไม่ตายตัว
     // =========================================================
-    const VOTE_GATE_MIN = 1;
+    function getGateMin(camp) {
+        const m = Number(camp && camp.MinVote);
+        return m > 0 ? Math.round(m * 100) / 100 : 1;   // ไม่ได้ตั้ง = 1 เหมือนเดิม
+    }
     let renderedCampaigns = [];
     let voteGateHref = '';
 
@@ -632,14 +636,16 @@
         const label = tokenType === 'GEToken' ? 'GE Token' : 'BLM48 Token';
         const unit = tokenType === 'GEToken' ? 'GE Token' : 'Token';
         const balance = getGateBalance(tokenType);
-        const enough = balance >= VOTE_GATE_MIN;
+        const minVote = getGateMin(camp);
+        const minTxt = minVote.toLocaleString('en-US', { maximumFractionDigits: 2 });
+        const enough = balance >= minVote;
 
         voteGateHref = event.currentTarget.getAttribute('href');
         const coin = document.getElementById('vote-gate-coin');
         coin.classList.toggle('ge', tokenType === 'GEToken');
         coin.innerHTML = tokenType === 'GEToken' ? '<i class="fa-solid fa-gem"></i>' : '<i class="fa-solid fa-coins"></i>';
-        document.getElementById('vote-gate-title').innerHTML = `To participate,<br>you need to have at least<br>${VOTE_GATE_MIN} ${escapeHtml(label)}`;
-        document.getElementById('vote-gate-required').textContent = `${VOTE_GATE_MIN} ${unit}`;
+        document.getElementById('vote-gate-title').innerHTML = `To participate,<br>you need to have at least<br>${minTxt} ${escapeHtml(label)}`;
+        document.getElementById('vote-gate-required').textContent = `${minTxt} ${unit}`;
         const balEl = document.getElementById('vote-gate-balance');
         balEl.textContent = `${balance.toLocaleString()} ${unit}`;
         balEl.classList.toggle('insufficient', !enough);
