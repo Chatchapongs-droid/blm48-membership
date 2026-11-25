@@ -188,8 +188,6 @@
             box-shadow: 0 0 0 1px rgba(224, 185, 83, 0.45), 0 4px 12px rgba(224, 185, 83, 0.25);
         }
         .item-img { width: 100%; height: 100%; object-fit: contain; display: block; padding: 6px; }
-        /* การ์ด 3D แบบเลเยอร์ (เช่น SSR Emmy Find Your Lucky Leaf) แทนรูปแบนในกระเป๋า */
-        .item-img-wrap blm-card-3d { width: 62%; flex: none; pointer-events: none; }
         /* กดปุ่ม 3D ของไอเทมที่มีการ์ด 3D -> เปิดการ์ดเต็มจอ */
         .card3d-overlay { position: fixed; inset: 0; z-index: 21000; display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: linear-gradient(to bottom, #ececee 0%, #f5f5f6 50%, #ffffff 66%, #ffffff 100%); color: #222;
@@ -705,7 +703,7 @@
         }
     }
 
-    // 🃏 ไอเทมที่มีการ์ด 3D แบบเลเยอร์ (assets/blm-card-3d) โชว์ในกระเป๋าเป็นการ์ด 3D
+    // 🃏 ไอเทมที่มีการ์ด 3D แบบเลเยอร์ (assets/blm-card-3d): กระเป๋ากับหน้าพรีวิวเป็นรูปธรรมดา กดปุ่ม 3D ถึงเห็นการ์ด 3D
     // ส่วนปุ่ม Save ยังบันทึกรูปเดิมของไอเทม (image_url) เหมือนเดิม
     const CARD_3D_ITEMS = [
         { name: 'SSR Emmy Find Your Lucky Leaf',
@@ -966,14 +964,6 @@ function renderInventoryData() {
             `;
             grid.appendChild(card);
             if (isCafeDrinkItem(item)) cupThumbs.push([card.querySelector('.item-img'), item.img]);
-            const card3d = card3DSrcFor(item);
-            if (card3d) {
-                const el = document.createElement('blm-card-3d');
-                el.setAttribute('src', card3d);
-                el.setAttribute('static', '');
-                el.setAttribute('no-flip', '');
-                card.querySelector('.item-img').replaceWith(el);
-            }
         });
 
         section.appendChild(grid);
