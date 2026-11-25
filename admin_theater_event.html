@@ -21,6 +21,7 @@
     <script src="assets/js/admin-photobook-picker.js"></script>
     <script src="assets/js/admin-pin.js"></script>
     <script src="assets/js/theater.js"></script>
+    <script src="assets/js/theater-lucky-stage.js"></script>
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
@@ -490,6 +491,7 @@
 
   // Lucky Draw: prize locks once drawn; draw button only when the prize is saved and every round has closed
   let drawArmed = false;
+  let currentEvent = null;
   function renderLucky(e) {
     const box = document.getElementById('lucky-draw');
     const drawn = !!e.luckyDrawnAt;
@@ -501,7 +503,8 @@
           <div class="title" style="color:#1f7a45"><i class="fa-solid fa-trophy"></i> ผู้โชคดี · สุ่มเมื่อ ${theaterDateTime(e.luckyDrawnAt)}</div>
           ${(e.luckyWinners || []).map(w => `<div class="bk-row"><div class="bk-top"><b>${escapeHtml(w.name || w.username || '-')}</b><span>ที่นั่ง ${escapeHtml(w.seat || '-')}</span></div>
             <div class="bk-sub">${escapeHtml(w.username || '')}${w.isGift ? ' · บัตรที่ ' + escapeHtml(w.buyerName || '') + ' ซื้อให้' : ''} · ${escapeHtml(w.zoneName)} · ${escapeHtml(w.bookingNo)} · ${w.claimed ? '<span style="color:#1f9d55">รับรางวัลแล้ว</span>' : 'ยังไม่กดรับ'}</div></div>`).join('')}
-        </div>`;
+        </div>
+        <button type="button" class="btn-add" style="margin-top:10px" onclick="blm48OpenLuckyStage(currentEvent)"><i class="fa-solid fa-play"></i> เปิดหน้าจอสุ่ม (ย้อนดูผล)</button>`;
       return;
     }
     let msg = '';
@@ -511,20 +514,26 @@
     box.innerHTML = msg
       ? `<div class="hint" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> ${msg}</div>`
       : `<button type="button" class="btn-primary" id="btn-draw" style="margin-top:12px;width:100%" onclick="drawLucky()"><i class="fa-solid fa-clover"></i> สุ่มผู้โชคดี</button>
-         <div class="hint">ถ้าแก้รางวัล ให้กดบันทึกก่อนสุ่ม</div><div class="hint" id="draw-msg" style="color:#d64545"></div>`;
+         <div class="hint">กดแล้วจะเปิดหน้าจอสุ่มเต็มจอ (แชร์หน้าจอตอนไลฟ์ได้) ผลสุ่มออกตอนกด "เริ่มสุ่ม" ในหน้าจอนั้น · ถ้าแก้รางวัล ให้กดบันทึกก่อนสุ่ม</div><div class="hint" id="draw-msg" style="color:#d64545"></div>`;
   }
 
   async function drawLucky() {
     const btn = document.getElementById('btn-draw');
-    if (!drawArmed) { drawArmed = true; btn.innerHTML = 'กดอีกครั้งเพื่อยืนยันการสุ่ม (สุ่มได้ครั้งเดียว)'; return; }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสุ่ม';
-    const res = await blm48AdminDrawTheaterLucky(user.username, Number(eventId));
+    if (!drawArmed) { drawArmed = true; btn.innerHTML = 'กดอีกครั้งเพื่อเปิดหน้าจอสุ่ม (สุ่มได้ครั้งเดียว)'; return; }
     drawArmed = false;
-    if (res && res.status === 'success') { loadEvent(); return; }
-    btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-clover"></i> สุ่มผู้โชคดี';
-    document.getElementById('draw-msg').textContent = (res && res.message) || 'สุ่มไม่สำเร็จ';
+    // หน้าจอสุ่ม: ผลสุ่มมาจากเซิร์ฟเวอร์ตอนกด "เริ่มสุ่ม" แล้วแอนิเมชันค่อยวิ่งไปหยุดที่ที่นั่งผู้โชคดี
+    blm48OpenLuckyStage(currentEvent, {
+      draw: async () => {
+        const res = await blm48AdminDrawTheaterLucky(user.username, Number(eventId));
+        if (!res || res.status !== 'success') throw new Error((res && res.message) || 'สุ่มไม่สำเร็จ');
+        const fresh = await blm48AdminGetTheaterEvent(user.username, Number(eventId));
+        const winners = (fresh && fresh.event && fresh.event.luckyWinners) || [];
+        if (!winners.length) throw new Error('สุ่มแล้ว แต่โหลดรายชื่อผู้โชคดีไม่ได้ ปิดหน้าจอแล้วดูในหน้านี้');
+        return winners;
+      },
+      onClose: () => loadEvent()
+    });
   }
 
   async function cancelEvent() {
@@ -551,6 +560,7 @@
     const res = await blm48AdminGetTheaterEvent(user.username, Number(eventId));
     if (!res || res.status !== 'success') { showMsg((res && res.message) || 'โหลดไม่สำเร็จ'); return; }
     const e = res.event;
+    currentEvent = e;
     document.getElementById('page-title').textContent = e.title;
     setCover(e.coverUrl);
     document.getElementById('f-title').value = e.title || '';
