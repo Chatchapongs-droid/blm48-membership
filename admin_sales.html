@@ -315,7 +315,15 @@
       const preorderCard = renderSalesCard('fa-box', 'Pre-order', '', preorderItems,
         'ยังไม่มีคำสั่งซื้อ', 'รวมทั้งหมด', `${Number(d.preorder?.totals?.tokenRevenue || 0).toLocaleString()} Token`);
 
-      tokenGrid.innerHTML = cafeCard + gachaCard + preorderCard;
+      // Pre-order Collection: ยอดสั่งจากตะกร้า (จ่าย Token ตอน checkout) นับทั้งที่ส่งแล้วและรอส่ง / ไม่นับซ้ำใน Official Merchandise
+      const pcItems = rankRows((d.preorderCollections?.items || []).map(it =>
+        ({ args: [it.name, `${Number(it.orders || 0).toLocaleString()} ออเดอร์ · ${Number(it.buyers || 0).toLocaleString()} คน · ${Number(it.waitingDraws) > 0 ? 'รอจัดส่ง' : 'จัดส่งแล้ว'}`,
+            it.coverImage, it.draws, 'สั่งแล้ว', it.tokenRevenue, 'Token'], revenue: it.tokenRevenue })));
+      const pcCard = renderSalesCard('fa-box-open', 'Pre-order Collection', '', pcItems,
+        'ยังไม่มีคำสั่งซื้อ', `รวม ${Number(d.preorderCollections?.totals?.orders || 0).toLocaleString()} ออเดอร์`,
+        `${Number(d.preorderCollections?.totals?.tokenRevenue || 0).toLocaleString()} Token`);
+
+      tokenGrid.innerHTML = cafeCard + gachaCard + pcCard + preorderCard;
 
       const giftWalletItems = rankRows((d.giftsWallet?.items || []).map(it =>
         ({ args: [it.name, it.tier, it.imageUrl, it.qtySold, 'ชิ้น', it.cookieRevenue, 'Cookie'], revenue: it.cookieRevenue, extra: { giftId: it.giftId } })));

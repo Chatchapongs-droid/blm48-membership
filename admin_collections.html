@@ -60,6 +60,12 @@
         .search:focus { outline: none; border-color: #ffc107; box-shadow: 0 0 0 3px rgba(255, 193, 7, .22); }
         .c-when .fa-clock { margin-right: 2px; }
         .ssr { font-weight: 700; color: #b8860b; }
+        .pill.pre { background: #f3e8ff; color: #7b3fc4; }
+        /* ยอดสั่งซื้อ Pre-order ของคอลเลกชัน */
+        .c-pre { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; padding: 7px 10px; border-radius: 10px; background: #faf6ff; font-size: 12px; color: #555; }
+        .c-pre b { color: #333; font-weight: 700; }
+        .c-pre .wait { color: #7b3fc4; font-weight: 700; }
+        .c-pre .done { color: #1a7f45; font-weight: 700; }
 
         .fab-create {
             position: fixed; right: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 200;
@@ -133,17 +139,29 @@
     else if (st === 'ended') when = 'Ended ' + fmtDate(c.saleEndAt);
     else if (st === 'draft') when = 'Not on sale yet · tap to continue setting up';
     const cover = c.coverImage ? `style="background-image:url('${escapeAttr(c.coverImage)}')"` : '';
+    // Pre-order: ยอดสั่งซื้อจากตะกร้า (ตัด Token ตอน checkout แล้ว) จนกว่าแอดมินจะกดจัดส่ง
+    const p = c.preorder;
+    const preHtml = p ? `
+          <div class="c-pre">
+            <span><b>${fmt(p.orders)}</b> orders</span>
+            <span><b>${fmt(p.buyers)}</b> buyers</span>
+            <span><b>${fmt(p.draws)}</b> draws${Number(c.cardsPerDraw) > 1 ? ` (${fmt(p.cards)} cards)` : ''}</span>
+            <span><i class="fa-solid fa-coins"></i> <b>${fmt(p.tokens)}</b> Token</span>
+            ${p.waitingDraws > 0 ? `<span class="wait"><i class="fa-regular fa-clock"></i> ${fmt(p.waitingDraws)} draws waiting to ship</span>`
+              : (p.orders ? '<span class="done"><i class="fa-solid fa-check"></i> Shipped</span>' : '')}
+          </div>` : '';
+    const soldTxt = p ? `${fmt(p.draws)} ordered` : `${fmt(c.sold)} sold`;
     return `
       <a class="c-row ${st}" href="admin_collection?id=${encodeURIComponent(c.collectionId)}">
         <div class="c-cover" ${cover}>${c.coverImage ? '' : '<i class="fa-solid fa-box-open"></i>'}</div>
         <div class="c-info">
           <div class="c-name">${escapeHtml(c.name || c.collectionId)}</div>
           <div class="c-sub">
-            <span class="pill ${st}">${STATES[st] || st}</span>${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> Low stock</span>' : ''}
+            <span class="pill ${st}">${STATES[st] || st}</span>${c.isPreorder ? '<span class="pill pre">Pre-order</span>' : ''}${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> Low stock</span>' : ''}
             ${c.group && c.group !== 'BLM48' ? `<span class="pill grp">${c.group === 'Both' ? 'BLM48 + NPT48' : escapeHtml(c.group)}</span>` : ''}
             <span class="c-price"><i class="fa-solid fa-coins"></i> ${fmt(c.costTokens)}${c.allowX5 ? ` · x5 ${fmt(c.costTokensX5)}` : ''}</span>
           </div>
-          <div class="c-when">${c.isLucky ? 'Lucky Box' : `${fmt(c.itemCount)} cards${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''} · ${fmt(c.stock)} left · ${fmt(c.sold)} sold`}${when ? '<br>' + when : ''}</div>
+          <div class="c-when">${c.isLucky ? 'Lucky Box' : `${fmt(c.itemCount)} cards${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''} · ${fmt(c.stock)} left · ${soldTxt}`}${when ? '<br>' + when : ''}</div>${preHtml}
         </div>
         <i class="fa-solid fa-chevron-right c-arrow"></i>
       </a>`;
