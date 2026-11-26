@@ -51,6 +51,10 @@
       <div class="form-field"><label>หมวด</label>
         <select id="gf-tier">${TIERS.map(t => `<option value="${t.key}" ${g.tier === t.key ? 'selected' : ''}>${t.label}</option>`).join('')}</select>
       </div>
+      <div class="form-field" id="gf-owner-field"><label>Members Gift (กิ๊ฟประจำตัวของ)</label>
+        <select id="gf-owner"><option value="">Loading...</option></select>
+        <div class="note" style="margin:6px 0 0;">มูลค่าที่แฟนส่งกิ๊ฟนี้จะขึ้นในหน้า Member Value ของเมมเบอร์คนนี้</div>
+      </div>
       <div class="row2">
         <div class="form-field"><label>ราคา (Cookie)</label><input id="gf-cost" type="number" inputmode="numeric" min="1" step="1" value="${g.costCookies ?? ''}"></div>
         <div class="form-field"><label>คะแนนโหวตที่ได้</label><input id="gf-points" type="number" inputmode="numeric" min="0" step="1" value="${g.points ?? ''}"></div>
@@ -74,6 +78,29 @@
         (imageUrl ? `<button type="button" class="btn-mini" data-act="clear">${sticker ? 'ใช้สติ๊กเกอร์เดิม' : 'Remove'}</button>` : '');
       $('gf-img-note').textContent = sticker && !imageUrl ? 'ตอนนี้ใช้สติ๊กเกอร์ในแอป · อัปโหลดรูปหรือวิดีโอเพื่อใช้แทน' : 'PNG พื้นใส ไม่เกิน 5MB หรือวิดีโอ MP4/MOV ไม่เกิน 20MB';
     }
+
+    // เมมเบอร์เจ้าของกิ๊ฟ: แสดงเฉพาะหมวด BLM48 / NPT48 และเลือกได้เฉพาะเมมเบอร์ของวงนั้น
+    const OWNER_GROUP = { MembersDesign: 'BLM48', NPT48Design: 'NPT48' };
+    let members = null;
+    let owner = g.ownerMember || (g.giftId && g.tier !== 'Normal' && window.blm48GiftMemberName ? (window.blm48GiftMemberName(g.giftId) || '') : '');
+    function renderOwner() {
+      const group = OWNER_GROUP[$('gf-tier').value];
+      $('gf-owner-field').style.display = group ? '' : 'none';
+      if (!group || !members) return;
+      const list = members.filter(m => String(m.group_name || '').toUpperCase() === group)
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+      const known = list.some(m => String(m.name).toLowerCase() === owner.toLowerCase());
+      $('gf-owner').innerHTML = '<option value="">- ไม่ระบุ -</option>' +
+        (owner && !known ? `<option value="${escapeAttr(owner)}" selected>${escapeHtml(owner)}</option>` : '') +
+        list.map(m => `<option value="${escapeAttr(m.name)}" ${String(m.name).toLowerCase() === owner.toLowerCase() ? 'selected' : ''}>${escapeHtml(m.name)}${m.status === 'Graduated' ? ' (Graduated)' : ''}</option>`).join('');
+    }
+    $('gf-tier').addEventListener('change', renderOwner);
+    $('gf-owner').addEventListener('change', e => { owner = e.target.value; });
+    blm48AdminGiftOwnerOptions(opts.username).then(res => {
+      members = res && Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
+      renderOwner();
+    }).catch(() => { members = []; renderOwner(); });
+    renderOwner();
 
     $('gf-img-btns').addEventListener('click', e => {
       const act = e.target.closest('[data-act]');
@@ -111,6 +138,7 @@
         active: $('gf-active').checked,
         imageUrl: imageUrl || null
       };
+      f.ownerMember = f.tier === 'Normal' ? '' : (members ? $('gf-owner').value : undefined);
       if (!f.giftName) return setMsg('กรุณากรอกชื่อของขวัญ');
       if (!Number.isInteger(f.costCookies) || f.costCookies < 1) return setMsg('ราคา Cookie ต้องเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไป');
       if (!Number.isInteger(f.points) || f.points < 0) return setMsg('คะแนนโหวตต้องเป็นจำนวนเต็มตั้งแต่ 0 ขึ้นไป');

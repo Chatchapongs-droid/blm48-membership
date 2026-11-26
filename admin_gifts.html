@@ -151,7 +151,8 @@
   const DEFAULT_AVATAR = '/assets/images/default-avatar.png';
   let members = {};
   function giftMember(g) {
-    return g.tier === 'Normal' ? '' : ((window.blm48GiftMemberName && window.blm48GiftMemberName(g.giftId)) || '');
+    // ตั้งในหน้าแก้ไข (gift_catalog.owner_member) ก่อน ไม่มีค่อยใช้แผนที่สติ๊กเกอร์
+    return g.tier === 'Normal' ? '' : (g.ownerMember || (window.blm48GiftMemberName && window.blm48GiftMemberName(g.giftId)) || '');
   }
   function memberHtml(g) {
     const name = giftMember(g);

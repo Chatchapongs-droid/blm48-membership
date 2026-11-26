@@ -1012,8 +1012,13 @@ function blm48AdminListGifts(adminUsername) {
 function blm48AdminSaveGift(adminUsername, giftId, g) {
   return blm48Rpc('admin_save_gift', {
     p_admin_username: adminUsername, p_gift_id: giftId || null, p_gift_name: g.giftName, p_tier: g.tier,
-    p_cost_cookies: g.costCookies, p_points: g.points, p_image_url: g.imageUrl || null, p_active: g.active !== false
+    p_cost_cookies: g.costCookies, p_points: g.points, p_image_url: g.imageUrl || null, p_active: g.active !== false,
+    // ไม่ส่ง ownerMember (undefined) = คงเจ้าของเดิม · '' = ไม่มีเจ้าของ
+    p_owner_member: g.ownerMember === undefined ? null : g.ownerMember
   });
+}
+function blm48AdminGiftOwnerOptions(adminUsername) {
+  return blm48Rpc('admin_gift_owner_options', { p_admin_username: adminUsername });
 }
 function blm48AdminDeleteGift(adminUsername, giftId) {
   return blm48Rpc('admin_delete_gift', { p_admin_username: adminUsername, p_gift_id: giftId });
