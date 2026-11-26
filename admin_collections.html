@@ -28,24 +28,60 @@
         #page-content { display: none; }
         .empty-state, .loading-state { text-align: center; color: #767676; font-size: 13px; padding: 40px 20px; }
 
-        .tools { display: flex; gap: 8px; margin: 0 0 6px; }
-        .search { flex: 1; min-width: 0; padding: 10px 14px; border: 1px solid #eee; border-radius: 10px; font-family: inherit; font-size: 14px; }
-        .chips { display: flex; gap: 6px; margin-bottom: 6px; overflow-x: auto; scrollbar-width: none; margin-right: -12px; padding-right: 12px; }
+        .tools { display: flex; gap: 8px; margin: 0 0 10px; }
+        .search-wrap { flex: 1; min-width: 0; position: relative; }
+        .search-wrap i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #aaa; font-size: 13px; pointer-events: none; }
+        .search { width: 100%; padding: 10px 14px 10px 36px; border: 1px solid #eee; border-radius: 12px; font-family: inherit; font-size: 14px; background: #fafafa; }
+        .chips { display: flex; gap: 6px; margin-bottom: 4px; overflow-x: auto; scrollbar-width: none; margin-right: -12px; padding-right: 12px; }
         .chips::-webkit-scrollbar { display: none; }
-        .chip { flex-shrink: 0; border: 1px solid #eee; background: #fff; border-radius: 20px; padding: 5px 12px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #666; cursor: pointer; }
+        .chip { flex-shrink: 0; border: 1px solid #eee; background: #fff; border-radius: 20px; padding: 6px 13px; font-family: inherit; font-size: 12.5px; font-weight: 700; color: #666; cursor: pointer; }
         .chip.active { background: #222; border-color: #222; color: #fff; }
-        .chip .n { font-weight: 600; opacity: .7; margin-left: 3px; }
+        .chip .n { font-weight: 600; opacity: .6; margin-left: 4px; }
 
-        /* แถวคอลเลกชัน -> กดแล้วไปหน้าแก้ไข */
-        a.c-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; color: inherit; }
-        .c-cover { width: 64px; height: 64px; flex: 0 0 64px; border-radius: 12px; background: #fafafa center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 22px; }
+        /* หัวข้อกลุ่มตามสถานะ */
+        .sec-head { display: flex; align-items: center; gap: 8px; margin: 18px 2px 8px; font-size: 12.5px; font-weight: 700; color: #767676; letter-spacing: .3px; }
+        .sec-head .dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+        .sec-head .dot.open { background: #2fb36a; }
+        .sec-head .dot.scheduled { background: #2d5bd1; }
+        .sec-head .dot.draft { background: #f0b400; }
+        .sec-head .dot.soldout { background: #d6304f; }
+        .sec-head .n { color: #aaa; font-weight: 600; }
+
+        /* การ์ดคอลเลกชัน -> กดแล้วไปหน้าแก้ไข */
+        a.c-row { display: block; padding: 12px; margin-bottom: 10px; border: 1px solid #f0f0f0; border-radius: 16px; background: #fff; text-decoration: none; color: inherit; box-shadow: 0 2px 10px rgba(0,0,0,.03); }
+        .c-top { display: flex; align-items: center; gap: 12px; }
+        .c-cover { width: 68px; height: 68px; flex: 0 0 68px; border-radius: 12px; background: #fafafa center/cover no-repeat; display: flex; align-items: center; justify-content: center; color: #ddd; font-size: 22px; }
         .c-row.off .c-cover, .c-row.ended .c-cover { opacity: .55; }
         .c-info { flex: 1; min-width: 0; }
-        .c-name { font-weight: 700; font-size: 15px; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .c-sub { font-size: 12.5px; color: #767676; margin-top: 3px; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
-        .c-price { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: #7a5a00; background: #fff3c4; padding: 1px 8px; border-radius: 20px; font-size: 12px; }
-        .c-when { font-size: 11.5px; color: #767676; margin-top: 3px; }
-        .c-arrow { color: #ccc; }
+        .c-name { font-weight: 700; font-size: 15px; color: #333; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .c-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+        .c-meta { font-size: 12px; color: #767676; margin-top: 5px; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; }
+        .c-meta .price { display: inline-flex; align-items: center; gap: 4px; font-weight: 700; color: #7a5a00; }
+        .c-when { font-size: 11.5px; color: #767676; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #eee; }
+        .c-arrow { color: #ccc; font-size: 13px; }
+        /* สต็อกคงเหลือ: ทั้งหมด / Normal / SSR */
+        .c-stock { margin-top: 10px; border: 1px solid #f0f0f0; border-radius: 12px; overflow: hidden; }
+        .stk-row { display: grid; grid-template-columns: repeat(3, 1fr); }
+        .stk { padding: 7px 4px; text-align: center; min-width: 0; }
+        .stk + .stk { border-left: 1px solid #f0f0f0; }
+        .stk .v { font-size: 14px; font-weight: 700; color: #333; }
+        .stk .l { font-size: 11px; color: #8a8a8a; margin-top: 1px; }
+        .stk.ssr-c .v { color: #b8860b; }
+        .stk.zero .v { color: #d6304f; }
+        .stk.none .v { color: #ccc; }
+        .stk-note { font-size: 11px; color: #7b3fc4; background: #faf8fd; padding: 5px 10px; text-align: center; }
+        /* ยอด Pre-order ของคอลเลกชัน */
+        .c-pre { margin-top: 10px; }
+        .pre-ge { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 12px; border-radius: 12px; background: #eef6ff; margin-bottom: 6px; }
+        .pre-ge .l { font-size: 12.5px; font-weight: 600; color: #4a6a90; }
+        .pre-ge .v { display: inline-flex; align-items: center; gap: 6px; font-size: 17px; font-weight: 700; color: #1d5fb8; }
+        .pre-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .pre-tile { background: #faf8fd; border-radius: 10px; padding: 7px 4px; text-align: center; min-width: 0; }
+        .pre-tile .v { font-size: 14px; font-weight: 700; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pre-tile .l { font-size: 11px; color: #8a8a8a; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pre-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; font-size: 11.5px; color: #767676; }
+        .pre-foot .wait { color: #7b3fc4; font-weight: 700; }
+        .pre-foot .done { color: #1a7f45; font-weight: 700; }
         .pill { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
         .pill.open { background: #e6f9ee; color: #1a7f45; }
         .pill.scheduled { background: #e8f0ff; color: #2d5bd1; }
@@ -57,15 +93,10 @@
         .c-row.draft .c-when { color: #8a6100; }
         a.c-row:active { background: #fafafa; }
         a.c-row:focus-visible, .chip:focus-visible, .fab-create:focus-visible { outline: 2px solid #ffc107; outline-offset: 2px; }
-        .search:focus { outline: none; border-color: #ffc107; box-shadow: 0 0 0 3px rgba(255, 193, 7, .22); }
-        .c-when .fa-clock { margin-right: 2px; }
+        .search:focus { outline: none; border-color: #ffc107; background: #fff; box-shadow: 0 0 0 3px rgba(255, 193, 7, .22); }
+        .c-when i { margin-right: 3px; }
         .ssr { font-weight: 700; color: #b8860b; }
         .pill.pre { background: #f3e8ff; color: #7b3fc4; }
-        /* ยอดสั่งซื้อ Pre-order ของคอลเลกชัน */
-        .c-pre { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; padding: 7px 10px; border-radius: 10px; background: #faf6ff; font-size: 12px; color: #555; }
-        .c-pre b { color: #333; font-weight: 700; }
-        .c-pre .wait { color: #7b3fc4; font-weight: 700; }
-        .c-pre .done { color: #1a7f45; font-weight: 700; }
 
         .fab-create {
             position: fixed; right: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); z-index: 200;
@@ -89,7 +120,7 @@
     <div id="access-denied"><i class="fa-solid fa-lock"></i><br>This page is for Admin accounts only</div>
     <div id="page-content">
         <div class="tools">
-            <input id="search" class="search" type="search" placeholder="Search collection..." oninput="render()">
+            <div class="search-wrap"><i class="fa-solid fa-magnifying-glass"></i><input id="search" class="search" type="search" placeholder="Search collection..." oninput="render()"></div>
         </div>
         <div class="chips" id="chips"></div>
         <div id="col-list"><div class="loading-state"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
@@ -135,35 +166,53 @@
     const st = stateOf(c);
     let when = '';
     if (st === 'scheduled') when = '<i class="fa-regular fa-clock"></i> Opens ' + fmtDate(c.saleStartAt);
-    else if (c.saleEndAt && st !== 'ended') when = 'Ends ' + fmtDate(c.saleEndAt);
+    else if (c.saleEndAt && st !== 'ended') when = '<i class="fa-regular fa-clock"></i> Ends ' + fmtDate(c.saleEndAt);
     else if (st === 'ended') when = 'Ended ' + fmtDate(c.saleEndAt);
-    else if (st === 'draft') when = 'Not on sale yet · tap to continue setting up';
+    else if (st === 'draft') when = '<i class="fa-solid fa-pen"></i> Not on sale yet · tap to continue setting up';
     const cover = c.coverImage ? `style="background-image:url('${escapeAttr(c.coverImage)}')"` : '';
-    // Pre-order: ยอดสั่งซื้อจากตะกร้า (ตัด Token ตอน checkout แล้ว) จนกว่าแอดมินจะกดจัดส่ง
+    // Pre-order: ยอดสั่งซื้อ + GE Token โบนัสที่แจกออกไปแล้ว (gePending = ตั้งเวลาแจกตอนจัดส่ง ยังไม่เครดิต)
     const p = c.preorder;
+    const gePending = p ? Number(p.gePending || 0) : 0;
     const preHtml = p ? `
-          <div class="c-pre">
-            <span><b>${fmt(p.orders)}</b> orders</span>
-            <span><b>${fmt(p.buyers)}</b> buyers</span>
-            <span><b>${fmt(p.draws)}</b> draws${Number(c.cardsPerDraw) > 1 ? ` (${fmt(p.cards)} cards)` : ''}</span>
-            <span><i class="fa-solid fa-coins"></i> <b>${fmt(p.tokens)}</b> Token</span>
+        <div class="c-pre">
+          <div class="pre-ge"><span class="l">GE Token issued</span><span class="v"><i class="fas fa-gem"></i>${fmt(p.geIssued)}</span></div>
+          <div class="pre-grid">
+            <div class="pre-tile"><div class="v">${fmt(p.orders)}</div><div class="l">Orders</div></div>
+            <div class="pre-tile"><div class="v">${fmt(p.buyers)}</div><div class="l">Buyers</div></div>
+            <div class="pre-tile"><div class="v">${fmt(p.draws)}</div><div class="l">${Number(c.cardsPerDraw) > 1 ? `Draws · ${fmt(p.cards)} cards` : 'Draws'}</div></div>
+          </div>
+          <div class="pre-foot">
+            <span>${gePending > 0 ? `+${fmt(gePending)} GE Token on shipping` : ''}</span>
             ${p.waitingDraws > 0 ? `<span class="wait"><i class="fa-regular fa-clock"></i> ${fmt(p.waitingDraws)} draws waiting to ship</span>`
-              : (p.orders ? '<span class="done"><i class="fa-solid fa-check"></i> Shipped</span>' : '')}
-          </div>` : '';
-    const soldTxt = p ? `${fmt(p.draws)} ordered` : `${fmt(c.sold)} sold`;
+              : (p.orders ? '<span class="done"><i class="fa-solid fa-check"></i> Shipped</span>' : '<span>No orders yet</span>')}
+          </div>
+        </div>` : '';
+    // Pre-order: จำนวนที่สั่งอยู่ในกล่องสถิติด้านล่างแล้ว ไม่ต้องซ้ำ
+    const meta = c.isLucky ? '<span>Lucky Box</span>'
+      : `<span>${fmt(c.itemCount)} cards${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''}</span>${p ? '' : `<span>${fmt(c.sold)} sold</span>`}`;
+    // สต็อกคงเหลือ แยก Normal (ไม่มีแท็ก SSR) กับ SSR
+    // Pre-order สุ่มการ์ดตอนจัดส่ง สต็อกยังไม่ถูกตัด -> แจ้งจำนวนการ์ดที่จองไว้แล้ว
+    const total = Number(c.stock || 0), ssrLeft = Number(c.ssrStock || 0), normalLeft = Math.max(total - ssrLeft, 0);
+    const reserved = p ? Number(p.waitingDraws || 0) * Math.max(Number(c.cardsPerDraw) || 1, 1) : 0;
+    const stk = (v, l, cls = '') => `<div class="stk ${cls} ${v > 0 ? '' : 'zero'}"><div class="v">${fmt(v)}</div><div class="l">${l}</div></div>`;
+    const stockHtml = c.isLucky ? '' : `
+        <div class="c-stock">
+          <div class="stk-row">${stk(total, 'Total left')}${stk(normalLeft, 'Normal')}${c.ssrCount ? stk(ssrLeft, 'SSR', 'ssr-c') : '<div class="stk none"><div class="v">-</div><div class="l">No SSR</div></div>'}</div>
+          ${reserved > 0 ? `<div class="stk-note">${fmt(reserved)} cards reserved for orders (drawn on shipping)</div>` : ''}
+        </div>`;
     return `
       <a class="c-row ${st}" href="admin_collection?id=${encodeURIComponent(c.collectionId)}">
-        <div class="c-cover" ${cover}>${c.coverImage ? '' : '<i class="fa-solid fa-box-open"></i>'}</div>
-        <div class="c-info">
-          <div class="c-name">${escapeHtml(c.name || c.collectionId)}</div>
-          <div class="c-sub">
-            <span class="pill ${st}">${STATES[st] || st}</span>${c.isPreorder ? '<span class="pill pre">Pre-order</span>' : ''}${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> Low stock</span>' : ''}
-            ${c.group && c.group !== 'BLM48' ? `<span class="pill grp">${c.group === 'Both' ? 'BLM48 + NPT48' : escapeHtml(c.group)}</span>` : ''}
-            <span class="c-price"><i class="fa-solid fa-coins"></i> ${fmt(c.costTokens)}${c.allowX5 ? ` · x5 ${fmt(c.costTokensX5)}` : ''}</span>
+        <div class="c-top">
+          <div class="c-cover" ${cover}>${c.coverImage ? '' : '<i class="fa-solid fa-box-open"></i>'}</div>
+          <div class="c-info">
+            <div class="c-name">${escapeHtml(c.name || c.collectionId)}</div>
+            <div class="c-tags">
+              <span class="pill ${st}">${STATES[st] || st}</span>${c.isPreorder ? '<span class="pill pre">Pre-order</span>' : ''}${lowStock(c) ? '<span class="pill low"><i class="fa-solid fa-triangle-exclamation"></i> Low stock</span>' : ''}${c.group && c.group !== 'BLM48' ? `<span class="pill grp">${c.group === 'Both' ? 'BLM48 + NPT48' : escapeHtml(c.group)}</span>` : ''}
+            </div>
+            <div class="c-meta"><span class="price"><i class="fas fa-coins"></i> ${fmt(c.costTokens)}${c.allowX5 ? ` · x5 ${fmt(c.costTokensX5)}` : ''}</span>${meta}</div>
           </div>
-          <div class="c-when">${c.isLucky ? 'Lucky Box' : `${fmt(c.itemCount)} cards${c.ssrCount ? ` · <span class="ssr">SSR ${fmt(c.ssrCount)}</span>` : ''} · ${fmt(c.stock)} left · ${soldTxt}`}${when ? '<br>' + when : ''}</div>${preHtml}
-        </div>
-        <i class="fa-solid fa-chevron-right c-arrow"></i>
+          <i class="fa-solid fa-chevron-right c-arrow"></i>
+        </div>${stockHtml}${preHtml}${when ? `<div class="c-when">${when}</div>` : ''}
       </a>`;
   }
 
@@ -174,10 +223,14 @@
     // ซ่อนตัวกรองที่ไม่มีรายการ (ยกเว้น All กับอันที่เลือกอยู่)
     document.getElementById('chips').innerHTML = FILTERS.filter(([k]) => k === 'all' || k === filter || count(k)).map(([k, label]) =>
       `<button type="button" class="chip ${k === filter ? 'active' : ''}" onclick="setFilter('${k}')">${label}<span class="n">${count(k)}</span></button>`).join('');
-    const rows = found.filter(c => filter === 'all' || stateOf(c) === filter)
-      .sort((a, b) => ORDER.indexOf(stateOf(a)) - ORDER.indexOf(stateOf(b)));
-    document.getElementById('col-list').innerHTML = rows.length ? rows.map(rowHtml).join('')
-      : `<div class="empty-state">${q || filter !== 'all' ? 'No collections found' : 'No collections yet · tap + to create one'}</div>`;
+    const rows = found.filter(c => filter === 'all' || stateOf(c) === filter);
+    const list = document.getElementById('col-list');
+    if (!rows.length) { list.innerHTML = `<div class="empty-state">${q || filter !== 'all' ? 'No collections found' : 'No collections yet · tap + to create one'}</div>`; return; }
+    // จัดกลุ่มตามสถานะ (เรียงตาม ORDER) พร้อมหัวข้อแต่ละกลุ่ม
+    list.innerHTML = ORDER.map(k => {
+      const g = rows.filter(c => stateOf(c) === k);
+      return g.length ? `<div class="sec-head"><span class="dot ${k}"></span>${STATES[k]}<span class="n">${g.length}</span></div>` + g.map(rowHtml).join('') : '';
+    }).join('');
   }
 
   window.addEventListener('DOMContentLoaded', () => {

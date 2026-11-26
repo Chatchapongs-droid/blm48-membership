@@ -15,7 +15,10 @@ returns jsonb language sql stable security definer set search_path to 'public' a
     'cards', coalesce(sum(oi.variant * oi.quantity), 0)
              * greatest(coalesce((select cards_per_draw from public.collections where collection_id = p_collection_id), 1), 1),
     'tokens', coalesce(sum(oi.line_total), 0),
-    'waitingDraws', coalesce(sum(oi.pending_draws) filter (where oi.status = 'waiting'), 0)
+    'waitingDraws', coalesce(sum(oi.pending_draws) filter (where oi.status = 'waiting'), 0),
+    -- 2026-11-26: GE Token bonus (preorder_bonus.geToken = line total). issued = already credited, pending = timing 'ship' not yet credited
+    'geIssued', coalesce(sum((oi.preorder_bonus->>'geToken')::numeric) filter (where coalesce((oi.preorder_bonus->>'credited')::boolean, false)), 0),
+    'gePending', coalesce(sum((oi.preorder_bonus->>'geToken')::numeric) filter (where not coalesce((oi.preorder_bonus->>'credited')::boolean, false)), 0)
   )
   from public.shop_order_items oi
   join public.shop_orders o on o.id = oi.order_id
@@ -40,7 +43,7 @@ begin
       'costTokens', c.cost_tokens, 'costTokensX5', c.cost_tokens_x5, 'allowX5', coalesce(c.allow_x5, true), 'cardsPerDraw', coalesce(c.cards_per_draw, 1),
       'saleStartAt', c.sale_start_at, 'saleEndAt', c.sale_end_at,
       'isLucky', c.draw_mode = 'lucky',
-      'itemCount', it.n, 'ssrCount', it.ssr, 'stock', it.stock,
+      'itemCount', it.n, 'ssrCount', it.ssr, 'stock', it.stock, 'ssrStock', it.ssr_stock,  -- 2026-11-26: Normal stock = stock - ssrStock
       'sold', (select count(*) from public.sales_log s where s.kind = 'gacha' and s.collection_id = c.collection_id),
       'isPreorder', coalesce(c.is_preorder, false),
       'preorder', case when coalesce(c.is_preorder, false)
@@ -51,7 +54,8 @@ begin
     ) order by coalesce(c.sale_start_at, c.updated_at) desc nulls last)
     from public.collections c
     cross join lateral (
-      select count(*) n, count(*) filter (where i.tag = 'SSR') ssr, coalesce(sum(i.stock), 0) stock
+      select count(*) n, count(*) filter (where i.tag = 'SSR') ssr, coalesce(sum(i.stock), 0) stock,
+             coalesce(sum(i.stock) filter (where i.tag = 'SSR'), 0) ssr_stock
       from public.items i where i.collection_id = c.collection_id
     ) it
     where c.collection_id like 'gacha\_%'
