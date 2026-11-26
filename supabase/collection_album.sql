@@ -2,6 +2,7 @@
 -- ทุกชุดของสะสมจากตาราง items (การ์ด/Coaster/Badge/PhotoCard) แยกเป็น "ชุด" ตาม reward_collection_name
 -- (photo_card + SSR_card ของคอนเสิร์ตรวมเป็นชุดเดียวกัน) พร้อมเลขช่องและจำนวนที่ผู้ใช้มี
 -- ไม่รวม Lucky Box, BLM48 Cafe, Photobook และชุดที่ยังไม่ถึงเวลาเปิดขาย
+-- 2026-11-26 Collection แบบ Pre-order (เช่น Christmas Project 2) ไม่แสดงจนกว่า Admin จะกดจัดส่ง (preorder_shipped_at)
 -- ช่องที่ยังไม่มี: ส่งรูป (หน้าเว็บใส่ฟิลเตอร์เทาดำ) แต่ไม่ส่งชื่อ/ความหายาก
 -- ชุดที่ตรงกับหมวด Pre-order (Concert 2026 Marry Me) ใช้ปกของ Pre-order ที่แพงที่สุด
 CREATE OR REPLACE FUNCTION public.get_collection_album(p_username text)
@@ -20,7 +21,7 @@ AS $function$
   cards as (
     select
       public.reward_collection_name(i.collection_id, i.name) as set_name,
-      c.collection_id, c.category, c.cover_image, c.back_image, c.status, c.sale_start_at,
+      c.collection_id, c.category, c.group_name, c.cover_image, c.back_image, c.status, c.sale_start_at,
       i.id, i.name, i.image_url, i.tag,
       (coalesce(i.tag, '') ilike 'ssr' or i.collection_id = 'SSR_card') as is_ssr,
       coalesce(o.qty, 0) as qty,
@@ -33,6 +34,8 @@ AS $function$
     where coalesce(c.draw_mode, 'normal') <> 'lucky'
       and c.category not in ('BLM48 Cafe', 'BLM48 Photobook')
       and (c.sale_start_at is null or c.sale_start_at <= now())
+      -- pre-order collections stay hidden until the admin ships them
+      and (not coalesce(c.is_preorder, false) or c.preorder_shipped_at is not null)
       -- show only collections that have actually gone on sale (opened day 1 onward)
       and (coalesce(c.status, '') ilike any (array['open', 'active', 'sold out'])
            or c.open_notified_at is not null
@@ -50,6 +53,7 @@ AS $function$
       set_name,
       min(collection_id) filter (where collection_id <> 'SSR_card') as set_key,
       min(category) filter (where collection_id <> 'SSR_card') as category,
+      case when bool_or(group_name = 'Both') then 'Both' when bool_or(group_name = 'NPT48') then 'NPT48' else 'BLM48' end as grp,
       max(cover_image) as cover,
       max(back_image) as back_image,
       (array_agg(image_url order by no) filter (where not is_ssr))[1] as cover_fallback,
@@ -76,7 +80,7 @@ AS $function$
     'key', set_key,
     'name', set_name,
     'category', category,
-    'group', case when category like 'NPT48%' then 'NPT48' else 'BLM48' end,
+    'group', grp,
     -- ชุดที่เป็นสินค้า Pre-order: ใช้ปกของ Pre-order ที่แพงที่สุด
     'cover', coalesce(
       (select pp.cover_image from public.preorder_products pp
