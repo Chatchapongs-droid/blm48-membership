@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Kanit:wght@500;600&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --cream:#fffaea; --pink:#f6bfd0; --pink-d:#e8799c; --brown:#9a6a4b; --brown-d:#7d5038; --mint:#bfeee8; --blue:#c8e6f7; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1200px; height:600px; overflow:hidden; background:var(--cream); }
+  #art { position:relative; width:1200px; height:600px; overflow:hidden; font-family:'Quicksand','Kanit',sans-serif;
+    background-color: var(--cream);
+    background-image:
+      radial-gradient(circle, rgba(191,230,247,.75) 7px, transparent 7.5px),
+      radial-gradient(circle, rgba(200,240,230,.6) 7px, transparent 7.5px);
+    background-size: 64px 64px, 64px 64px; background-position: 0 0, 32px 32px; }
+  .gingham { position:absolute; left:0; right:0; bottom:0; height:150px;
+    background-color:#fff;
+    background-image:
+      linear-gradient(90deg, rgba(246,175,198,.55) 50%, transparent 50%),
+      linear-gradient(rgba(246,175,198,.55) 50%, transparent 50%);
+    background-size: 36px 36px; }
+  .gingham::before { content:''; position:absolute; left:0; right:0; top:-6px; height:6px; background:#f3c2d2; }
+  svg.layer { position:absolute; inset:0; }
+  .abs { position:absolute; }
+
+  /* scalloped logo label */
+  #logo { left:62px; top:96px; width:470px; height:150px; }
+  #logo .t { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; gap:14px;
+    font-family:'Dancing Script',cursive; color:var(--brown-d); font-size:76px; line-height:1; letter-spacing:.5px; padding-top:4px; }
+  .sub { left:40px; width:516px; top:278px; text-align:center; font-family:'Fraunces',serif; font-weight:600; font-size:25px; color:var(--brown-d); }
+  .th { left:40px; width:516px; top:300px; text-align:center; font-family:'Kanit',sans-serif; font-weight:600; font-size:30px; color:var(--pink-d); letter-spacing:.2px; }
+  .ribbon { left:48px; width:500px; top:350px; display:flex; align-items:center; gap:10px; color:var(--brown-d); font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:17px; }
+  .ribbon .ln { flex:1; height:2px; background:var(--brown); border-radius:2px; position:relative; }
+  .ribbon .ln::after { content:''; position:absolute; top:-4px; width:10px; height:10px; background:var(--brown); transform:rotate(45deg); border-radius:2px; }
+  .ribbon .ln.l::after { left:-2px; } .ribbon .ln.r::after { right:-2px; }
+  .ribbon span { padding:0 2px; white-space:nowrap; }
+
+  .heart-txt { position:absolute; width:170px; text-align:center; color:var(--brown-d); }
+  .heart-txt b { display:block; font-family:'Fraunces',serif; font-weight:700; font-size:25px; line-height:1.02; }
+  .heart-txt small { display:block; font-family:'Quicksand',sans-serif; font-weight:700; font-size:12px; margin-top:4px; color:#a07055; }
+
+  .cta { left:450px; top:446px; height:58px; padding:0 30px; border-radius:30px; background:var(--pink-d); color:#fff;
+    font-family:'Fraunces',serif; font-weight:700; font-size:24px; display:flex; align-items:center; gap:10px;
+    box-shadow: 0 0 0 4px #fff, 0 0 0 6px #f3a9c0, 0 8px 16px rgba(232,121,156,.3); }
+  .foot { left:50%; transform:translateX(-50%); bottom:14px; padding:5px 26px; border-radius:20px; background:#fffaf0;
+    border:2px solid var(--brown); color:var(--brown-d); font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:15px; }
+
+  .coaster { position:absolute; width:290px; height:290px; filter: drop-shadow(0 10px 12px rgba(150,90,110,.22)); }
+  .coaster img { width:100%; height:100%; object-fit:contain; }
+  .badge { left:794px; top:90px; width:186px; height:66px; }
+  .badge .t { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:'Dancing Script',cursive; font-size:31px; color:var(--brown-d); }
+  .swap { left:862px; top:302px; width:96px; height:96px; border-radius:50%; background:#fff; box-shadow:0 0 0 5px var(--pink), 0 8px 16px rgba(150,90,110,.25); display:flex; align-items:center; justify-content:center; }
+</style></head>
+<body>
+<div id="art">
+  <div class="gingham"></div>
+
+  <!-- awning + flourishes + ribbon + sparkles (built by script) -->
+  <svg class="layer" id="back" viewBox="0 0 1200 600"></svg>
+
+  <!-- logo -->
+  <div class="abs" id="logo"><svg width="470" height="150" id="logo-svg"></svg><div class="t">Coaster Trade</div></div>
+  <div class="abs sub">Swap, Collect &amp; Complete Your Set</div>
+  <div class="abs ribbon"><span class="ln l"></span><span>♡ how to trade ♡</span><span class="ln r"></span></div>
+
+  <svg class="layer" id="hearts" viewBox="0 0 1200 600"></svg>
+  <div class="heart-txt" style="left:47px; top:438px"><b>Same<br>Rarity</b><small>any collection</small></div>
+  <div class="heart-txt" style="left:259px; top:438px"><b>3 Free<br>Trades</b><small>every day</small></div>
+  <div class="abs cta">Trade Now <svg width="22" height="20" viewBox="0 0 24 22"><path d="M12 21s-9-5.6-9-12a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6.4-9 12-9 12z" fill="#fff"/></svg></div>
+
+  <!-- coasters -->
+  <div class="coaster" style="left:645px; top:155px; transform:rotate(-9deg)"><svg id="c1" width="290" height="290" viewBox="0 0 250 250"></svg></div>
+  <div class="coaster" style="left:885px; top:190px; transform:rotate(8deg)"><svg id="c2" width="290" height="290" viewBox="0 0 250 250"></svg></div>
+  <div class="abs swap"><svg width="54" height="54" viewBox="0 0 48 48" fill="none" stroke="#e8799c" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 18h26"/><path d="M29 10l8 8-8 8"/><path d="M38 31H12"/><path d="M19 23l-8 8 8 8"/></svg></div>
+  <div class="abs badge"><svg width="186" height="66" id="badge-svg"></svg><div class="t">Swap Now!</div></div>
+
+  <svg class="layer" id="front" viewBox="0 0 1200 600"></svg>
+  <div class="abs foot">blm48 membership ©2026</div>
+</div>
+
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+const add = (svg, tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+const back = document.getElementById('back'), front = document.getElementById('front');
+const PINK = '#f6bfd0', CREAM = '#fff4d6', BROWN = '#9a6a4b';
+
+// ⛱ awning: pink/cream stripes with scalloped bottom
+const SW = 100;
+for (let i = 0; i < 12; i++) {
+  const x = i * SW, fill = i % 2 ? CREAM : PINK;
+  add(back, 'rect', { x, y: 0, width: SW, height: 58, fill });
+  add(back, 'path', { d: `M${x} 58 a${SW/2} 26 0 0 0 ${SW} 0 z`, fill });
+}
+add(back, 'path', { d: Array.from({length:12}, (_, i) => `M${i*SW} 58 a${SW/2} 26 0 0 0 ${SW} 0`).join(' '), fill: 'none', stroke: '#eeaabd', 'stroke-width': 2 });
+
+// ★ star helper
+function star(svg, cx, cy, r, fill, rot = 0) {
+  const pts = [];
+  for (let i = 0; i < 10; i++) { const a = (Math.PI / 5) * i - Math.PI / 2 + rot; const rr = i % 2 ? r * 0.48 : r; pts.push([cx + rr * Math.cos(a), cy + rr * Math.sin(a)]); }
+  add(svg, 'polygon', { points: pts.map(p => p.join(',')).join(' '), fill, 'stroke-linejoin': 'round', stroke: fill, 'stroke-width': r * 0.18 });
+}
+function sparkle(svg, cx, cy, r, fill) {
+  add(svg, 'path', { d: `M${cx} ${cy-r} Q${cx+r*0.18} ${cy-r*0.18} ${cx+r} ${cy} Q${cx+r*0.18} ${cy+r*0.18} ${cx} ${cy+r} Q${cx-r*0.18} ${cy+r*0.18} ${cx-r} ${cy} Q${cx-r*0.18} ${cy-r*0.18} ${cx} ${cy-r}z`, fill });
+}
+
+// 🌀 brown flourish with stars (mirrored for right side)
+function flourish(svg, x, y, flip, vflip) {
+  const g = add(svg, 'g', { transform: `translate(${x} ${y}) scale(${flip ? -1 : 1} ${vflip ? -1 : 1})`, fill: 'none', stroke: BROWN, 'stroke-width': 4, 'stroke-linecap': 'round' });
+  add(g, 'path', { d: 'M0 0 C 30 -30, 80 -30, 100 -6 C 112 8, 98 26, 84 18 C 72 11, 80 -2, 90 4' });
+  add(g, 'path', { d: 'M100 -6 C 130 -30, 168 -20, 176 2 C 182 18, 166 28, 156 20 C 148 13, 154 4, 162 8' });
+  add(g, 'path', { d: 'M40 -20 C 44 -38, 60 -46, 70 -40', 'stroke-width': 3 });
+  star(g, 0, 0, 15, BROWN, 0.1); star(g, 196, -14, 12, BROWN, -0.2); star(g, 60, 22, 7, BROWN, 0.3);
+}
+flourish(front, 26, 116, false, false);
+flourish(front, 1174, 116, true, false);
+flourish(front, 26, 574, false, true);
+flourish(front, 1174, 574, true, true);
+
+// 🎀 pink ribbon loops behind the coasters
+const rib = add(back, 'g', { fill: 'none', stroke: '#f7b8cc', 'stroke-width': 24, 'stroke-linecap': 'round', opacity: .8 });
+add(rib, 'path', { d: 'M905 222 C 820 120, 690 140, 700 230 C 708 300, 820 290, 905 222' });
+add(rib, 'path', { d: 'M905 222 C 990 120, 1130 140, 1118 236 C 1108 300, 990 290, 905 222' });
+add(rib, 'path', { d: 'M890 240 C 860 340, 800 420, 760 520', 'stroke-width': 20 });
+add(rib, 'path', { d: 'M922 240 C 960 340, 1040 420, 1090 520', 'stroke-width': 20 });
+add(back, 'circle', { cx: 905, cy: 226, r: 22, fill: '#f6a9c2' });
+
+// 🧁 lace doily under each coaster
+function doily(cx, cy, r) {
+  const n = 22; let d = '';
+  for (let i = 0; i <= n; i++) { const a = (i / n) * Math.PI * 2, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a); d += i ? ` A${r*0.16} ${r*0.16} 0 0 1 ${x} ${y}` : `M${x} ${y}`; }
+  add(back, 'path', { d: d + 'z', fill: '#fff', stroke: '#f3b5c8', 'stroke-width': 3 });
+  add(back, 'circle', { cx, cy, r: r * 0.86, fill: 'none', stroke: '#f3b5c8', 'stroke-width': 2, 'stroke-dasharray': '1 7', 'stroke-linecap': 'round' });
+}
+doily(790, 300, 163); doily(1030, 335, 163);
+
+// 🍓🍒 illustrated mock coasters (no real product art)
+function blobPath(cx, cy, r, n, bump, kind) {
+  // kind 'scallop' = round bumps, 'flower' = rounded petals
+  let d = '';
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2, x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+    d += i ? ` A${bump} ${bump} 0 0 1 ${x} ${y}` : `M${x} ${y}`;
+  }
+  return d + 'z';
+}
+function coasterBase(svg, kind, edge, top, inner, stitch) {
+  const c = 125;
+  const shape = kind === 'flower' ? blobPath(c, c, 92, 8, 44) : blobPath(c, c, 108, 18, 20);
+  add(svg, 'path', { d: shape, fill: edge, transform: 'translate(0 7)' });       // cork/edge thickness
+  add(svg, 'path', { d: shape, fill: top, stroke: edge, 'stroke-width': 2 });
+  add(svg, 'circle', { cx: c, cy: c, r: 84, fill: inner });
+  add(svg, 'circle', { cx: c, cy: c, r: 94, fill: 'none', stroke: stitch, 'stroke-width': 3, 'stroke-dasharray': '7 7', 'stroke-linecap': 'round' });
+  add(svg, 'circle', { cx: c, cy: c, r: 84, fill: 'none', stroke: stitch, 'stroke-width': 2, opacity: .5 });
+  // glossy highlight
+  add(svg, 'path', { d: 'M62 92 A70 70 0 0 1 112 48', fill: 'none', stroke: '#fff', 'stroke-width': 7, 'stroke-linecap': 'round', opacity: .8 });
+}
+function polkaInner(svg, color) {
+  for (let y = 60; y <= 190; y += 26) for (let x = 60; x <= 190; x += 26) {
+    const ox = ((y - 60) / 26) % 2 ? 13 : 0;
+    if (Math.hypot(x + ox - 125, y - 125) < 76) add(svg, 'circle', { cx: x + ox, cy: y, r: 3.2, fill: color });
+  }
+}
+// 1) pink scallop coaster + strawberry
+const c1 = document.getElementById('c1');
+coasterBase(c1, 'scallop', '#e892ad', '#f9c6d6', '#fff7ef', '#ef9fb8');
+polkaInner(c1, '#fde1ea');
+add(c1, 'path', { d: 'M125 182 C 82 164, 70 118, 92 98 C 104 87, 116 90, 125 96 C 134 90, 146 87, 158 98 C 180 118, 168 164, 125 182 z', fill: '#f2738f', stroke: '#d9577a', 'stroke-width': 3, 'stroke-linejoin': 'round' });
+add(c1, 'path', { d: 'M100 112 C 98 128, 104 146, 116 158', fill: 'none', stroke: '#ffb3c4', 'stroke-width': 6, 'stroke-linecap': 'round', opacity: .9 });
+[[108,124],[125,118],[142,124],[115,142],[135,142],[125,160],[100,140],[150,140]].forEach(([x,y]) => add(c1, 'ellipse', { cx: x, cy: y, rx: 2.6, ry: 4, fill: '#ffe38a' }));
+[[-38,'#8fd3a8'],[0,'#7cc79a'],[38,'#8fd3a8']].forEach(([rot, col]) => add(c1, 'path', { d: 'M125 98 C 116 84, 118 74, 125 68 C 132 74, 134 84, 125 98 z', fill: col, transform: `rotate(${rot} 125 98)` }));
+add(c1, 'path', { d: 'M125 70 C 126 62, 130 58, 135 56', fill: 'none', stroke: '#6bb58a', 'stroke-width': 4, 'stroke-linecap': 'round' });
+sparkle(c1, 176, 86, 10, '#ffd36b'); sparkle(c1, 80, 172, 7, '#f6a9c2');
+
+// 2) mint flower coaster + cherries
+const c2 = document.getElementById('c2');
+coasterBase(c2, 'flower', '#86cbbf', '#c6efe6', '#fffaf0', '#8fd6c8');
+polkaInner(c2, '#e3f6f1');
+add(c2, 'path', { d: 'M104 150 C 108 118, 122 96, 146 78', fill: 'none', stroke: '#6bb58a', 'stroke-width': 5, 'stroke-linecap': 'round' });
+add(c2, 'path', { d: 'M150 152 C 148 122, 148 98, 146 78', fill: 'none', stroke: '#6bb58a', 'stroke-width': 5, 'stroke-linecap': 'round' });
+add(c2, 'path', { d: 'M146 78 C 160 62, 182 64, 190 76 C 176 88, 158 88, 146 78 z', fill: '#8fd3a8', stroke: '#6bb58a', 'stroke-width': 2 });
+[[100,162],[152,164]].forEach(([x,y]) => {
+  add(c2, 'circle', { cx: x, cy: y, r: 25, fill: '#ef5d7f', stroke: '#d24468', 'stroke-width': 3 });
+  add(c2, 'ellipse', { cx: x - 9, cy: y - 9, rx: 7, ry: 5, fill: '#fff', opacity: .75, transform: `rotate(-30 ${x-9} ${y-9})` });
+});
+add(c2, 'path', { d: 'M86 92 c -6 -8 -18 -2 -12 8 l 12 12 l 12 -12 c 6 -10 -6 -16 -12 -8 z', fill: '#f6a9c2' });
+sparkle(c2, 176, 186, 9, '#ffd36b'); sparkle(c2, 70, 128, 6, '#bfe6f7');
+
+// ✨ sparkles + pastel stars
+[[640,120,16,'#bfe6f7'],[1150,300,14,'#f6bfd0'],[700,440,12,'#c8f0e6'],[1120,96,10,'#ffe08a'],[600,232,9,'#f6bfd0'],[1010,460,15,'#bfe6f7']].forEach(s => sparkle(front, ...s));
+[[860,500,11,'#ffd6e3'],[1160,420,9,'#c8f0e6'],[650,330,8,'#ffe08a']].forEach(s => star(front, s[0], s[1], s[2], s[3], 0.2));
+
+// ☁ scalloped label shapes
+function scallop(svg, w, h, bump, fill, stroke) {
+  const cx = w / 2, cy = h / 2, rx = w / 2 - bump - 4, ry = h / 2 - bump - 4;
+  const n = Math.round((Math.PI * (rx + ry)) / (bump * 1.55));
+  let d = '';
+  for (let i = 0; i <= n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const x = cx + rx * Math.cos(a), y = cy + ry * Math.sin(a);
+    if (i === 0) d += `M${x} ${y}`; else d += ` A${bump} ${bump} 0 0 1 ${x} ${y}`;
+  }
+  add(svg, 'path', { d: d + 'z', fill, stroke, 'stroke-width': 4, 'stroke-linejoin': 'round' });
+  add(svg, 'ellipse', { cx, cy, rx: rx - 8, ry: ry - 8, fill: 'none', stroke, 'stroke-width': 1.5, 'stroke-dasharray': '2 5', 'stroke-linecap': 'round' });
+}
+scallop(document.getElementById('logo-svg'), 470, 150, 16, '#fffdf6', BROWN);
+scallop(document.getElementById('badge-svg'), 186, 66, 9, '#fffdf6', BROWN);
+const logo = document.getElementById('logo-svg');
+[[52,62,7,'#bfe6f7'],[430,30,6,'#f6bfd0'],[436,124,7,'#ffe08a'],[40,100,6,'#c8f0e6']].forEach(s => star(logo, s[0], s[1], s[2], s[3], 0.2));
+
+// 💗 lace hearts
+const hs = document.getElementById('hearts');
+function heart(cx, cy, s) {
+  const d = `M${cx} ${cy + 62*s} C ${cx - 98*s} ${cy + 4*s}, ${cx - 92*s} ${cy - 70*s}, ${cx - 40*s} ${cy - 70*s} C ${cx - 14*s} ${cy - 70*s}, ${cx} ${cy - 52*s}, ${cx} ${cy - 40*s} C ${cx} ${cy - 52*s}, ${cx + 14*s} ${cy - 70*s}, ${cx + 40*s} ${cy - 70*s} C ${cx + 92*s} ${cy - 70*s}, ${cx + 98*s} ${cy + 4*s}, ${cx} ${cy + 62*s} z`;
+  add(hs, 'path', { d, fill: '#fff', stroke: '#fff', 'stroke-width': 22, 'stroke-linejoin': 'round' });
+  add(hs, 'path', { d, fill: 'none', stroke: '#f3b5c8', 'stroke-width': 22, 'stroke-dasharray': '0.1 13', 'stroke-linecap': 'round' });
+  add(hs, 'path', { d, fill: '#fffaf0', stroke: BROWN, 'stroke-width': 3 });
+  add(hs, 'path', { d, fill: 'none', stroke: BROWN, 'stroke-width': 1.5, 'stroke-dasharray': '2 5', 'stroke-linecap': 'round', transform: `translate(${cx} ${cy}) scale(.88) translate(${-cx} ${-cy})` });
+}
+heart(132, 474, 1.14);
+heart(344, 474, 1.14);
+</script>
+</body></html>

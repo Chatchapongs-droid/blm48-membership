@@ -1,0 +1,10 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<canvas id="c" style="width:100%"></canvas>
+<video id="v" src="ref-clip.mp4" muted playsinline style="display:none"></video>
+<script>
+const v=document.getElementById('v'),c=document.getElementById('c');
+const t=Number(new URLSearchParams(location.search).get('t')||1);
+const crop=(new URLSearchParams(location.search).get('crop')||'0,0,1,1').split(',').map(Number);
+v.addEventListener('loadedmetadata',()=>{v.currentTime=t;});
+v.addEventListener('seeked',()=>{const W=v.videoWidth,H=v.videoHeight;const sx=crop[0]*W,sy=crop[1]*H,sw=crop[2]*W,sh=crop[3]*H;c.width=sw*2;c.height=sh*2;c.getContext('2d').drawImage(v,sx,sy,sw,sh,0,0,sw*2,sh*2);document.title='ok';});
+</script></body></html>

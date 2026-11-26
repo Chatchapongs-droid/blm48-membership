@@ -1,0 +1,17 @@
+<!doctype html><html><body style="margin:0;background:#000">
+<div id="g" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px"></div>
+<video id="v" src="ref-clip.mp4" muted playsinline style="display:none"></video>
+<script>
+const v=document.getElementById('v'),g=document.getElementById('g');
+v.addEventListener('loadedmetadata',async()=>{
+  document.title='dur '+v.duration+' '+v.videoWidth+'x'+v.videoHeight;
+  const N=12;
+  for(let i=0;i<N;i++){
+    v.currentTime=v.duration*(i+0.5)/N; await new Promise(r=>v.onseeked=r);
+    const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
+    c.getContext('2d').drawImage(v,0,0);c.style.width='100%';
+    const w=document.createElement('div');w.style.cssText='position:relative;color:#fff;font:12px sans-serif';
+    w.appendChild(c);const l=document.createElement('span');l.textContent=(v.currentTime).toFixed(1)+'s';l.style.cssText='position:absolute;left:4px;top:2px;background:#000';w.appendChild(l);g.appendChild(w);
+  }
+});
+</script></body></html>

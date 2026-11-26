@@ -1,0 +1,89 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "change_pin.html"
+        ],
+        "createdAt": "2026-10-24T05:46:47.973Z",
+        "reason": "Claude: only shadow is neutral rgba(0,0,0,0.04) top-bar elevation, no colored glow"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "admin_gifts.html"
+        ],
+        "createdAt": "2026-10-29T04:38:04.568Z",
+        "reason": "Claude: flagged colour comes from sitewide glassmorphism.css offset elevation shadow (8-14% alpha) on a white page, not a glow on dark bg"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "admin*.html"
+        ],
+        "createdAt": "2026-10-29T04:45:27.814Z",
+        "reason": "Claude: flagged colour comes from sitewide glassmorphism.css offset elevation shadow (8-14% alpha) on white admin pages, not a glow on dark bg"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "admin_transfer.html"
+        ],
+        "createdAt": "2026-10-29T04:48:05.578Z",
+        "reason": "Claude: #cf-avatar img src is set by JS in showConfirmStep before the confirm card is shown; never visible empty"
+      },
+      {
+        "rule": "pulsing-dot",
+        "value": "*",
+        "files": [
+          "admin_users.html"
+        ],
+        "createdAt": "2026-10-29T04:59:23.574Z",
+        "reason": "Claude: dot marks a real Supabase realtime subscription (blm48SubscribeAdminUsersOverview) that reloads the table on wallet changes; genuinely live"
+      },
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "assets/js/item-3d-viewer.js"
+        ],
+        "createdAt": "2026-11-06T18:40:36.334Z",
+        "reason": "Claude: front <img> in the 3D viewer template gets its src from JS (img.src = opts.image) right after the markup is inserted; not a placeholder"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "transfer_wallet.html"
+        ],
+        "createdAt": "2026-11-22T04:52:44.926Z",
+        "reason": "Claude: only neutral rgba(0,0,0) shadows; black bg is the full-screen QR camera layer"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "transfer.html"
+        ],
+        "createdAt": "2026-11-22T04:54:29.080Z",
+        "reason": "Claude: page bg is #ffffff per sitewide white-bg rule; only warm tone is the Token coin circle #fff1c9 copied from majorvote.html / yellow #ffd75e brand icon"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "transfer_wallet.html"
+        ],
+        "createdAt": "2026-11-22T04:54:29.353Z",
+        "reason": "Claude: page bg is #ffffff per sitewide white-bg rule; only warm tone is the Token coin circle #fff1c9 copied from majorvote.html / yellow #ffd75e brand icon"
+      }
+    ]
+  }
+}

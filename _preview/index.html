@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Birthday preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<base href="/">
+<style>
+  body{margin:0;background:#fff;font-family:'Quicksand','Kanit',sans-serif}
+  .bar{padding:14px 12px;font-weight:700;font-size:18px}
+  #autoBannerContainer{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;background:#ffeef2}
+  #autoBannerContainer > a{flex:0 0 100%;min-width:100%;scroll-snap-align:start;display:block}
+  .note{padding:16px 12px;color:#888;font-size:13px;line-height:1.6}
+  button{margin:0 12px;padding:10px 16px;border-radius:20px;border:0;background:#ffde5b;font-family:inherit;font-weight:700;font-size:14px}
+  #splash-screen{position:fixed;inset:0;display:none;z-index:9999;transition:opacity .5s ease;opacity:1;background:#DCE3DD}
+</style>
+</head>
+<body>
+<div id="app-loading-screen" data-blm48-loading></div>
+<script src="assets/js/blm48-loading.js"></script>
+<div id="splash-screen"><div id="stage" style="position:absolute;inset:0"></div></div>
+<script src="assets/js/bday-splash.js"></script>
+
+<div class="bar">Home (ตัวอย่าง)</div>
+<div id="autoBannerContainer">
+  <a href="#" class="hbd-banner-item" style="aspect-ratio:3/1"></a>
+  <a href="#"><img src="https://lh3.googleusercontent.com/d/1vP3dLFNLlaECTHi6DgxlM_Wk5Jtz-PZO=s1000" referrerpolicy="no-referrer" style="width:100%;display:block" alt=""></a>
+</div>
+<p class="note">ตัวอย่างนี้เปิดในเครื่องเท่านั้น ไม่กระทบแอปจริง<br>ลำดับ: Loading 2.5 วิ → Splash วันเกิด 6 วิ → Banner หน้า Home (เลื่อนแบนเนอร์ได้)</p>
+<button onclick="run()">เล่นใหม่อีกครั้ง</button>
+
+<script>
+  // ?m=bumblebee -> ตัวอย่างเดิม, ค่าเริ่มต้น = Emmy (รูปจริงจาก members.splash_bd_url)
+  const B = new URLSearchParams(location.search).get('m') === 'bumblebee'
+    ? { name: 'Bumblebee', photo: '_preview/bunny.png', birthday: '10-28' }
+    : { name: 'Emmy', photo: 'https://lh3.googleusercontent.com/d/1oJMSeHrI9KPAVuNlSQ8NCx0C_fJ8RbD3=s1000', birthday: '05-06' };
+  BLM48BirthdaySplash.renderBanner(document.querySelector('.hbd-banner-item'), B);
+
+  async function run() {
+    const loader = document.getElementById('app-loading-screen');
+    const splash = document.getElementById('splash-screen');
+    loader.style.display = 'flex'; loader.style.opacity = '1';
+    splash.style.display = 'block'; splash.style.opacity = '1';
+    await new Promise(r => setTimeout(r, 2500));
+    await BLM48BirthdaySplash.render(document.getElementById('stage'), B);
+    loader.style.opacity = '0'; setTimeout(() => loader.style.display = 'none', 500);
+    setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); }, 6000);
+  }
+  run();
+</script>
+</body>
+</html>

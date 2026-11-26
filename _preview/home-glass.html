@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home mockup (glass)</title>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root{
+    --pink:#ff85a2; --pink-strong:#d93a66; --pink-ink:#c92f5e; --gold:#e0a800;
+    --ink:#2b2226; --ink-2:#5e5157; --ink-3:#76686e;
+    --edge:12px;
+    --font:'Quicksand','Kanit',sans-serif;
+
+    /* glass recipe */
+    --g-bg:rgba(255,255,255,.52);
+    --g-bg-strong:rgba(255,255,255,.7);
+    --g-blur:saturate(1.8) blur(22px);
+    --g-border:rgba(255,255,255,.75);
+    --g-shadow:0 10px 30px rgba(180,90,120,.12), 0 1px 0 rgba(255,255,255,.9) inset;
+    --r:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html{background:#fff6f8}
+  body{font-family:var(--font);font-size:14px;color:var(--ink);max-width:480px;margin:0 auto;padding-bottom:120px;overflow-x:hidden;min-height:100vh;background:transparent}
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;border:0;background:none;color:inherit;cursor:pointer}
+
+  /* ===== soft colour backdrop: glass needs something behind it ===== */
+  .mesh{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(180deg,#fff4f7 0%,#fdf2ff 45%,#fff8f0 100%)}
+  .mesh i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.75;animation:drift 18s ease-in-out infinite alternate}
+  .mesh i:nth-child(1){width:320px;height:320px;background:#ffb3c6;top:-80px;left:-90px}
+  .mesh i:nth-child(2){width:280px;height:280px;background:#d9c6ff;top:30%;right:-110px;animation-delay:-6s}
+  .mesh i:nth-child(3){width:300px;height:300px;background:#ffe1b8;bottom:-60px;left:-60px;animation-delay:-12s}
+  .mesh i:nth-child(4){width:200px;height:200px;background:#ffc8dd;top:60%;left:40%;animation-delay:-3s}
+  @keyframes drift{to{transform:translate(30px,40px) scale(1.12)}}
+  @media (prefers-reduced-motion:reduce){.mesh i{animation:none}}
+
+  /* ===== shared glass surface ===== */
+  .glass{position:relative;background:var(--g-bg);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+         border:1px solid var(--g-border);box-shadow:var(--g-shadow);border-radius:var(--r)}
+  /* specular highlight along the top edge */
+  .glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+         background:linear-gradient(180deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,0) 38%)}
+  .glass > *{position:relative}
+
+  /* ===== top navbar (same items as now) ===== */
+  .navbar{position:sticky;top:0;z-index:50;margin:0;padding:10px var(--edge);display:flex;align-items:center;justify-content:space-between;
+          transition:background .25s,box-shadow .25s}
+  .navbar.scrolled{background:rgba(255,255,255,.55);-webkit-backdrop-filter:var(--g-blur);backdrop-filter:var(--g-blur);
+          box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 6px 20px rgba(180,90,120,.08)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:22px}
+  .logo .add{color:var(--pink-strong);font-size:22px}
+  .nav-btns{display:flex;gap:8px}
+  .nav-btns a{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:16px;color:var(--ink-2)}
+  .nav-btns a.glass{border-radius:50%}
+  .nav-btns .dot{position:absolute;top:6px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--pink-strong)}
+
+  .wrap{padding:0 var(--edge)}
+
+  /* ===== Champ banner ===== */
+  .champ{display:flex;align-items:center;gap:12px;padding:16px;margin-top:6px;overflow:hidden;
+         background:linear-gradient(120deg,rgba(255,133,162,.55),rgba(255,214,224,.45));}
+  .champ .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+         background:rgba(255,255,255,.6);color:var(--pink-ink)}
+  .champ .badge i{color:var(--gold)}
+  .champ h3{font-size:20px;margin-top:8px}
+  .champ p{font-size:12px;color:var(--ink-2)}
+  .champ .btn{margin-top:10px;font-size:12px;font-weight:600;padding:7px 12px;border-radius:999px;display:inline-flex;gap:6px;align-items:center}
+  .champ .img{margin-left:auto;width:96px;height:120px;border-radius:16px;flex:0 0 auto;
+         background:linear-gradient(160deg,#fff1cf,#ffd27f 55%,#ffad5c);display:grid;place-items:center;color:#fff;font-size:30px;
+         border:2px solid rgba(255,255,255,.8)}
+
+  /* ===== section title ===== */
+  .sec{display:flex;align-items:center;justify-content:space-between;margin:22px 0 10px;font-size:16px;font-weight:700}
+  .sec a{font-size:13px;font-weight:600;color:var(--ink-2)}
+  .sec a i{font-size:11px;margin-left:3px}
+
+  /* ===== Special Fans Day tracker ===== */
+  .tracker{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;padding:10px}
+  .day{text-align:center;padding:8px 0;border-radius:12px}
+  .day small{display:block;font-size:11px;font-weight:600;color:var(--ink-3)}
+  .day b{font-size:15px}
+  .day.done b{color:var(--pink-ink)}
+  .day.today{background:var(--pink-strong);color:#fff;box-shadow:0 6px 14px rgba(255,92,134,.35)}
+  .day.today small{color:#fff}
+
+  /* ===== Member ranking ===== */
+  .ranking{padding:14px 0 12px}
+  .rank-list{display:flex;gap:14px;overflow-x:auto;padding:0 14px;scrollbar-width:none}
+  .rank-list::-webkit-scrollbar{display:none}
+  .rk{flex:0 0 auto;width:64px;text-align:center;position:relative}
+  .rk .av{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:20px;font-weight:700;
+         border:2.5px solid rgba(255,255,255,.9);box-shadow:0 6px 14px rgba(180,90,120,.18)}
+  .rk .no{position:absolute;top:46px;left:50%;transform:translateX(-50%);min-width:22px;height:22px;border-radius:999px;padding:0 6px;
+         font-size:11px;font-weight:700;display:grid;place-items:center;background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.12)}
+  .rk:nth-child(1) .no{background:#ffd34d}.rk:nth-child(2) .no{background:#e3e3ea}.rk:nth-child(3) .no{background:#f0b78a}
+  .rk p{font-size:12px;font-weight:600;margin-top:12px}
+  .rk span{font-size:11px;color:var(--ink-3)}
+  .members{display:flex;align-items:center;justify-content:space-between;margin:12px 14px 0;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.5)}
+  .members .l{display:flex;align-items:center;gap:10px}
+  .members .ic{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--pink-strong);display:grid;place-items:center;font-size:13px}
+  .members small{display:block;font-size:11px;color:var(--ink-3);font-weight:600}
+  .members b{font-size:15px;color:var(--pink-ink)}
+
+  /* ===== Top Fans ticker ===== */
+  .ticker{display:flex;align-items:center;gap:10px;padding:12px 14px;margin-top:12px;font-weight:700;font-size:14px;border-radius:16px}
+  .ticker .ic{color:var(--gold)}
+  .ticker .avs{margin-left:auto;display:flex}
+  .ticker .avs i{width:26px;height:26px;border-radius:50%;border:2px solid #fff;margin-left:-8px}
+  .ticker .chev{color:var(--ink-3);font-size:13px}
+
+  /* ===== Shop banner ===== */
+  .banner{display:block;margin-top:14px;height:150px;overflow:hidden;padding:0;
+          background:linear-gradient(120deg,#ffd6e0,#e8dcff)}
+  .glass.banner .txt{position:absolute;left:16px;bottom:14px}
+  .banner .txt small{font-size:11px;font-weight:700;color:var(--pink-ink)}
+  .banner .txt b{display:block;font-size:18px}
+  .glass.banner .dots{position:absolute;right:14px;bottom:16px;display:flex;gap:4px}
+  .banner .dots i{width:6px;height:6px;border-radius:999px;background:rgba(255,255,255,.7)}
+  .banner .dots i.on{width:16px;background:#fff}
+
+  /* ===== horizontal cards ===== */
+  .h{display:flex;gap:10px;overflow-x:auto;margin:0 calc(var(--edge)*-1);padding:2px var(--edge) 10px;scroll-padding:0 var(--edge);scroll-snap-type:x mandatory;scrollbar-width:none}
+  .h::-webkit-scrollbar{display:none}
+  .camp{flex:0 0 70%;scroll-snap-align:start;padding:8px;border-radius:18px}
+  .camp .t{aspect-ratio:16/9;border-radius:12px;position:relative}
+  .camp .t span{position:absolute;left:8px;top:8px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.75);
+                -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .camp h4{font-size:13.5px;margin:8px 4px 0}
+  .camp p{font-size:12px;color:var(--ink-3);margin:2px 4px 0}
+  .bar{height:5px;border-radius:5px;background:rgba(255,255,255,.7);margin:8px 4px 4px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,#ffa3bb,#ff5c86)}
+  .mv{flex:0 0 42%;scroll-snap-align:start}
+  .mv .t{aspect-ratio:3/4;border-radius:16px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.8)}
+  .mv .play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;
+            display:grid;place-items:center;color:#fff;background:rgba(255,255,255,.3);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.6)}
+  .mv h4{font-size:13px;margin-top:6px}
+  .mv p{font-size:11.5px;color:var(--ink-3)}
+
+  /* ===== Timeline posts ===== */
+  .filter{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:14px}
+  .post{padding:12px;margin-bottom:14px}
+  .post .hd{display:flex;align-items:center;gap:10px}
+  .post .hd .av{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;border:2px solid #fff}
+  .post .hd b{font-size:14px}
+  .post .hd b i{color:var(--pink-ink);font-size:12px;margin-left:3px}
+  .post .hd small{display:block;font-size:11.5px;color:var(--ink-3)}
+  .post .hd .more{margin-left:auto;color:var(--ink-3)}
+  .post .txt{font-size:13.5px;line-height:1.55;margin:10px 2px}
+  .post .txt .tag{color:#3b6fd8}
+  .post .media{border-radius:14px;aspect-ratio:4/5;display:grid;place-items:center;color:#ffffffcc;font-size:40px;position:relative;overflow:hidden}
+  .post .media .big{position:absolute;font-size:84px;color:#fff;opacity:0;transform:scale(0);filter:drop-shadow(0 6px 16px rgba(0,0,0,.2))}
+  .post .media .big.pop{animation:pop .8s ease forwards}
+  @keyframes pop{20%{transform:scale(1.15);opacity:1}35%{transform:scale(.95)}70%{opacity:1}100%{transform:scale(1);opacity:0}}
+  .post .acts{display:flex;gap:8px;margin-top:10px}
+  .post .acts button{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;
+                     background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.8)}
+  .post .acts button i{font-size:15px}
+  .post .acts .liked{color:var(--pink-ink)}
+  .post .acts .liked i{color:var(--pink-strong)}
+  .post .acts .gift{margin-left:auto;background:linear-gradient(120deg,#e0507a,#c92f5e);color:#fff;border-color:transparent}
+  .bump{animation:bump .35s ease}
+  @keyframes bump{50%{transform:scale(1.3)}}
+
+  /* ===== bottom tab bar: floating liquid-glass ===== */
+  .tabbar{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(12px + env(safe-area-inset-bottom));
+          width:min(calc(100% - 24px),456px);height:66px;border-radius:999px;display:flex;align-items:center;justify-content:space-around;padding:0 8px;
+          background:rgba(255,255,255,.5)}
+  .tab{width:56px;height:50px;border-radius:999px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--ink-3);
+       font-size:19px;transition:.2s}
+  .tab span{font-size:11px;font-weight:600}
+  .tab.on{color:var(--pink-ink);background:rgba(255,255,255,.8);box-shadow:0 4px 12px rgba(180,90,120,.15)}
+  .tab .me{width:24px;height:24px;border-radius:50%;overflow:hidden;border:2px solid #fff}
+  .tab .me img{width:100%;height:100%;object-fit:cover}
+  .tab .badge{position:absolute;margin:-14px 0 0 18px;min-width:16px;height:16px;border-radius:8px;background:var(--pink-strong);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 4px}
+
+  /* placeholder fills */
+  .g1{background:linear-gradient(160deg,#ffd6e0,#ff9fb8 55%,#ff6f96)}
+  .g2{background:linear-gradient(160deg,#e5dcff,#b7a2ff 55%,#8f78ff)}
+  .g3{background:linear-gradient(160deg,#d9f3ff,#9fd5ff 55%,#6fb0ff)}
+  .g4{background:linear-gradient(160deg,#fff1cf,#ffd27f 55%,#ffad5c)}
+  .g5{background:linear-gradient(160deg,#dbffef,#93e8c6 55%,#55c79f)}
+  .g6{background:linear-gradient(160deg,#ffe0f5,#f3a6e0 55%,#d56fc6)}
+
+  .note{margin-top:20px;padding:12px;font-size:12px;color:var(--ink-2);line-height:1.6;border-radius:16px}
+</style>
+</head>
+<body>
+<div class="mesh" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<nav class="navbar" id="navbar">
+  <div class="logo"><a class="add" href="#" title="Create post"><i class="fas fa-plus-circle"></i></a>Discover</div>
+  <div class="nav-btns">
+    <a href="#" class="glass" title="Missions"><i class="fas fa-list-check"></i><span class="dot"></span></a>
+    <a href="#" class="glass" title="Theaters"><i class="fas fa-ticket"></i></a>
+    <a href="#" class="glass" title="Shop"><i class="fas fa-bag-shopping"></i></a>
+    <a href="#" class="glass" title="Search"><i class="fas fa-magnifying-glass"></i></a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <a href="#" class="champ glass">
+    <div>
+      <span class="badge"><i class="fas fa-crown"></i>Champ of the Month</span>
+      <h3>Mewnich</h3>
+      <p>November 2026</p>
+      <span class="btn glass">view special thanks <i class="fas fa-chevron-right"></i></span>
+    </div>
+    <div class="img"><i class="fas fa-crown"></i></div>
+  </a>
+
+  <div class="sec"><span>Special Fans Day</span><a href="#">View All<i class="fas fa-chevron-right"></i></a></div>
+  <div class="tracker glass" id="tracker"></div>
+
+  <div class="sec"><span>Member Ranking</span><a href="#">View All<i class="fas fa-chevron-right"></i></a></div>
+  <div class="ranking glass">
+    <div class="rank-list" id="rank"></div>
+    <div class="members">
+      <div class="l"><span class="ic"><i class="fas fa-users"></i></span><div><small>สมาชิกทั้งหมด</small><span style="font-size:11px;color:var(--ink-3)">Official Membership</span></div></div>
+      <div><b>1,248</b> <small style="display:inline">คน</small></div>
+    </div>
+  </div>
+
+  <a href="#" class="ticker glass">
+    <i class="fas fa-trophy ic"></i>Top Fans
+    <span class="avs"><i class="g1"></i><i class="g2"></i><i class="g3"></i></span>
+    <i class="fas fa-chevron-right chev"></i>
+  </a>
+
+  <a href="#" class="banner glass">
+    <div class="txt"><small>NEW IN SHOP</small><b>Winter Collection</b></div>
+    <div class="dots"><i class="on"></i><i></i><i></i></div>
+  </a>
+
+  <div class="sec"><span>Campaign</span><a href="#">View All<i class="fas fa-chevron-right"></i></a></div>
+  <div class="h">
+    <a href="#" class="camp glass"><div class="t g1"><span>3 days left</span></div><h4>Birthday Billboard for Pim</h4><p>12,480 / 20,000 Cookie</p><div class="bar"><i style="width:62%"></i></div></a>
+    <a href="#" class="camp glass"><div class="t g2"><span>New</span></div><h4>Theater Stage Flower Stand</h4><p>3,100 / 10,000 Cookie</p><div class="bar"><i style="width:31%"></i></div></a>
+    <a href="#" class="camp glass"><div class="t g5"><span>Ends today</span></div><h4>Single Release Support</h4><p>18,900 / 20,000 Cookie</p><div class="bar"><i style="width:94%"></i></div></a>
+  </div>
+
+  <div class="sec"><span>Music Video</span><a href="#">View All<i class="fas fa-chevron-right"></i></a></div>
+  <div class="h">
+    <a href="#" class="mv"><div class="t g6"><span class="play"><i class="fas fa-play"></i></span></div><h4>Koisuru Fortune Cookie</h4><p>2.1K views</p></a>
+    <a href="#" class="mv"><div class="t g3"><span class="play"><i class="fas fa-play"></i></span></div><h4>Heavy Rotation</h4><p>1.4K views</p></a>
+    <a href="#" class="mv"><div class="t g4"><span class="play"><i class="fas fa-play"></i></span></div><h4>Shonichi</h4><p>980 views</p></a>
+  </div>
+
+  <div class="sec"><span>Timeline</span><button class="filter glass" title="Filter members"><i class="fas fa-sliders"></i></button></div>
+  <div id="feed"></div>
+
+  <div class="note glass"><b>Mockup only.</b> เค้าโครงเรียงตามหน้า Home เดิม เปลี่ยนเฉพาะหน้าตาให้เป็นกระจกโปร่งแสง รูปเป็นสีแทนรูปจริง ลองดับเบิลแทปรูปโพสต์ได้</div>
+</div>
+
+<nav class="tabbar glass">
+  <a href="#" class="tab on"><i class="fas fa-house"></i><span>Home</span></a>
+  <a href="#" class="tab"><i class="fas fa-star"></i><span>Fan Post</span></a>
+  <a href="#" class="tab"><i class="fas fa-crown"></i><span>Vote</span></a>
+  <a href="#" class="tab"><i class="fas fa-bell"></i><b class="badge">3</b><span>Alerts</span></a>
+  <a href="#" class="tab"><span class="me"><img src="../assets/images/default-avatar.png" alt=""></span><span>Profile</span></a>
+</nav>
+
+<script>
+  var G=['g1','g2','g3','g4','g5','g6'];
+  document.getElementById('tracker').innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(function(d,i){
+    return '<div class="day'+(i<3?' done':'')+(i===3?' today':'')+'"><small>'+d+'</small><b>'+(17+i)+'</b></div>';}).join('');
+
+  var rank=[['Pim','12.4K'],['Mewnich','11.9K'],['Fahsai','10.2K'],['Jane','8.7K'],['Namwan','7.1K'],['Kaimook','6.5K']];
+  document.getElementById('rank').innerHTML=rank.map(function(r,i){
+    return '<a href="#" class="rk"><div class="av '+G[i%6]+'">'+r[0][0]+'</div><span class="no">'+(i+1)+'</span><p>'+r[0]+'</p><span>'+r[1]+' pts</span></a>';}).join('');
+
+  var posts=[
+    {m:'Pim',t:'2 ชม.',l:1284,c:86,x:'ขอบคุณทุกคนที่มาเจอกันที่ Theater วันนี้นะ <span class="tag">#BLM48Theater</span>'},
+    {m:'Mewnich',t:'5 ชม.',l:932,c:41,x:'ชุดใหม่สำหรับ Single ถัดไป ใครชอบสีไหนบอกหน่อย'},
+    {m:'Fahsai',t:'เมื่อวาน',l:2051,c:203,x:'Live คืนนี้ 2 ทุ่ม มาคุยกันนะ'}];
+  var feed=document.getElementById('feed');
+  feed.innerHTML=posts.map(function(p,i){
+    return '<article class="post glass"><div class="hd"><div class="av '+G[i%6]+'">'+p.m[0]+'</div><div><b>'+p.m+'<i class="fas fa-circle-check"></i></b><small>'+p.t+'</small></div><button class="more"><i class="fas fa-ellipsis"></i></button></div>'+
+      '<div class="txt">'+p.x+'</div>'+
+      '<div class="media '+G[(i+2)%6]+'"><i class="far fa-image"></i><i class="fas fa-heart big"></i></div>'+
+      '<div class="acts"><button class="like"><i class="far fa-heart"></i><em style="font-style:normal">'+p.l.toLocaleString()+'</em></button>'+
+      '<button><i class="far fa-comment"></i>'+p.c+'</button><button class="gift"><i class="fas fa-gift"></i>Gift</button></div></article>';}).join('');
+
+  function like(b,on){
+    if(on===b.classList.contains('liked'))return;
+    var ic=b.querySelector('i'),em=b.querySelector('em'),n=+em.textContent.replace(/,/g,'');
+    b.classList.toggle('liked',on); ic.className=on?'fas fa-heart':'far fa-heart';
+    em.textContent=(n+(on?1:-1)).toLocaleString(); ic.classList.remove('bump'); void ic.offsetWidth; ic.classList.add('bump');
+  }
+  feed.addEventListener('click',function(e){var b=e.target.closest('.like'); if(b) like(b,!b.classList.contains('liked'));});
+  feed.querySelectorAll('.media').forEach(function(m){
+    var last=0; m.addEventListener('pointerup',function(){var n=Date.now();
+      if(n-last<300){var h=m.querySelector('.big');h.classList.remove('pop');void h.offsetWidth;h.classList.add('pop');like(m.closest('.post').querySelector('.like'),true);last=0;} else last=n;});
+  });
+
+  var nav=document.getElementById('navbar');
+  window.addEventListener('scroll',function(){nav.classList.toggle('scrolled',scrollY>8);},{passive:true});
+</script>
+</body>
+</html>
