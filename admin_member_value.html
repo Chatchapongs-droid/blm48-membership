@@ -137,7 +137,7 @@
       if (seq !== reqSeq) return;
       if (error) throw error;
       if (!data || data.status !== 'success') { list.innerHTML = `<div class="empty-state">${escapeHtml((data && data.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div>`; return; }
-      rows = (data.members || []).map(r => Object.assign(r, Object.fromEntries(['total', 'merchTokens', 'cookieTokens', 'voteTokens', 'theaterTokens', 'voteGe', 'cookies', 'giftCookies', 'refundCookies', 'merchQty', 'spenders'].map(k => [k, Number(r[k]) || 0]))));
+      rows = (data.members || []).map(r => Object.assign(r, Object.fromEntries(['total', 'merchTokens', 'cookieTokens', 'voteTokens', 'theaterTokens', 'voteGe', 'cookies', 'giftCookies', 'refundCookies', 'ownGiftCookies', 'ownGiftQty', 'ownGiftTokens', 'merchQty', 'spenders'].map(k => [k, Number(r[k]) || 0]))));
       render();
     } catch (e) {
       if (seq !== reqSeq) return;
@@ -181,6 +181,7 @@
           <div class="d-line"><span><i class="dot c-vote"></i> โหวตด้วย Token</span><span>${fmt(r.voteTokens)} Token</span></div>
           <div class="d-line"><span><i class="dot c-theater"></i> Theater</span><span>${fmt(r.theaterTokens, 1)} Token</span></div>
           ${r.voteGe ? `<div class="d-line"><span><i class="fa-solid fa-gem" style="font-size:11px"></i> โหวตด้วย GE Token (ไม่รวมในยอด)</span><span>${fmt(r.voteGe)} GE</span></div>` : ''}
+          ${r.ownGiftCookies ? `<div class="d-line"><span><i class="fa-solid fa-gift" style="font-size:11px"></i> กิ๊ฟประจำตัวที่แฟนส่ง ${fmt(r.ownGiftQty)} ชิ้น (ไม่รวมในยอด)</span><span>${fmt(r.ownGiftCookies)} Cookie · ${fmt(r.ownGiftTokens, 1)} Token</span></div>` : ''}
         </div>
       </div>`;
     }).join('') : '<div class="empty-state">ไม่มีเมมเบอร์ในกลุ่มนี้</div>';
