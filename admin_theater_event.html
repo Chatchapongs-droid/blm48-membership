@@ -276,6 +276,19 @@
   }
 
   const PB_TYPE = 'BLM48 Photobook';
+  // ประเภทไอเทม (= หมวดใน Inventory) ให้เลือกจาก dropdown แทนการพิมพ์เอง
+  const ITEM_TYPES = [
+    ['PhotoCard', 'PhotoCard'], ['PhotoSet', 'PhotoSet'], ['Photo', 'Photo'], ['Poster', 'Poster'],
+    ['Badge', 'Badge'], ['BLM48 SSR Photo', 'SSR Photo'], ['Thank You Card', 'Thank You Card'],
+    ['Merchandise Official', 'Merchandise Official'], ['', 'ไม่ระบุ (ใช้ค่าเริ่มต้นของระบบ)']
+  ];
+  // ไอเทมใหม่เริ่มที่ PhotoCard · ไอเทมเดิมที่ประเภทไม่อยู่ในรายการ จะเพิ่มเป็นตัวเลือกให้ ไม่ให้ค่าเดิมหาย
+  function itemTypeOptions(cur, isNew) {
+    cur = cur == null ? '' : String(cur);
+    if (isNew && !cur) cur = 'PhotoCard';
+    const list = ITEM_TYPES.some(([v]) => v === cur) ? ITEM_TYPES : [[cur, cur], ...ITEM_TYPES];
+    return list.map(([v, t]) => `<option value="${escapeHtml(v)}" ${v === cur ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('');
+  }
   // ประเภทรางวัล "Photobook" (ต้องเลือกประเภทนี้ก่อนจึงมีปุ่มเลือกเล่ม) บันทึกเป็น kind 'item' + itemType 'BLM48 Photobook' + รูปปก
   // (ระบบผูกเล่มด้วยรูปปก → เปิดอ่าน 3D ใน Inventory ได้)
   function rewardRowHtml(rw) {
@@ -292,7 +305,7 @@
         <div class="rw-fields">
           <div class="rw-item" style="display:${ui === 'item' ? 'grid' : 'none'};gap:8px">
             <input class="rw-label" placeholder="ชื่อไอเทม เช่น Photo Card Jew" value="${isPb ? '' : escapeHtml(rw.label || '')}">
-            <input class="rw-type" placeholder="ประเภท เช่น PhotoCard / Poster" value="${isPb ? '' : escapeHtml(rw.itemType || '')}">
+            <select class="rw-type" aria-label="ประเภทไอเทม">${itemTypeOptions(isPb ? '' : rw.itemType, !rw.label)}</select>
             <div class="rw-img-row">
               <img class="rw-thumb" alt="" src="${isPb ? '' : escapeHtml(rw.imageUrl || '')}" style="display:${!isPb && rw.imageUrl ? 'block' : 'none'}">
               <input class="rw-img" placeholder="ลิงก์รูป หรือกดอัปโหลด" value="${isPb ? '' : escapeHtml(rw.imageUrl || '')}" oninput="syncRewardThumb(this)">
