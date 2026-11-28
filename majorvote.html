@@ -660,7 +660,9 @@
     }
 
     function enterVoteGate() {
-        if (voteGateHref) window.location.href = voteGateHref;
+        if (!voteGateHref) return;
+        closeVoteGate();
+        window.location.href = voteGateHref;
     }
 
     function closeVoteGate() {
@@ -810,6 +812,7 @@
     }
 
     window.addEventListener("pageshow", function(event) {
+        closeVoteGate(); // กดย้อนกลับจากหน้าโหวต เบราว์เซอร์คืนหน้าเดิมจาก cache พร้อมป๊อปอัปที่ยังเปิดค้าง -> ปิดทิ้ง
         initPage();
     });
   
