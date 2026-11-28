@@ -49,9 +49,28 @@
         .sub-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 700; font-size: 13.5px; color: #333; }
         .btn-del { border: none; background: none; color: #d64545; font: inherit; font-size: 12.5px; cursor: pointer; }
         .btn-add { border: 1.5px dashed #ffc107; background: #fffbef; color: #8a6400; border-radius: 12px; padding: 9px 14px; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%; }
-        .reward-row { display: grid; grid-template-columns: 110px 1fr auto; gap: 8px; align-items: start; margin-bottom: 8px; }
-        .reward-row .reward-extra { grid-column: 2 / 3; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .reward-row input, .reward-row select { border: 1px solid #e3e3e3; border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; width: 100%; }
+        .reward-row { background: #fff; border: 1px solid #f0e6cc; border-radius: 12px; padding: 8px; margin-bottom: 8px; display: grid; gap: 8px; }
+        .rw-head { display: flex; gap: 8px; align-items: center; }
+        .rw-head .rw-kind { flex: 1; }
+        .rw-head .btn-del { flex: none; width: 34px; height: 34px; }
+        .reward-row input, .reward-row select { border: 1px solid #e3e3e3; border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 13px; width: 100%; background: #fff; }
+        .reward-row .rw-item { display: grid; gap: 8px; }
+        .rw-amount-wrap { display: flex; align-items: center; gap: 8px; }
+        .rw-amount-wrap span { font-size: 12.5px; color: #767676; white-space: nowrap; }
+        .pb-chosen { display: flex; align-items: center; gap: 10px; }
+        .pb-chosen .pb-cover { width: 40px; height: 56px; flex: none; border-radius: 2px 6px 6px 2px; background: #f3f3f3 center/cover no-repeat; }
+        .pb-chosen .pb-t { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; color: #333; }
+        .pb-chosen .pb-t small { display: block; font-weight: 500; color: #767676; font-size: 11.5px; }
+        .pb-change { flex: none; border: 1px solid #e3e3e3; background: #fff; border-radius: 16px; padding: 6px 12px; font: inherit; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; }
+        .reward-row :disabled { opacity: .7; cursor: not-allowed; }
+        .sec-nav { position: sticky; top: 60px; z-index: 90; background: #fff; display: flex; gap: 6px; overflow-x: auto; padding: 8px 12px; margin: 0 -12px; border-bottom: 1px solid #f0f0f0; scrollbar-width: none; }
+        .sec-nav::-webkit-scrollbar { display: none; }
+        .sec-nav a { flex: none; font-size: 12.5px; font-weight: 600; color: #555; text-decoration: none; border: 1px solid #e8e8e8; border-radius: 999px; padding: 5px 12px; background: #fff; }
+        .sec-nav a.on { border-color: #ffc107; background: #fff6d6; color: #8a6400; }
+        .panel { scroll-margin-top: 112px; }
+        .sub-head .num { color: #8a6400; }
+        .btn-del.armed { color: #fff; background: #d64545; border-radius: 10px; padding: 4px 8px; }
+        @media (min-width: 560px) { .row2-wide { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } }
         .rw-img-row { display: flex; gap: 8px; align-items: center; }
         .rw-img-row .rw-img { flex: 1; min-width: 0; }
         .rw-thumb { width: 38px; height: 38px; border-radius: 8px; object-fit: cover; background: #eee; flex: none; }
@@ -99,7 +118,17 @@
         </div>
         <input type="file" id="cover-file" accept="image/*" hidden onchange="uploadCover(this)">
 
-        <div class="panel">
+        <nav class="sec-nav" id="sec-nav">
+            <a href="#sec-info">ข้อมูล</a>
+            <a href="#sec-members">สมาชิก</a>
+            <a href="#sec-rounds">รอบขาย</a>
+            <a href="#sec-zones">โซน</a>
+            <a href="#sec-souvenir">ของที่ระลึก</a>
+            <a href="#sec-lucky">Lucky Draw</a>
+            <a href="#sec-bookings" id="nav-bookings" style="display:none">การจอง</a>
+        </nav>
+
+        <div class="panel" id="sec-info">
             <h2><i class="fa-solid fa-masks-theater"></i> ข้อมูลการแสดง</h2>
             <div class="field"><label>ชื่อการแสดง *</label><input id="f-title" placeholder="เช่น Jew and Palmmy Birthday Fanmeet"></div>
             <div class="field"><label>วันที่แสดง *</label><input type="date" id="f-date"></div>
@@ -136,42 +165,42 @@
             </div>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="sec-members">
             <h2><i class="fa-regular fa-id-badge"></i> สมาชิกที่ขึ้นแสดง <span id="member-count" style="color:#767676;font-weight:600"></span></h2>
             <div class="field member-search"><input id="member-q" placeholder="ค้นหาชื่อสมาชิก" oninput="renderMembers()"></div>
             <div class="member-grid" id="member-grid"></div>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="sec-rounds">
             <h2><i class="fa-regular fa-calendar-check"></i> รอบการขาย</h2>
             <div id="rounds"></div>
             <button type="button" class="btn-add" onclick="addRound()"><i class="fa-solid fa-plus"></i> เพิ่มรอบขาย</button>
             <div class="hint">Normal: สุ่มเลขที่นั่งให้ทุกคนเมื่อถึงเวลาปิดรอบ · Express: ได้ที่นั่งทันที (มักเปิดหลัง Normal ปิด เพื่อขายที่นั่งที่เหลือ) · เวลาเป็นเวลาไทย</div>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="sec-zones">
             <h2><i class="fa-solid fa-couch"></i> โซนที่นั่ง &amp; Official Souvenir</h2>
             <div id="zones"></div>
             <button type="button" class="btn-add" onclick="addZone()"><i class="fa-solid fa-plus"></i> เพิ่มโซน</button>
             <div class="hint">Official Souvenir คิดต่อ 1 ที่นั่ง (ซื้อ 2 ที่นั่งได้ 2 เท่า) ผู้ซื้อกด Redeem เข้า Inventory ได้เมื่อได้เลขที่นั่งแล้ว และได้ Ticket Stub อัตโนมัติ</div>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="sec-souvenir">
             <h2><i class="fa-solid fa-gift"></i> ของที่ระลึกหลังจบการแสดง</h2>
             <div class="rewards-box">
                 <div class="title"><i class="fas fa-gift"></i> ของที่ระลึกต่อ 1 ที่นั่ง (ทุกโซน)</div>
                 <div class="rw-list" id="souvenirs"></div>
-                <button type="button" class="btn-add" style="padding:6px" onclick="document.getElementById('souvenirs').insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่มของที่ระลึก</button>
+                <button type="button" class="btn-add" style="padding:6px" onclick="addRewardRow(document.getElementById('souvenirs'))"><i class="fa-solid fa-plus"></i> เพิ่มของที่ระลึก</button>
             </div>
             <div class="hint" id="souvenir-hint">ผู้ถือบัตรทุกคนกดรับเข้า Inventory ได้หลังเวลาจบการแสดง (ถ้าไม่ใส่เวลาจบ = หลังเที่ยงคืนของวันแสดง) เพิ่มหรือแก้ได้ตลอด แม้การแสดงจบไปแล้ว · คนที่กดรับไปแล้วจะไม่ได้ของที่เพิ่มทีหลัง</div>
         </div>
 
-        <div class="panel">
+        <div class="panel" id="sec-lucky">
             <h2><i class="fa-solid fa-clover"></i> รางวัลลุ้นโชค (Lucky Draw)</h2>
             <div class="rewards-box">
                 <div class="title"><i class="fas fa-gift"></i> รางวัลต่อผู้โชคดี 1 คน เช่น การ์ด SSR ใบเดียว</div>
                 <div class="rw-list" id="lucky-prize"></div>
-                <button type="button" class="btn-add" id="lucky-add" style="padding:6px" onclick="document.getElementById('lucky-prize').insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่มรางวัล</button>
+                <button type="button" class="btn-add" id="lucky-add" style="padding:6px" onclick="addRewardRow(document.getElementById('lucky-prize'))"><i class="fa-solid fa-plus"></i> เพิ่มรางวัล</button>
             </div>
             <div class="field" style="margin-top:12px"><label>จำนวนผู้โชคดี</label><input type="number" id="f-lucky-count" min="1" max="100" value="1"></div>
             <div class="hint">สุ่มจากผู้ถือบัตรที่จ่ายแล้วทุกคน 1 ที่นั่ง = 1 สิทธิ์ · กดสุ่มได้เมื่อปิดการขายทุกรอบ (กดสด ๆ ระหว่างงานได้) · สุ่มได้ครั้งเดียว ผลบันทึกถาวร ผู้โชคดีได้แจ้งเตือนและกดรับเข้า Inventory ที่หน้า Booking Detail</div>
@@ -255,7 +284,7 @@
       .map(m => `<button type="button" class="m-chip ${selected.has(m.member_id) ? 'on' : ''}" onclick="toggleMember('${escapeHtml(m.member_id)}')">
           <img src="${escapeHtml(m.profile || '')}" alt="" loading="lazy">${escapeHtml(m.name)}</button>`).join('');
   }
-  function toggleMember(id) { selected.has(id) ? selected.delete(id) : selected.add(id); renderMembers(); }
+  function toggleMember(id) { selected.has(id) ? selected.delete(id) : selected.add(id); renderMembers(); markDirty(); }
 
   function addRound(r) {
     r = r || {};
@@ -263,49 +292,83 @@
     el.className = 'sub-row round-row';
     el.dataset.id = r.id || '';
     el.innerHTML = `
-      <div class="sub-head"><span>รอบขาย${r.drawDone ? ' <span style="color:#1f9d55;font-weight:600">· สุ่มที่นั่งแล้ว</span>' : ''}</span><button type="button" class="btn-del" onclick="this.closest('.round-row').remove()"><i class="fa-solid fa-trash"></i> ลบ</button></div>
+      <div class="sub-head"><span><span class="num">รอบที่ <b class="r-no"></b></span>${r.drawDone ? ' <span style="color:#1f9d55;font-weight:600">· สุ่มที่นั่งแล้ว</span>' : ''}</span><button type="button" class="btn-del" onclick="armDelete(this, '.round-row')"><i class="fa-solid fa-trash"></i> ลบ</button></div>
       <div class="field"><label>ประเภทรอบ</label><select class="r-kind"><option value="normal">Normal round (สุ่มที่นั่งหลังปิดรอบ)</option><option value="express">Express round (ได้ที่นั่งทันที)</option></select></div>
-      <div class="field"><label>เปิดขาย</label><input type="datetime-local" class="r-open" value="${toLocalInput(r.openAt)}"></div>
-      <div class="field"><label>ปิดขาย</label><input type="datetime-local" class="r-close" value="${toLocalInput(r.closeAt)}"></div>`;
+      <div class="row2-wide">
+        <div class="field"><label>เปิดขาย</label><input type="datetime-local" class="r-open" value="${toLocalInput(r.openAt)}"></div>
+        <div class="field"><label>ปิดขาย</label><input type="datetime-local" class="r-close" value="${toLocalInput(r.closeAt)}"></div>
+      </div>`;
     el.querySelector('.r-kind').value = r.kind || 'normal';
     document.getElementById('rounds').appendChild(el);
+    renumber();
   }
 
+  // ลบรอบ/โซน: กดครั้งแรกปุ่มเปลี่ยนเป็น "ยืนยันลบ" กดอีกครั้งภายใน 3 วิ ถึงจะลบจริง
+  function armDelete(btn, sel) {
+    if (btn.classList.contains('armed')) { btn.closest(sel).remove(); renumber(); markDirty(); return; }
+    btn.classList.add('armed');
+    btn.innerHTML = 'ยืนยันลบ';
+    setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.innerHTML = '<i class="fa-solid fa-trash"></i> ลบ'; } }, 3000);
+  }
+  function renumber() {
+    document.querySelectorAll('.round-row .r-no').forEach((el, i) => { el.textContent = i + 1; });
+    document.querySelectorAll('.zone-row .z-no').forEach((el, i) => { el.textContent = i + 1; });
+  }
+
+  const PB_TYPE = 'BLM48 Photobook';
+  // แถวรางวัล: เลือกประเภทก่อน (ไอเทม / Photobook / Cookie / GE Token) แล้วจึงแสดงช่องของประเภทนั้น
+  // Photobook บันทึกเป็น kind 'item' + itemType 'BLM48 Photobook' + รูปปก (ระบบผูกเล่มด้วยรูปปก → เปิดอ่าน 3D ใน Inventory ได้)
   function rewardRowHtml(rw) {
     rw = rw || { kind: 'item' };
-    return `<div class="reward-row">
-        <select class="rw-kind" onchange="syncRewardRow(this)">
-          <option value="item" ${rw.kind === 'item' ? 'selected' : ''}>ไอเทม</option>
-          <option value="cookie" ${rw.kind === 'cookie' ? 'selected' : ''}>Cookie</option>
-          <option value="ge_token" ${rw.kind === 'ge_token' ? 'selected' : ''}>GE Token</option>
-        </select>
-        <div class="rw-fields">
-          <div class="rw-item" style="display:${rw.kind === 'item' ? 'grid' : 'none'};gap:8px">
-            <input class="rw-label" placeholder="ชื่อไอเทม เช่น Photo Card Jew" value="${escapeHtml(rw.label || '')}">
-            <input class="rw-type" placeholder="ประเภท เช่น PhotoCard / Poster" value="${escapeHtml(rw.itemType || '')}">
-            <div class="rw-img-row">
-              <img class="rw-thumb" alt="" src="${escapeHtml(rw.imageUrl || '')}" style="display:${rw.imageUrl ? 'block' : 'none'}">
-              <input class="rw-img" placeholder="ลิงก์รูป หรือกดอัปโหลด" value="${escapeHtml(rw.imageUrl || '')}" oninput="syncRewardThumb(this)">
-              <button type="button" class="rw-upload" aria-label="อัปโหลดรูป" onclick="this.nextElementSibling.click()"><i class="fa-solid fa-upload"></i></button>
-              <input type="file" accept="image/*" hidden onchange="uploadRewardImage(this)">
-            </div>
-            <button type="button" class="btn-add btn-pb-pick" style="padding:6px;justify-content:center" onclick="pickRewardPhotobook(this)"><i class="fa-solid fa-book"></i> Photobook</button>
-          </div>
-          <input class="rw-amount" type="number" min="1" placeholder="จำนวน" value="${rw.amount || ''}" style="display:${rw.kind === 'item' ? 'none' : 'block'}">
+    const ui = rw.kind === 'item' && rw.itemType === PB_TYPE ? 'photobook' : (rw.kind || 'item');
+    const isPb = ui === 'photobook';
+    return `<div class="reward-row" data-kind="${ui}">
+        <div class="rw-head">
+          <select class="rw-kind" onchange="syncRewardRow(this)" aria-label="ประเภทรางวัล">
+            <option value="item" ${ui === 'item' ? 'selected' : ''}>ไอเทม</option>
+            <option value="photobook" ${isPb ? 'selected' : ''}>Photobook</option>
+            <option value="cookie" ${ui === 'cookie' ? 'selected' : ''}>Cookie</option>
+            <option value="ge_token" ${ui === 'ge_token' ? 'selected' : ''}>GE Token</option>
+          </select>
+          <button type="button" class="btn-del" aria-label="ลบรางวัล" onclick="this.closest('.reward-row').remove();markDirty()"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <button type="button" class="btn-del" onclick="this.closest('.reward-row').remove()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="rw-item" style="display:${ui === 'item' ? 'grid' : 'none'}">
+          <input class="rw-label" placeholder="ชื่อไอเทม เช่น Photo Card Jew" value="${isPb ? '' : escapeHtml(rw.label || '')}">
+          <input class="rw-type" placeholder="ประเภท เช่น PhotoCard / Poster" value="${isPb ? '' : escapeHtml(rw.itemType || '')}">
+          <div class="rw-img-row">
+            <img class="rw-thumb" alt="" src="${isPb ? '' : escapeHtml(rw.imageUrl || '')}" style="display:${!isPb && rw.imageUrl ? 'block' : 'none'}">
+            <input class="rw-img" placeholder="ลิงก์รูป หรือกดอัปโหลด" value="${isPb ? '' : escapeHtml(rw.imageUrl || '')}" oninput="syncRewardThumb(this)">
+            <button type="button" class="rw-upload" aria-label="อัปโหลดรูป" onclick="this.nextElementSibling.click()"><i class="fa-solid fa-upload"></i></button>
+            <input type="file" accept="image/*" hidden onchange="uploadRewardImage(this)">
+          </div>
+        </div>
+        <div class="rw-pb" style="display:${isPb ? 'block' : 'none'}" data-label="${isPb ? escapeHtml(rw.label || '') : ''}" data-img="${isPb ? escapeHtml(rw.imageUrl || '') : ''}">${pbBoxHtml(isPb ? rw : null)}</div>
+        <div class="rw-amount-wrap" style="display:${ui === 'cookie' || ui === 'ge_token' ? 'flex' : 'none'}">
+          <input class="rw-amount" type="number" min="1" placeholder="จำนวน" value="${rw.amount || ''}"><span class="rw-unit">${ui === 'ge_token' ? 'GE Token' : 'Cookie'}</span>
+        </div>
       </div>`;
   }
-  // ใช้เล่มจากหน้า Admin Photobook เป็นไอเทมรางวัล: ชื่อ/ประเภท/รูปปก (ระบบผูกเล่มด้วยรูปปก → เปิดอ่าน 3D ใน Inventory ได้)
+  function pbBoxHtml(b) {
+    if (b && b.label) {
+      return `<div class="pb-chosen"><span class="pb-cover" style="background-image:url('${escapeHtml(b.imageUrl || '')}')"></span>
+        <span class="pb-t">${escapeHtml(b.label)}<small>${PB_TYPE}</small></span>
+        <button type="button" class="pb-change btn-pb-pick" onclick="pickRewardPhotobook(this)">เปลี่ยนเล่ม</button></div>`;
+    }
+    return `<button type="button" class="btn-add btn-pb-pick" style="padding:8px;justify-content:center" onclick="pickRewardPhotobook(this)"><i class="fa-solid fa-book"></i> เลือกโฟโต้บุ๊ค</button>`;
+  }
+  function addRewardRow(list) {
+    list.insertAdjacentHTML('beforeend', rewardRowHtml());
+    markDirty();
+  }
+  // เลือกเล่มจากหน้า Admin Photobook (รายการกางใต้ปุ่ม) → แสดงปก + ชื่อเล่มในแถว
   function pickRewardPhotobook(btn) {
+    const pb = btn.closest('.rw-pb');
     blm48TogglePhotobookPicker(btn, user.username, b => {
-      const box = btn.closest('.rw-item');
-      box.querySelector('.rw-label').value = b.title;
-      box.querySelector('.rw-type').value = 'BLM48 Photobook';
-      const img = box.querySelector('.rw-img');
-      img.value = b.coverUrl;
-      syncRewardThumb(img);
-    });
+      pb.dataset.label = b.title || '';
+      pb.dataset.img = b.coverUrl || '';
+      pb.innerHTML = pbBoxHtml({ label: b.title, imageUrl: b.coverUrl });
+      markDirty();
+    }, pb.firstElementChild);
   }
   function syncRewardThumb(input) {
     const url = input.value.trim();
@@ -332,9 +395,15 @@
   }
   function syncRewardRow(sel) {
     const row = sel.closest('.reward-row');
-    const isItem = sel.value === 'item';
-    row.querySelector('.rw-item').style.display = isItem ? 'grid' : 'none';
-    row.querySelector('.rw-amount').style.display = isItem ? 'none' : 'block';
+    const k = sel.value;
+    row.dataset.kind = k;
+    row.querySelector('.rw-item').style.display = k === 'item' ? 'grid' : 'none';
+    row.querySelector('.rw-pb').style.display = k === 'photobook' ? 'block' : 'none';
+    row.querySelector('.rw-amount-wrap').style.display = k === 'cookie' || k === 'ge_token' ? 'flex' : 'none';
+    row.querySelector('.rw-unit').textContent = k === 'ge_token' ? 'GE Token' : 'Cookie';
+    // เพิ่งเลือก Photobook และยังไม่มีเล่ม → กางรายการเล่มให้เลือกทันที
+    const pb = row.querySelector('.rw-pb');
+    if (k === 'photobook' && !pb.dataset.label && !pb.querySelector('.pb-picker')) pickRewardPhotobook(pb.querySelector('.btn-pb-pick'));
   }
 
   function addZone(z) {
@@ -344,8 +413,8 @@
     el.dataset.id = z.id || '';
     const sold = z.id ? Number(z.capacity) - Number(z.left) : 0;
     el.innerHTML = `
-      <div class="sub-head"><span>โซน${z.id ? ` <span style="color:#767676;font-weight:600">· จองแล้ว ${sold}/${z.capacity}</span>` : ''}</span>
-        ${z.hasBookings ? '' : `<button type="button" class="btn-del" onclick="this.closest('.zone-row').remove()"><i class="fa-solid fa-trash"></i> ลบ</button>`}</div>
+      <div class="sub-head"><span><span class="num">โซนที่ <b class="z-no"></b></span>${z.id ? ` <span style="color:#767676;font-weight:600">· จองแล้ว ${sold}/${z.capacity}</span>` : ''}</span>
+        ${z.hasBookings ? '' : `<button type="button" class="btn-del" onclick="armDelete(this, '.zone-row')"><i class="fa-solid fa-trash"></i> ลบ</button>`}</div>
       <div class="field"><label>ชื่อโซน *</label><input class="z-name" placeholder="เช่น Normal Zone / Lady Zone (For women only)" value="${escapeHtml(z.name || '')}"></div>
       <div class="field"><label>หมายเหตุโซน</label><input class="z-note" placeholder="เช่น แถวหน้าติดเวที" value="${escapeHtml(z.note || '')}"></div>
       <div class="row2">
@@ -356,14 +425,19 @@
       <div class="rewards-box">
         <div class="title"><i class="fas fa-gift"></i> Official Souvenir ต่อ 1 ที่นั่ง</div>
         <div class="rw-list">${(z.rewards || []).map(rewardRowHtml).join('')}</div>
-        <button type="button" class="btn-add" style="padding:6px" onclick="this.previousElementSibling.insertAdjacentHTML('beforeend', rewardRowHtml())"><i class="fa-solid fa-plus"></i> เพิ่ม Official Souvenir</button>
+        <button type="button" class="btn-add" style="padding:6px" onclick="addRewardRow(this.previousElementSibling)"><i class="fa-solid fa-plus"></i> เพิ่ม Official Souvenir</button>
       </div>`;
     document.getElementById('zones').appendChild(el);
+    renumber();
   }
 
   function readRewards(rows) {
     return [...rows].map(r => {
       const kind = r.querySelector('.rw-kind').value;
+      if (kind === 'photobook') {
+        const pb = r.querySelector('.rw-pb');
+        return { kind: 'item', label: (pb.dataset.label || '').trim(), itemType: PB_TYPE, imageUrl: pb.dataset.img || '' };
+      }
       if (kind === 'item') {
         return { kind, label: r.querySelector('.rw-label').value.trim(), itemType: r.querySelector('.rw-type').value.trim(),
                  imageUrl: r.querySelector('.rw-img').value.trim() };
@@ -423,14 +497,23 @@
     for (const z of ev.zones) {
       if (!z.name || z.price === '' || !(Number(z.capacity) > 0)) return 'กรุณากรอกชื่อ ราคา และจำนวนที่นั่งของทุกโซน';
     }
+    if ([...document.querySelectorAll('.reward-row[data-kind="photobook"] .rw-pb')].some(pb => !pb.dataset.label)) return 'มีแถว Photobook ที่ยังไม่ได้เลือกเล่ม เลือกเล่มหรือลบแถวนั้นก่อน';
     if (ev.watchUrl && !/^https?:\/\//i.test(ev.watchUrl)) return 'ลิงก์รับชมต้องขึ้นต้นด้วย https://';
     return '';
   }
 
+  let dirty = false;
+  function markDirty() {
+    if (dirty) return;
+    dirty = true;
+    const m = document.getElementById('save-msg');
+    if (!m.textContent || m.classList.contains('ok')) { m.textContent = 'มีการแก้ไขที่ยังไม่บันทึก'; m.className = 'msg'; m.style.color = '#8a6400'; }
+  }
   function showMsg(text, ok) {
     const m = document.getElementById('save-msg');
     m.textContent = text || '';
     m.className = 'msg' + (ok ? ' ok' : '');
+    m.style.color = '';
   }
 
   async function save() {
@@ -443,6 +526,7 @@
     const res = await blm48AdminSaveTheaterEvent(user.username, ev);
     btn.disabled = false;
     if (res && res.status === 'success') {
+      dirty = false;
       showMsg('บันทึกแล้ว', true);
       if (!eventId) { blm48Replace('admin_theater_event?id=' + res.id); return; }
       loadEvent();
@@ -459,7 +543,7 @@
     const revenue = paid.reduce((s, b) => s + Number(b.total), 0);
     const cap = (e.zones || []).reduce((s, z) => s + Number(z.capacity), 0);
     box.innerHTML = `
-      <div class="panel">
+      <div class="panel" id="sec-bookings">
         <h2><i class="fa-solid fa-ticket"></i> การจอง</h2>
         <div class="stat-line">
           <div><div class="v">${paid.length}</div><div class="k">การจอง</div></div>
@@ -589,6 +673,34 @@
     const locked = e.status === 'cancelled';
     document.getElementById('save-bar').style.display = locked ? 'none' : '';
     renderManage(e);
+    document.getElementById('nav-bookings').style.display = '';
+    dirty = false;
+  }
+
+  // แถบหัวข้อด้านบน: กดเพื่อเลื่อนไปยังส่วนนั้น และไฮไลต์ส่วนที่กำลังดูอยู่
+  function setupSecNav() {
+    const nav = document.getElementById('sec-nav');
+    const links = [...nav.querySelectorAll('a')];
+    links.forEach(a => a.addEventListener('click', ev => {
+      ev.preventDefault();
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }));
+    let last = null;
+    const onScroll = () => {
+      let cur = links[0];
+      links.forEach(a => {
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t && a.style.display !== 'none' && t.getBoundingClientRect().top < 130) cur = a;
+      });
+      if (cur === last) return;
+      last = cur;
+      links.forEach(a => a.classList.toggle('on', a === cur));
+      const l = cur.offsetLeft - nav.offsetLeft;
+      if (l < nav.scrollLeft || l + cur.offsetWidth > nav.scrollLeft + nav.clientWidth) nav.scrollLeft = l - 12;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   }
 
   window.addEventListener('DOMContentLoaded', async () => {
@@ -599,6 +711,12 @@
       return;
     }
     document.getElementById('page-content').style.display = 'block';
+    const pc = document.getElementById('page-content');
+    const track = e => { if (!e.target.closest('#manage, #member-q')) markDirty(); };
+    pc.addEventListener('input', track);
+    pc.addEventListener('change', track);
+    window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+    setupSecNav();
     document.getElementById('save-bar').style.display = '';
     const mres = await blm48GetAllMembers();
     members = ((mres && mres.data) || []).filter(m => String(m.status || '').toLowerCase() !== 'graduated');
