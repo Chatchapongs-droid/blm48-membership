@@ -123,8 +123,8 @@ function renderCampaignStamp(c) {
       <svg viewBox="0 0 120 108" xmlns="http://www.w3.org/2000/svg">
         <path d="M60 104 C20 76 4 56 4 32 C4 15 17 4 32 4 C44 4 54 11 60 21 C66 11 76 4 88 4 C103 4 116 15 116 32 C116 56 100 76 60 104 Z" fill="#fff" stroke="#e64980" stroke-width="5"/>
         <path d="M60 96 C25 71 12 53 12 33 C12 20 22 12 33 12 C44 12 53 19 60 30 C67 19 76 12 87 12 C98 12 108 20 108 33 C108 53 95 71 60 96 Z" fill="none" stroke="#f783ac" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <text x="60" y="46" text-anchor="middle" font-family="Kanit, sans-serif" font-weight="700" font-size="${line1.length > 7 ? 15 : 19}" fill="#d6336c">${line1}</text>
-        <text x="60" y="68" text-anchor="middle" font-family="Kanit, sans-serif" font-weight="700" font-size="17" fill="#d6336c">${line2}</text>
+        <text x="60" y="46" text-anchor="middle" font-family="Google Sans, sans-serif" font-weight="700" font-size="${line1.length > 7 ? 15 : 19}" fill="#d6336c">${line1}</text>
+        <text x="60" y="68" text-anchor="middle" font-family="Google Sans, sans-serif" font-weight="700" font-size="17" fill="#d6336c">${line2}</text>
       </svg>
     </div>`;
 }

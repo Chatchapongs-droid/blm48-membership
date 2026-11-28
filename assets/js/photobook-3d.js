@@ -110,7 +110,7 @@
     const st = document.createElement('style');
     st.id = 'blm48-pb3d-style';
     st.textContent = `
-      .pb-overlay { position: fixed; inset: 0; z-index: 21000; overflow: hidden; color: #fff; font-family: 'Quicksand', 'Kanit', sans-serif;
+      .pb-overlay { position: fixed; inset: 0; z-index: 21000; overflow: hidden; color: #fff; font-family: 'Quicksand', 'Google Sans', sans-serif;
         background: radial-gradient(circle at 50% 40%, #f0454b 0%, #c8151d 55%, #8f0c12 100%);
         touch-action: none; user-select: none; -webkit-user-select: none; opacity: 0; transition: opacity 0.25s; }
       .pb-overlay.show { opacity: 1; }

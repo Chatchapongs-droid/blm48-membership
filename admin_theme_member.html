@@ -12,7 +12,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/glassmorphism.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -22,7 +22,7 @@
     <script src="assets/js/champ-splash.js"></script>
     <style>
         * { box-sizing: border-box; }
-        body { font-family: 'Quicksand', 'Kanit', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
+        body { font-family: 'Quicksand', 'Google Sans', sans-serif; margin: 0; min-height: 100vh; color: #444; background: #fff; }
         .top-navigation-bar { display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
         .page-wrapper { max-width: 760px; margin: 0 auto; padding: 14px 12px 100px; }
         #access-denied { display: none; text-align: center; padding: 80px 20px; color: #767676; }
@@ -339,8 +339,8 @@
     fonts.forEach(f => window.BLM48BirthdaySplash.loadFont(f));
     const cur = currentFont();
     const sample = escapeHtml(String(member.name).split(' ')[0]); // ชื่อแรกพอ ปุ่มเล็ก
-    grid.innerHTML = [{ name: null, label: 'Default', family: "'Comfortaa','Kanit',sans-serif", weight: 700 }]
-      .concat(fonts.map(f => ({ name: f.name, label: f.name, family: `'${f.name}','Kanit',sans-serif`, weight: f.weight })))
+    grid.innerHTML = [{ name: null, label: 'Default', family: "'Comfortaa','Google Sans',sans-serif", weight: 700 }]
+      .concat(fonts.map(f => ({ name: f.name, label: f.name, family: `'${f.name}','Google Sans',sans-serif`, weight: f.weight })))
       .map(o => `
         <button type="button" class="font-chip ${o.name === cur ? 'active' : ''}" onclick='pickFont(${JSON.stringify(o.name)})'>
           <span class="fc-sample" style="font-family:${o.family};font-weight:${o.weight}">${sample}</span>

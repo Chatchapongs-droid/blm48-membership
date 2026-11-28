@@ -49,13 +49,13 @@
     '.bs-root .bs-card{position:absolute;left:16.3px;top:16.3px;width:292.5px;height:420px;background:var(--bs-card);border-radius:4px 4px 22px 22px;box-shadow:0 4px 14px rgba(70,80,60,.18);overflow:hidden}' +
     '.bs-root .bs-photo{position:absolute;left:6px;right:6.9px;top:85.7px;bottom:5px;border-radius:2px 2px 17px 17px;overflow:hidden;background:#C9CCBE}' +
     '.bs-root .bs-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 25%;display:block}' +
-    ".bs-root .bs-t1,.bs-root .bs-t2{position:absolute;left:0;width:325px;text-align:center;color:#fff;white-space:nowrap;font-family:'Quicksand','Kanit',sans-serif;line-height:1}" +
-    ".bs-root .bs-t1{top:27px;font-family:'Archivo','Kanit',sans-serif;font-stretch:125%;font-size:24px;font-weight:800;letter-spacing:.02em}" +
+    ".bs-root .bs-t1,.bs-root .bs-t2{position:absolute;left:0;width:325px;text-align:center;color:#fff;white-space:nowrap;font-family:'Quicksand','Google Sans',sans-serif;line-height:1}" +
+    ".bs-root .bs-t1{top:27px;font-family:'Archivo','Google Sans',sans-serif;font-stretch:125%;font-size:24px;font-weight:800;letter-spacing:.02em}" +
     // HAPPY BIRTHDAY + ชื่อเมมเบอร์: Archivo ตัวกว้าง พิมพ์ใหญ่ (ผู้ใช้เลือกจากดีไซน์อ้างอิง 2026-10-26 แทน Comfortaa) สีตามโทนรองของรูป
-    // ข้อยกเว้นของกฎ Quicksand/Kanit เฉพาะ Splash/Banner วันเกิด - ถ้าแอดมินเลือกฟอนต์ไว้ (bday_font) ชื่อใช้ฟอนต์นั้นแทน
-    ".bs-root .bs-t2{top:57px;font-family:'Archivo','Kanit',sans-serif;font-stretch:125%;font-weight:800;text-transform:uppercase;color:var(--bs-name);letter-spacing:.02em}" +
+    // ข้อยกเว้นของกฎ Quicksand/Google Sans เฉพาะ Splash/Banner วันเกิด - ถ้าแอดมินเลือกฟอนต์ไว้ (bday_font) ชื่อใช้ฟอนต์นั้นแทน
+    ".bs-root .bs-t2{top:57px;font-family:'Archivo','Google Sans',sans-serif;font-stretch:125%;font-weight:800;text-transform:uppercase;color:var(--bs-name);letter-spacing:.02em}" +
     '.bs-root .bs-cake{position:absolute;left:27px;top:106px;width:24px;height:24px;border-radius:50%;border:1.5px solid #fff;background:url(assets/img/bday-splash/cake.webp) 50% 50% / 25.8px 56.1px no-repeat,var(--bs-cake);box-sizing:border-box}' +
-    ".bs-root .bs-pill{position:absolute;left:107.9px;top:403.8px;width:108px;height:14px;border-radius:999px;background:var(--bs-pill);color:#fff;font-family:'Avenir Next','Avenir','Nunito Sans','Kanit',sans-serif;font-size:9.5px;font-weight:600;line-height:14px;text-align:center;overflow:hidden;letter-spacing:.02em}" +
+    ".bs-root .bs-pill{position:absolute;left:107.9px;top:403.8px;width:108px;height:14px;border-radius:999px;background:var(--bs-pill);color:#fff;font-family:'Avenir Next','Avenir','Nunito Sans','Google Sans',sans-serif;font-size:9.5px;font-weight:600;line-height:14px;text-align:center;overflow:hidden;letter-spacing:.02em}" +
     '@keyframes bVeil{0%{opacity:1}6%{opacity:0}93%{opacity:0}100%{opacity:1}}' +
     '@keyframes bCard{0%,4%{opacity:0;transform:translateY(64px) scale(.9) rotate(-3deg);animation-timing-function:cubic-bezier(.34,1.4,.64,1)}20%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);animation-timing-function:ease-in-out}48%{opacity:1;transform:translateY(-5px) scale(1) rotate(0deg);animation-timing-function:ease-in-out}70%{opacity:1;transform:translateY(0) scale(1) rotate(0deg);animation-timing-function:ease-in-out}88%{opacity:1;transform:translateY(-5px) scale(1) rotate(0deg);animation-timing-function:ease-in-out}100%{opacity:1;transform:translateY(0) scale(1) rotate(0deg)}}' +
     '@keyframes bT1{0%,18%{opacity:0;clip-path:inset(0 100% 0 0);transform:translateY(8px);animation-timing-function:cubic-bezier(.16,1,.3,1)}19%{opacity:1}29%,100%{opacity:1;clip-path:inset(0 0 0 0);transform:translateY(0)}}' +
@@ -298,7 +298,7 @@
   }
 
   function fontStyle(f) {
-    return f ? "font-family:'" + f.name + "','Kanit',sans-serif;font-weight:" + f.weight + ';font-stretch:normal;text-transform:none;letter-spacing:.02em;' : '';
+    return f ? "font-family:'" + f.name + "','Google Sans',sans-serif;font-weight:" + f.weight + ';font-stretch:normal;text-transform:none;letter-spacing:.02em;' : '';
   }
 
   // ===== ปรับขนาด/ตำแหน่งรูปเมมเบอร์ (หน้า Theme Application -> members.bday_photo_adjust) =====
@@ -321,7 +321,7 @@
     if (!f || !text) return base;
     try {
       measureCtx = measureCtx || document.createElement('canvas').getContext('2d');
-      measureCtx.font = f.weight + ' 100px "' + f.name + '", Kanit, sans-serif';
+      measureCtx.font = f.weight + ' 100px "' + f.name + '", Google Sans, sans-serif';
       var w100 = measureCtx.measureText(text).width + text.length * 2; // + letter-spacing .02em
       return w100 > 0 ? Math.min(base, max * 100 / w100) : base;
     } catch (e) { return base; }
@@ -473,11 +473,11 @@
     '.bb-root .bb-photo img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;display:block}' +
     // โลโก้วง BLM48 (ไฟล์จากผู้ใช้ 1333x1867 สัดส่วนเท่ากล่องมุมซ้ายล่างของดีไซน์)
     '.bb-root .bb-logo{position:absolute;left:0;bottom:0;width:5.7cqw;height:7.85cqw;background:#ffde5b url(assets/img/bday-splash/blm48-logo.png) 50% 50% / cover no-repeat}' +
-    ".bb-root .bb-text{position:absolute;left:41.55cqw;right:0;top:0;bottom:0;text-align:center;color:#fff;font-family:'Quicksand','Kanit',sans-serif;text-shadow:0 .1cqw .5cqw rgba(0,0,0,.08)}" +
-    ".bb-root .bb-date{position:absolute;left:0;right:0;top:7.4cqw;font-family:'Avenir Next','Avenir','Nunito Sans','Kanit',sans-serif;font-size:2.3cqw;font-weight:500;letter-spacing:.04em;line-height:1}" +
+    ".bb-root .bb-text{position:absolute;left:41.55cqw;right:0;top:0;bottom:0;text-align:center;color:#fff;font-family:'Quicksand','Google Sans',sans-serif;text-shadow:0 .1cqw .5cqw rgba(0,0,0,.08)}" +
+    ".bb-root .bb-date{position:absolute;left:0;right:0;top:7.4cqw;font-family:'Avenir Next','Avenir','Nunito Sans','Google Sans',sans-serif;font-size:2.3cqw;font-weight:500;letter-spacing:.04em;line-height:1}" +
     '.bb-root .bb-date i{display:inline-block;width:1.3cqw;height:1.3cqw;border-radius:50%;background:#fff;margin-right:2.2cqw;vertical-align:.15cqw}' +
-    ".bb-root .bb-hbd{position:absolute;left:0;right:0;top:12cqw;font-family:'Archivo','Kanit',sans-serif;font-stretch:125%;font-size:4.3cqw;font-weight:800;letter-spacing:.02em;line-height:1}" +
-    ".bb-root .bb-name{position:absolute;left:0;right:0;top:17.6cqw;font-family:'Archivo','Kanit',sans-serif;font-stretch:125%;font-weight:800;text-transform:uppercase;line-height:1;white-space:nowrap;letter-spacing:.02em}" +
+    ".bb-root .bb-hbd{position:absolute;left:0;right:0;top:12cqw;font-family:'Archivo','Google Sans',sans-serif;font-stretch:125%;font-size:4.3cqw;font-weight:800;letter-spacing:.02em;line-height:1}" +
+    ".bb-root .bb-name{position:absolute;left:0;right:0;top:17.6cqw;font-family:'Archivo','Google Sans',sans-serif;font-stretch:125%;font-weight:800;text-transform:uppercase;line-height:1;white-space:nowrap;letter-spacing:.02em}" +
     '.bb-root .bb-cake{position:absolute;right:2.75cqw;top:2.1cqw;width:5.2cqw;height:5.2cqw;border-radius:50%;border:.15cqw solid #fff;box-sizing:border-box;' +
       'background:url(assets/img/bday-splash/cake.webp) 50% 50% / 6.2cqw 13.5cqw no-repeat,var(--bs-cake)}';
 

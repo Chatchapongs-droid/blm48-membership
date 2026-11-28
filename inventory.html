@@ -16,7 +16,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/glassmorphism.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,7 +42,7 @@
         }
 
         body {
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             margin: 0;
             padding: 0;
             min-height: 100vh;
@@ -107,7 +107,7 @@
         .inv-search-icon { position: absolute; left: 14px; color: #999; font-size: 14px; pointer-events: none; }
         .inv-search-input {
             width: 100%; background: #f2f2f5; border: 1px solid transparent; border-radius: 12px;
-            padding: 11px 38px; font-family: 'Quicksand', 'Kanit', sans-serif;
+            padding: 11px 38px; font-family: 'Quicksand', 'Google Sans', sans-serif;
             font-size: 14px; color: #222; outline: none; transition: border-color 0.2s ease, background 0.2s ease;
         }
         .inv-search-input::placeholder { color: #9a9a9a; }
@@ -121,7 +121,7 @@
         .group-tabs { display: flex; margin: 0 20px; border-bottom: 1px solid #ececec; }
         .group-tab {
             flex: 1; background: none; border: none; cursor: pointer; position: relative;
-            padding: 10px 0 12px; font-family: 'Quicksand', 'Kanit', sans-serif;
+            padding: 10px 0 12px; font-family: 'Quicksand', 'Google Sans', sans-serif;
             font-size: 15px; font-weight: 600; color: #8a8a8a; transition: color 0.15s;
         }
         .group-tab::after {
@@ -141,7 +141,7 @@
         .filter-chip {
             flex-shrink: 0; border: 1px solid #e5e5e5; background: #fff; color: #444;
             padding: 7px 16px; border-radius: 20px; cursor: pointer;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 13.5px; font-weight: 500;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 13.5px; font-weight: 500;
             transition: background 0.15s, color 0.15s, border-color 0.15s;
         }
         .filter-chip.active { background: var(--primary-pink); border-color: var(--primary-pink); color: #fff; font-weight: 600; }
@@ -150,7 +150,7 @@
         .sub-filter-row { display: flex; align-items: center; gap: 8px; margin: 0 20px; font-size: 13px; color: #888; }
         .sort-btn {
             border: none; background: #f2f2f5; border-radius: 20px; padding: 6px 14px;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 13.5px; font-weight: 600; color: #222;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 13.5px; font-weight: 600; color: #222;
             cursor: pointer; display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
         }
         .sort-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -191,7 +191,7 @@
         /* กดปุ่ม 3D ของไอเทมที่มีการ์ด 3D -> เปิดการ์ดเต็มจอ */
         .card3d-overlay { position: fixed; inset: 0; z-index: 21000; display: flex; flex-direction: column; align-items: center; justify-content: center;
             background: linear-gradient(to bottom, #ececee 0%, #f5f5f6 50%, #ffffff 66%, #ffffff 100%); color: #222;
-            font-family: 'Quicksand', 'Kanit', sans-serif; opacity: 0; transition: opacity 0.25s; }
+            font-family: 'Quicksand', 'Google Sans', sans-serif; opacity: 0; transition: opacity 0.25s; }
         .card3d-overlay.show { opacity: 1; }
         .card3d-overlay blm-card-3d { width: min(76vw, 340px, calc((100vh - 200px) * 0.655)); }
         .card3d-title { position: absolute; top: calc(22px + env(safe-area-inset-top)); left: 16px; right: 64px; font-size: 15px; font-weight: 600;
@@ -272,7 +272,7 @@
         .inv-qty-value { min-width: 20px; text-align: center; font-weight: 700; color: #222; font-size: 14px; }
         .btn-delete-item {
             background: #fff0f0; color: #e0435c; border: none; padding: 9px 16px; border-radius: 20px;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 13px; font-weight: 600;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 13px; font-weight: 600;
             display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
         }
 
@@ -280,12 +280,12 @@
         .modal-action-buttons > * { flex: 1; justify-content: center; padding-left: 10px !important; padding-right: 10px !important; white-space: nowrap; }
         .btn-close-modal {
             background: #f2f2f5; color: #333; border: none; padding: 12px 18px; border-radius: 14px;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer;
         }
         .btn-save-image {
             background: var(--primary-pink); color: #fff; text-decoration: none;
             padding: 12px 18px; border-radius: 14px; border: none; cursor: pointer;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 14px; font-weight: 600;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 14px; font-weight: 600;
             display: inline-flex; align-items: center; gap: 8px;
         }
         .btn-close-modal:active, .btn-save-image:active { transform: scale(0.97); }
@@ -314,7 +314,7 @@
             flex: 1;
             min-width: 0;
             color: #fff;
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             font-size: 14px;
             font-weight: 500;
             white-space: nowrap;
@@ -382,7 +382,7 @@
             justify-content: center;
             gap: 10px;
             color: #999;
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             font-size: 13px;
             text-align: center;
             padding: 30px;
@@ -415,7 +415,7 @@
         .epub-page-indicator {
             color: #ccc;
             font-size: 12px;
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             min-width: 60px;
             text-align: center;
         }
@@ -425,10 +425,10 @@
         .sheet { width: 100%; max-width: 640px; max-height: 85vh; display: flex; flex-direction: column; padding: 0 10px calc(10px + env(safe-area-inset-bottom)); transform: translateY(100%); transition: transform .25s ease; }
         .sheet-overlay.open .sheet { transform: translateY(0); }
         .sheet-group { background: rgba(245,245,247,.92); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border-radius: 14px; overflow-y: auto; }
-        .sheet-option { display: block; width: 100%; border: none; background: none; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 20px; color: #111; padding: 17px 12px; cursor: pointer; text-align: center; }
+        .sheet-option { display: block; width: 100%; border: none; background: none; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 20px; color: #111; padding: 17px 12px; cursor: pointer; text-align: center; }
         .sheet-option + .sheet-option { border-top: 0.5px solid rgba(60,60,67,.29); }
         .sheet-option:active { background: rgba(0,0,0,.06); }
-        .sheet-cancel { display: block; width: 100%; flex-shrink: 0; margin-top: 8px; border: none; background: #fff; border-radius: 14px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 20px; font-weight: 700; color: #111; padding: 17px 12px; cursor: pointer; }
+        .sheet-cancel { display: block; width: 100%; flex-shrink: 0; margin-top: 8px; border: none; background: #fff; border-radius: 14px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 20px; font-weight: 700; color: #111; padding: 17px 12px; cursor: pointer; }
         .sheet-cancel:active { background: #f0f0f0; }
     </style>
   <!-- 🎉 ธีมเทศกาล (เปิด/ปิดเองตามวันที่ ดูรายการเทศกาลใน assets/js/festivals.js) -->

@@ -978,10 +978,10 @@ async function blm48FlushPostLikers() {
     .swal2-container .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup):not([style*="width"]) { width: min(340px, calc(100vw - 48px)) !important; }
     .swal2-container .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) { padding: 22px 20px 20px !important; border-radius: 18px !important; background: #fff !important; border: none !important; box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important; }
     .swal2-popup.swal2-modal:not(.swal2-toast) > .swal2-icon { display: none !important; }
-    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-title { font-family: 'Quicksand','Kanit',sans-serif !important; font-size: 18px !important; font-weight: 700 !important; color: #111 !important; padding: 0 !important; margin: 0 0 10px !important; }
-    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-html-container { font-family: 'Quicksand','Kanit',sans-serif !important; font-size: 15px !important; color: #222 !important; line-height: 1.5 !important; margin: 4px 0 0 !important; padding: 0 !important; }
+    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-title { font-family: 'Quicksand','Google Sans',sans-serif !important; font-size: 18px !important; font-weight: 700 !important; color: #111 !important; padding: 0 !important; margin: 0 0 10px !important; }
+    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-html-container { font-family: 'Quicksand','Google Sans',sans-serif !important; font-size: 15px !important; color: #222 !important; line-height: 1.5 !important; margin: 4px 0 0 !important; padding: 0 !important; }
     .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-actions { width: 100% !important; flex-wrap: nowrap !important; gap: 12px !important; margin: 22px 0 0 !important; padding: 0 !important; }
-    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-actions:not([style*="display: none"]) > button { flex: 1 1 0 !important; min-width: 0 !important; height: 46px !important; margin: 0 !important; border-radius: 23px !important; font-family: 'Quicksand','Kanit',sans-serif !important; font-size: 16px !important; box-shadow: none !important; }
+    .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-actions:not([style*="display: none"]) > button { flex: 1 1 0 !important; min-width: 0 !important; height: 46px !important; margin: 0 !important; border-radius: 23px !important; font-family: 'Quicksand','Google Sans',sans-serif !important; font-size: 16px !important; box-shadow: none !important; }
     .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-confirm { order: 2 !important; background: #fbd96b !important; background-image: none !important; color: #111 !important; border: none !important; font-weight: 600 !important; }
     .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-deny { order: 1 !important; background: #fff !important; color: #111 !important; border: 1.5px solid #111 !important; font-weight: 500 !important; }
     .swal2-popup.swal2-modal:not(.swal2-toast):not(.ks-popup) .swal2-cancel { order: 0 !important; background: #fff !important; background-image: none !important; color: #111 !important; border: 1.5px solid #111 !important; font-weight: 500 !important; }
@@ -1196,10 +1196,10 @@ async function generateTransferSlip({ admin, adminName, adminAvatar, target, tok
     ctx.fillStyle = '#ffffff';
 
     ctx.textAlign = 'left';
-    ctx.font = '600 38px "Quicksand", "Kanit", sans-serif';
+    ctx.font = '600 38px "Quicksand", "Google Sans", sans-serif';
     ctx.fillText(dateStr, 64, 1250);
 
-    ctx.font = '600 42px "Quicksand", "Kanit", sans-serif';
+    ctx.font = '600 42px "Quicksand", "Google Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText('@' + admin, 280, 352);
     ctx.fillText(adminName || admin, 280, 414);
@@ -1208,7 +1208,7 @@ async function generateTransferSlip({ admin, adminName, adminAvatar, target, tok
     ctx.fillText(target.name || target.username, 280, 742);
 
     ctx.textAlign = 'right';
-    ctx.font = '600 46px "Quicksand", "Kanit", sans-serif';
+    ctx.font = '600 46px "Quicksand", "Google Sans", sans-serif';
     ctx.fillText(ref, 1170, 944);
 
     const items = [];
@@ -1216,7 +1216,7 @@ async function generateTransferSlip({ admin, adminName, adminAvatar, target, tok
     if (cookie > 0) items.push({ label: 'Cookie', amount: cookie });
     if (getoken > 0) items.push({ label: 'GEToken', amount: getoken });
     let y = 1074;
-    ctx.font = '700 52px "Quicksand", "Kanit", sans-serif';
+    ctx.font = '700 52px "Quicksand", "Google Sans", sans-serif';
     items.forEach(item => {
       ctx.fillText(Number(item.amount).toLocaleString() + ' ' + item.label, 1170, y);
       y += 62;
@@ -1662,7 +1662,7 @@ function injectIosNotificationStyles() {
       transform: translateX(-50%) translateY(-140%);
       opacity: 0;
       transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
-      font-family: 'Quicksand', 'Kanit', sans-serif;
+      font-family: 'Quicksand', 'Google Sans', sans-serif;
     }
     .blm48-ios-noti.show { transform: translateX(-50%) translateY(0); opacity: 1; }
     .blm48-ios-noti-avatar { width: 38px; height: 38px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; background: #eee; }

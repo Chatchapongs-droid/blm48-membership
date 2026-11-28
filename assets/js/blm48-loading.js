@@ -12,7 +12,7 @@
   var CSS = '' +
     '.blm48-loading{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;overflow:hidden;' +
       'background:linear-gradient(180deg,#FFE374 0%,#FCE993 48%,#F6EEC4 100%);color:#6E5200;' +
-      "font-family:'Quicksand','Kanit',sans-serif;transition:opacity .5s cubic-bezier(.4,0,.2,1);--bl-d:4s}" +
+      "font-family:'Quicksand','Google Sans',sans-serif;transition:opacity .5s cubic-bezier(.4,0,.2,1);--bl-d:4s}" +
     '.blm48-loading svg.bl-art{position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;overflow:visible;pointer-events:none}' +
     '.blm48-loading .bl-an{animation-duration:var(--bl-d);animation-iteration-count:infinite;animation-fill-mode:both;animation-delay:calc(var(--bl-d) * var(--bl-k,0));transform-box:view-box;transform-origin:0 0}' +
     '.blm48-loading .bl-k1{--bl-k:.03}.blm48-loading .bl-k2{--bl-k:.06}.blm48-loading .bl-k3{--bl-k:.09}.blm48-loading .bl-k4{--bl-k:.12}' +

@@ -201,7 +201,7 @@ body.glass-mesh-bg.force-white-bg {
   border: 1px solid #ffeef2 !important;
   border-radius: var(--glass-radius) !important;
   box-shadow: var(--glass-shadow-lg) !important;
-  font-family: 'Quicksand', 'Kanit', sans-serif !important;
+  font-family: 'Quicksand', 'Google Sans', sans-serif !important;
 }
 
 .swal2-title {

@@ -19,7 +19,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/glassmorphism.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -40,7 +40,7 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             color: var(--text-dark);
             margin: 0; padding: 0; padding-top: 60px; padding-bottom: 40px;
         }
@@ -101,7 +101,7 @@
         .candidate-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
         .vote-action-btn {
             min-width: 84px; border: none; padding: 8px 16px; border-radius: 999px;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 14px; font-weight: 700;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 14px; font-weight: 700;
             cursor: pointer; transition: transform 0.1s; white-space: nowrap;
         }
         .vote-action-btn { background: #ffd75e; color: #222; }
@@ -122,12 +122,12 @@
         .gift-modal-avatar { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: #f5f5f5; border: none; box-shadow: 0 0 0 3px var(--frame, #ffde5b), 0 4px 14px rgba(0,0,0,0.12); }
         /* โหวตเพลง: รูปปกเพลงเป็นสี่เหลี่ยมมุมมน ไม่มีกรอบสีกลุ่ม */
         body.song-vote .gift-modal-avatar { border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
-        .gift-modal-target { font-family: 'Quicksand', 'Kanit', sans-serif; font-weight: 700; font-size: 21px; color: #111; text-transform: uppercase; margin-top: 10px; max-width: 80%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .gift-modal-target { font-family: 'Quicksand', 'Google Sans', sans-serif; font-weight: 700; font-size: 21px; color: #111; text-transform: uppercase; margin-top: 10px; max-width: 80%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         /* แท็บหมวดของขวัญ + Backpack (ของที่ซื้อเก็บไว้) อยู่แถวเดียวกัน */
         .gift-tabs { display: flex; border-top: 1px solid #eeeeee; border-bottom: 1px solid #eeeeee; flex-shrink: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
         .gift-tabs::-webkit-scrollbar { display: none; }
-        .gift-tab { flex: 1 0 auto; min-width: 25%; background: none; border: none; padding: 14px 10px 12px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 600; color: #b8b8b8; cursor: pointer; position: relative; white-space: nowrap; }
+        .gift-tab { flex: 1 0 auto; min-width: 25%; background: none; border: none; padding: 14px 10px 12px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 16px; font-weight: 600; color: #b8b8b8; cursor: pointer; position: relative; white-space: nowrap; }
         .gift-tab.active { color: #111; }
         .gift-tab.active::after { content: ''; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); width: 60%; height: 4px; border-radius: 2px; background: #ffd75e; }
 
@@ -157,7 +157,7 @@
         .gift-dot.active { background: #9a9a9a; }
 
         .gift-qty-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid #eeeeee; flex-shrink: 0; }
-        .gift-qty-btn { flex: 1; min-width: 0; background: #ffffff; color: #222; border: 1.5px solid #ececec; padding: 10px 0; border-radius: 999px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+        .gift-qty-btn { flex: 1; min-width: 0; background: #ffffff; color: #222; border: 1.5px solid #ececec; padding: 10px 0; border-radius: 999px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; white-space: nowrap; }
         .gift-qty-btn.custom { flex: 2; }
         .gift-qty-btn.active { border-color: #ffd75e; background: #fffdf4; }
         .gift-qty-btn:disabled { color: #cfcfcf; cursor: not-allowed; }
@@ -165,9 +165,9 @@
         .gift-send-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #f2f2f2; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); flex-shrink: 0; }
         .gift-balance-chip { display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 999px; padding: 6px 6px 6px 14px; min-width: 0; }
         .gift-balance-chip > i { color: #e2a63b; font-size: 20px; }
-        .gift-balance-chip span { font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 17px; font-weight: 600; color: #222; min-width: 40px; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+        .gift-balance-chip span { font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 17px; font-weight: 600; color: #222; min-width: 40px; text-align: center; overflow: hidden; text-overflow: ellipsis; }
         .gift-topup-btn { width: 34px; height: 34px; border-radius: 50%; background: #ffd36b; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 16px; text-decoration: none; flex-shrink: 0; }
-        .gift-send-btn { background: #ffd75e; color: #222; border: none; border-radius: 999px; padding: 14px 44px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+        .gift-send-btn { background: #ffd75e; color: #222; border: none; border-radius: 999px; padding: 14px 44px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
         .gift-send-btn:active { transform: scale(0.97); }
         .gift-send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
@@ -186,16 +186,16 @@
         .gift-confirm-qty { font-size: 24px; font-weight: 700; color: #111; white-space: nowrap; }
         .gift-confirm-divider { display: flex; align-items: center; gap: 14px; width: 100%; margin: 20px 0 8px; font-size: 17px; font-weight: 700; color: #222; }
         .gift-confirm-divider::before, .gift-confirm-divider::after { content: ''; flex: 1; height: 1px; background: #e6e6e6; }
-        .gift-confirm-total { display: flex; align-items: center; gap: 12px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 34px; font-weight: 700; color: #111; }
+        .gift-confirm-total { display: flex; align-items: center; gap: 12px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 34px; font-weight: 700; color: #111; }
         .gift-confirm-total i { color: #e2a63b; font-size: 30px; }
         .gift-confirm-note { font-size: 12.5px; color: #999; margin-top: 4px; text-align: center; }
         .gift-confirm-actions { display: flex; gap: 12px; padding: 16px 20px 18px; border-top: 1px solid #eeeeee; }
-        .gift-confirm-cancel, .gift-confirm-ok { flex: 1; border-radius: 999px; padding: 13px 0; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 17px; cursor: pointer; }
+        .gift-confirm-cancel, .gift-confirm-ok { flex: 1; border-radius: 999px; padding: 13px 0; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 17px; cursor: pointer; }
         .gift-confirm-cancel { background: #ffffff; color: #222; border: 1.5px solid #222; font-weight: 500; }
         .gift-confirm-ok { flex: 1.5; background: #ffd75e; color: #222; border: none; font-weight: 700; }
         .gift-confirm-actions.has-choice { gap: 8px; padding: 16px 14px 18px; }
         .gift-confirm-actions.has-choice .gift-confirm-cancel, .gift-confirm-actions.has-choice .gift-confirm-ok { flex: 1; font-size: 15px; padding: 12px 0; }
-        .gift-confirm-bag { flex: 1; border-radius: 999px; padding: 12px 0; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; background: #fffdf4; color: #222; border: 1.5px solid #ffd75e; }
+        .gift-confirm-bag { flex: 1; border-radius: 999px; padding: 12px 0; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; background: #fffdf4; color: #222; border: 1.5px solid #ffd75e; }
 
         @media (max-width: 360px) {
             .gift-item-img { width: 56px; height: 56px; }

@@ -38,7 +38,7 @@
 * { -webkit-tap-highlight-color: transparent; }
 
 body, body.glass-mesh-bg {
-    font-family: 'Quicksand', 'Kanit', sans-serif;
+    font-family: 'Quicksand', 'Google Sans', sans-serif;
     background: #ffffff !important;
     background-image: none !important;
     color: var(--admin-text);
@@ -73,7 +73,7 @@ body, body.glass-mesh-bg {
 }
 .top-navigation-bar .refresh-btn i { font-size: 18px; margin: 0; }
 .top-bar-title {
-    font-family: 'Quicksand', 'Kanit', sans-serif;
+    font-family: 'Quicksand', 'Google Sans', sans-serif;
     font-size: 17px; font-weight: 600; color: var(--admin-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }

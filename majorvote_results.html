@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <script src="assets/js/back-nav.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>BLM48 | ผลโหวต</title>
+    <title>BLM48 | Vote Results</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s32">
     <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s180">
     <link rel="icon" sizes="192x192" href="https://lh3.googleusercontent.com/d/1p6lV8bD6VVjR-Ys2EnpcQH1AOsnahQSp=s192">
@@ -15,7 +15,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/glassmorphism.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,7 +24,7 @@
 
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Quicksand', 'Kanit', sans-serif; color: #333; margin: 0; padding: 60px 0 50px; }
+        body { font-family: 'Quicksand', 'Google Sans', sans-serif; color: #333; margin: 0; padding: 60px 0 50px; }
         body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
 
         .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: center; z-index: 1000; }
@@ -90,30 +90,63 @@
         .rank-pct { display: block; font-size: 11.5px; color: #767676; font-weight: 600; }
 
         /* Stats */
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 12px 4px; }
-        .stat-card { background: #fafafa; border: 1px solid #f0f0f0; border-radius: 14px; padding: 12px; }
-        .stat-card.wide { grid-column: 1 / -1; background: #fff8e1; border-color: #ffe9a8; }
-        .stat-k { font-size: 12px; color: #767676; font-weight: 600; }
-        .stat-v { font-size: 19px; font-weight: 700; color: #111; margin-top: 4px; font-variant-numeric: tabular-nums; }
-        .stat-card.wide .stat-v { font-size: 26px; }
-        .stat-v.plus { color: #1f9d55; }
-        .sec-title { font-size: 15px; font-weight: 700; color: #111; margin: 22px 12px 4px; }
+        .hero { margin: 14px 12px 0; padding: 16px 16px 14px; border-radius: 18px; background: linear-gradient(140deg, #fff9e3 0%, #ffefb3 100%); border: 1px solid #ffe08a; position: relative; overflow: hidden; }
+        .hero::after { content: ""; position: absolute; right: -40px; top: -40px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,193,7,.16); pointer-events: none; }
+        .hero-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; position: relative; z-index: 1; }
+        .hero-k { font-size: 12.5px; color: #7a6000; font-weight: 600; }
+        .live-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 700; letter-spacing: .6px; color: #1f9d55; background: #fff; padding: 3px 9px; border-radius: 20px; }
+        .live-tag .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+        .live-tag.ended { color: #767676; }
+        .hero-v { display: flex; align-items: center; gap: 9px; margin-top: 8px; font-size: 30px; font-weight: 700; color: #111; line-height: 1.1; font-variant-numeric: tabular-nums; position: relative; z-index: 1; word-break: break-all; }
+        .hero-v i { font-size: 22px; }
+        .tk-ic { width: 1.1em; height: 1.1em; object-fit: contain; vertical-align: -0.18em; flex: 0 0 auto; }
+        .hero-v .tk-ic { width: 32px; height: 32px; }
+        .hero-unit { font-size: 12px; color: #7a6000; margin-top: 3px; font-weight: 600; position: relative; z-index: 1; }
+        .hero-foot { margin-top: 12px; padding-top: 10px; border-top: 1px dashed rgba(122,96,0,.22); font-size: 11.5px; color: #7a6000; display: flex; align-items: center; gap: 6px; position: relative; z-index: 1; }
+
+        .inc-grid { display: grid; grid-template-columns: 1fr 1fr; margin: 10px 12px 0; border: 1px solid #f0f0f0; border-radius: 16px; overflow: hidden; background: #fff; }
+        .inc-cell { padding: 12px 14px; min-width: 0; }
+        .inc-cell:nth-child(odd) { border-right: 1px solid #f3f3f3; }
+        .inc-cell:nth-child(-n+2) { border-bottom: 1px solid #f3f3f3; }
+        .inc-k { font-size: 11.5px; color: #767676; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .inc-k i { font-size: 11px; color: #f5a300; }
+        .inc-v { font-size: 18px; font-weight: 700; color: #b5b5b5; margin-top: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .inc-v.plus { color: #1f9d55; }
+
         .sec-hint { font-size: 12px; color: #767676; margin: 0 12px 8px; }
-        .tbl { width: calc(100% - 24px); margin: 0 12px; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-        .tbl th { text-align: left; font-size: 11.5px; color: #767676; font-weight: 600; padding: 8px 4px; border-bottom: 1px solid #eee; }
-        .tbl td { padding: 9px 4px; border-bottom: 1px solid #f5f5f5; color: #333; }
+        .card { margin: 14px 12px 0; border: 1px solid #f0f0f0; border-radius: 16px; background: #fff; padding: 14px 14px 12px; }
+        .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .card-title { font-size: 15px; font-weight: 700; color: #111; display: flex; align-items: center; gap: 7px; }
+        .card-title i { color: #f5a300; font-size: 14px; }
+        .card-sub { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; }
+        .card-hint { font-size: 11.5px; color: #767676; }
+        .empty-mini { text-align: center; color: #999; font-size: 13px; padding: 26px 0 14px; }
+
+        .tbl { width: 100%; margin-top: 6px; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .tbl th { text-align: left; font-size: 11px; color: #999; font-weight: 600; padding: 6px 2px 8px; border-bottom: 1px solid #eee; }
+        .tbl td { padding: 9px 2px; border-bottom: 1px solid #f6f6f6; color: #333; }
+        .tbl tr:last-child td { border-bottom: none; }
         .tbl th.r, .tbl td.r { text-align: right; }
         .tbl td.plus { color: #1f9d55; font-weight: 700; }
-        .tbl td.zero { color: #767676; }
+        .tbl td.zero { color: #b5b5b5; }
+        .tbl tr.peak td { background: #fffaeb; }
+        .tbl tr.peak td:first-child { border-radius: 8px 0 0 8px; }
+        .tbl tr.peak td:last-child { border-radius: 0 8px 8px 0; }
+        .peak-tag { display: inline-block; margin-left: 6px; font-size: 10px; font-weight: 700; color: #b37a00; background: #ffecb3; padding: 1px 6px; border-radius: 6px; vertical-align: 1px; }
+        .tbl-more { display: block; width: 100%; margin-top: 6px; border: none; background: #fafafa; border-radius: 10px; padding: 9px; font-family: inherit; font-size: 12.5px; font-weight: 600; color: #555; cursor: pointer; }
 
         /* กราฟแท่งคะแนน */
-        .chart-card { margin: 10px 12px 14px; border: 1px solid #f0f0f0; border-radius: 14px; padding: 12px 12px 10px; }
-        .chart-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-        .seg { display: inline-flex; border: 1px solid #e6e6e6; border-radius: 8px; overflow: hidden; }
-        .seg button { border: none; background: #fff; color: #555; font-family: inherit; font-size: 12px; font-weight: 600; padding: 5px 11px; cursor: pointer; }
-        .seg button.active { background: #222; color: #fff; }
-        .chart-unit { font-size: 11.5px; color: #767676; }
-        .chart { position: relative; display: flex; height: 160px; padding-left: 34px; }
+        .seg { display: inline-flex; background: #f3f3f3; border-radius: 10px; padding: 3px; }
+        .seg button { border: none; background: transparent; color: #767676; font-family: inherit; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+        .seg button.active { background: #fff; color: #111; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+        .seg.sm button { font-size: 11.5px; padding: 4px 10px; }
+        .readout { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 12px; padding: 10px 12px; background: #fffaeb; border-radius: 12px; font-variant-numeric: tabular-nums; }
+        .readout-l { font-size: 12px; color: #7a6000; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .readout-r { text-align: right; flex: 0 0 auto; }
+        .readout-v { font-size: 17px; font-weight: 700; color: #1f9d55; }
+        .readout-v.zero { color: #b5b5b5; }
+        .readout-c { display: block; font-size: 11px; color: #767676; margin-top: 1px; }
+        .chart { position: relative; display: flex; height: 160px; padding-left: 34px; margin-top: 22px; }
         .chart-grid { position: absolute; left: 34px; right: 0; top: 0; bottom: 0; pointer-events: none; }
         .chart-grid div { position: absolute; left: 0; right: 0; border-top: 1px dashed #eee; }
         .chart-grid span { position: absolute; left: -34px; width: 30px; text-align: right; top: -7px; font-size: 10px; color: #999; font-variant-numeric: tabular-nums; }
@@ -125,8 +158,6 @@
         .chart-bar .peak { position: absolute; left: 50%; transform: translateX(-50%); font-size: 10.5px; font-weight: 700; color: #111; white-space: nowrap; }
         .chart-x { display: flex; gap: 2px; padding-left: 34px; margin-top: 4px; }
         .chart-x span { flex: 1; min-width: 0; text-align: center; font-size: 10px; color: #999; white-space: nowrap; overflow: visible; }
-        .chart-cap { text-align: center; font-size: 12.5px; color: #555; margin-top: 8px; font-variant-numeric: tabular-nums; }
-        .chart-cap b { color: #111; }
 
         .notice { margin: 18px 12px 0; padding: 14px; border-radius: 14px; background: #f7f7f7; color: #666; font-size: 13.5px; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start; }
         .notice i { font-size: 18px; margin-top: 2px; color: #767676; }
@@ -137,8 +168,8 @@
 <body class="glass-mesh-bg force-white-bg">
 
 <div class="top-navbar">
-    <button class="nav-back" type="button" title="กลับ" onclick="goBack()"><i class="fa-solid fa-chevron-left"></i></button>
-    <div class="nav-title">ผลโหวต</div>
+    <button class="nav-back" type="button" title="Back" onclick="goBack()"><i class="fa-solid fa-chevron-left"></i></button>
+    <div class="nav-title">Vote Results</div>
 </div>
 
 <div class="wrap">
@@ -152,7 +183,7 @@
         <button type="button" class="main-tab" data-tab="stats" onclick="setTab('stats')"><span>Stats</span></button>
     </div>
 
-    <div id="view"><div class="loading-view"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</div></div>
+    <div id="view"><div class="loading-view"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div></div>
     <div class="updated-at" id="updated-at"></div>
 </div>
 
@@ -169,14 +200,15 @@
     function fmtTime(ts, opts) {
         const d = new Date(ts);
         if (isNaN(d.getTime())) return '-';
-        return d.toLocaleString('th-TH', Object.assign({ timeZone: 'Asia/Bangkok' }, opts || { dateStyle: 'medium', timeStyle: 'short' }));
+        return d.toLocaleString('en-GB', Object.assign({ timeZone: 'Asia/Bangkok' }, opts || { dateStyle: 'medium', timeStyle: 'short' }));
     }
     function hm(ts) { return fmtTime(ts, { hour: '2-digit', minute: '2-digit' }); }
     function tokenIcon() {
         const t = String(data && data.tokenType || '').toLowerCase();
-        if (t === 'getoken') return '<i class="fa-solid fa-gem" style="color:#4dabf7"></i>';
+        // ใช้รูปเหรียญเดียวกับหน้า Wallet
+        if (t === 'getoken') return '<img class="tk-ic" src="assets/images/getoken.png" alt="GE Token">';
         if (t === 'gift') return '<i class="fa-solid fa-gift" style="color:#ff69b4"></i>';
-        return '<i class="fa-solid fa-coins" style="color:#f5b700"></i>';
+        return '<img class="tk-ic" src="assets/images/token.png" alt="Token">';
     }
     function tokenName() {
         const t = String(data && data.tokenType || '').toLowerCase();
@@ -190,7 +222,7 @@
     function rounds() {
         const list = (data.checkpoints || []).map((c, i) => ({
             key: 'cp:' + c.id,
-            label: c.label || ('ผลด่วน ' + (i + 1)),
+            label: c.label || ('Update ' + (i + 1)),
             at: c.at, total: Number(c.totalVotes || 0), ranking: c.ranking || [], isPublic: c.isPublic !== false
         })).filter(r => r.isPublic);
         if (data.live && data.timeStatus === 'closed') {
@@ -215,6 +247,7 @@
     function setStatsView(v) {
         statsView = v;
         chartSel = null;
+        tblExpanded = false;
         try { localStorage.setItem('blm48_vote_stats_view', v); } catch (e) {}
         render();
     }
@@ -239,7 +272,7 @@
 
     // rows: [{label, xLabel, inc, cum}]
     function renderChart(rows) {
-        if (!rows.length) return '';
+        if (!rows.length) return '<div class="empty-mini">No data yet</div>';
         rows = rows.slice().reverse();   // server ส่งใหม่สุดก่อน -> กราฟเรียงเก่า→ใหม่ ซ้าย→ขวา
         const key = chartMode === 'cum' ? 'cum' : 'inc';
         const vals = rows.map(r => Math.max(0, Number(r[key] || 0)));
@@ -259,24 +292,42 @@
         const xs = rows.map((r, i) => `<span>${i % step === 0 ? escapeHtml(r.xLabel) : ''}</span>`).join('');
         const s = rows[sel];
 
-        return `<div class="chart-card">
-            <div class="chart-top">
-              <div class="seg">
-                <button type="button" class="${key === 'inc' ? 'active' : ''}" onclick="setChartMode('inc')">เพิ่มขึ้น</button>
-                <button type="button" class="${key === 'cum' ? 'active' : ''}" onclick="setChartMode('cum')">สะสม</button>
-              </div>
-              <span class="chart-unit">${statsView === 'hourly' ? 'ทุก 1 ชั่วโมง' : 'รายวัน'}</span>
+        const sInc = Number(s.inc || 0);
+        return `<div class="readout">
+              <span class="readout-l">${escapeHtml(s.label)}</span>
+              <span class="readout-r"><span class="readout-v ${sInc > 0 ? '' : 'zero'}">${sInc > 0 ? '+' : ''}${fmt(sInc)}</span><span class="readout-c">Total ${fmt(s.cum)}</span></span>
             </div>
-            <div class="chart" style="margin-top:16px;"><div class="chart-grid">${grid}</div><div class="chart-bars">${bars}</div></div>
-            <div class="chart-x">${xs}</div>
-            <div class="chart-cap">${escapeHtml(s.label)}: <b>+${fmt(s.inc)}</b> · สะสม ${fmt(s.cum)}</div>
+            <div class="chart"><div class="chart-grid">${grid}</div><div class="chart-bars">${bars}</div></div>
+            <div class="chart-x">${xs}</div>`;
+    }
+
+    // ตาราง: แสดง 8 แถวแรกก่อน กด "ดูทั้งหมด" เพื่อขยาย
+    let tblExpanded = false;
+    function toggleTbl() { tblExpanded = !tblExpanded; render(); }
+    function renderTable(head, rows) {
+        if (!rows.length) return '';
+        const peak = Math.max(...rows.map(r => Number(r.inc || 0)));
+        const LIMIT = 8;
+        const shown = tblExpanded ? rows : rows.slice(0, LIMIT);
+        const body = shown.map(r => {
+            const inc = Number(r.inc || 0);
+            const isPeak = peak > 0 && inc === peak;
+            return `<tr class="${isPeak ? 'peak' : ''}"><td>${escapeHtml(r.label)}${isPeak ? '<span class="peak-tag">Peak</span>' : ''}</td><td class="r ${inc > 0 ? 'plus' : 'zero'}">${inc > 0 ? '+' + fmt(inc) : '0'}</td><td class="r">${fmt(r.cum)}</td></tr>`;
+        }).join('');
+        const more = rows.length > LIMIT
+            ? `<button type="button" class="tbl-more" onclick="toggleTbl()">${tblExpanded ? 'Show less <i class="fa-solid fa-chevron-up"></i>' : 'Show all ' + rows.length + ' rows <i class="fa-solid fa-chevron-down"></i>'}</button>`
+            : '';
+        return `<div class="card">
+            <div class="card-head"><div class="card-title"><i class="fa-solid fa-table-list"></i>${statsView === 'hourly' ? 'Hourly table' : 'Daily table'}</div></div>
+            <table class="tbl"><thead><tr><th>${head}</th><th class="r">Added</th><th class="r">Total</th></tr></thead><tbody>${body}</tbody></table>
+            ${more}
         </div>`;
     }
 
     function render() {
         const view = document.getElementById('view');
         if (data.timeStatus === 'upcoming') {
-            view.innerHTML = `<div class="notice"><i class="fa-regular fa-clock"></i><div>กิจกรรมนี้จะเปิดโหวต <b>${escapeHtml(fmtTime(data.startTime))}</b><br>ผลโหวตและสถิติจะแสดงหลังเปิดโหวตค่ะ</div></div>`;
+            view.innerHTML = `<div class="notice"><i class="fa-regular fa-clock"></i><div>Voting opens <b>${escapeHtml(fmtTime(data.startTime))}</b><br>Results and stats will appear once voting opens.</div></div>`;
             return;
         }
         // ยังไม่ประกาศผล: ไม่มีส่วน Results เลย แสดงแค่ Stats
@@ -302,10 +353,10 @@
         let diffHtml = '';
         if (prev && prev.total > 0) {
             const d = cur.total - prev.total;
-            diffHtml = `<span class="sum-diff">+${fmt(d)} (${(d / prev.total * 100).toFixed(1)}%) จาก${escapeHtml(prev.label)}</span>`;
+            diffHtml = `<span class="sum-diff">+${fmt(d)} (${(d / prev.total * 100).toFixed(1)}%) since ${escapeHtml(prev.label)}</span>`;
         }
-        html += `<div class="sum-row"><span class="sum-total">${tokenIcon()} ${fmt(cur.total)}</span><span class="sum-label">${tokenName()} รวม</span>${diffHtml}</div>`;
-        html += `<div class="sum-note">ตัดยอด ${escapeHtml(fmtTime(cur.at))}</div>`;
+        html += `<div class="sum-row"><span class="sum-total">${tokenIcon()} ${fmt(cur.total)}</span><span class="sum-label">Total ${tokenName()}</span>${diffHtml}</div>`;
+        html += `<div class="sum-note">As of ${escapeHtml(fmtTime(cur.at))}</div>`;
 
         // อันดับรอบก่อน ใช้ทำลูกศรขึ้น/ลง
         const prevRank = {};
@@ -325,7 +376,7 @@
             }
             const above = i > 0 ? ranking[i - 1] : null;
             const gap = above ? Number(above.votes || 0) - Number(r.votes || 0) : 0;
-            const sub = above && gap > 0 ? `ห่างอันดับ ${escapeHtml(above.rank)} อยู่ ${fmt(gap)}` : (i === 0 && ranking[1] ? `นำอันดับ 2 อยู่ ${fmt(Number(r.votes || 0) - Number(ranking[1].votes || 0))}` : '');
+            const sub = above && gap > 0 ? `${fmt(gap)} behind #${escapeHtml(above.rank)}` : (i === 0 && ranking[1] ? `Leads #2 by ${fmt(Number(r.votes || 0) - Number(ranking[1].votes || 0))}` : '');
             const w = Math.max(0, Math.min(100, Number(r.votes || 0) / maxVotes * 100));
             return `
               <div class="rank-row ${rank <= 3 ? 'r' + rank : ''}">
@@ -365,7 +416,7 @@
         });
         const rest = ranking.map((r, i) => ({ r, i })).filter(x => tierOf(Number(x.r.rank)) === -1);
         if (rest.length) {
-            html += `<div class="tier-head other"><span class="tier-name">อันดับอื่นๆ</span><span class="tier-range">#${start}+</span></div>`;
+            html += `<div class="tier-head other"><span class="tier-name">Other ranks</span><span class="tier-range">#${start}+</span></div>`;
             html += `<div class="rank-list">${rest.map(x => rowHtml(x.r, x.i)).join('')}</div>`;
         }
         return html;
@@ -373,56 +424,71 @@
 
     function renderStats() {
         const s = data.stats;
-        if (!s) return `<div class="notice"><i class="fa-solid fa-hourglass-half"></i><div>สถิติจะแสดงหลังประกาศผลค่ะ</div></div>`;
+        if (!s) return `<div class="notice"><i class="fa-solid fa-hourglass-half"></i><div>Stats will be shown after the results are announced.</div></div>`;
         const open = data.timeStatus === 'open';
         const plus = v => Number(v) > 0 ? '+' + fmt(v) : '0';
-        const cell = v => `<td class="r ${Number(v) > 0 ? 'plus' : 'zero'}">${plus(v)}</td>`;
+        const inc = (icon, k, v) => `<div class="inc-cell"><div class="inc-k"><i class="${icon}"></i>${k}</div><div class="inc-v ${Number(v) > 0 ? 'plus' : ''}">${plus(v)}</div></div>`;
 
-        let html = `<div class="stat-grid">
-            <div class="stat-card wide"><div class="stat-k">คะแนนรวมทั้งหมด (${tokenName()})</div><div class="stat-v">${tokenIcon()} ${fmt(s.total)}</div></div>`;
-        if (open) {
-            html += `
-            <div class="stat-card"><div class="stat-k">5 นาทีล่าสุด</div><div class="stat-v plus">${plus(s.inc5m)}</div></div>
-            <div class="stat-card"><div class="stat-k">15 นาทีล่าสุด</div><div class="stat-v plus">${plus(s.inc15m)}</div></div>
-            <div class="stat-card"><div class="stat-k">1 ชั่วโมงล่าสุด</div><div class="stat-v plus">${plus(s.inc1h)}</div></div>
-            <div class="stat-card"><div class="stat-k">วันนี้</div><div class="stat-v plus">${plus(s.incToday)}</div></div>`;
-        }
-        html += `</div>`;
-        if (s.lastVoteAt) html += `<div class="sec-hint" style="margin-top:6px;">คะแนนเข้าล่าสุด ${escapeHtml(fmtTime(s.lastVoteAt))}</div>`;
-
-        // เลือกดูตารางรายชั่วโมง หรือ รายวัน
-        html += `<div class="round-pills" style="padding-top:18px;">
-            <button type="button" class="round-pill ${statsView === 'hourly' ? 'active' : ''}" onclick="setStatsView('hourly')">รายชั่วโมง</button>
-            <button type="button" class="round-pill ${statsView === 'daily' ? 'active' : ''}" onclick="setStatsView('daily')">รายวัน</button>
+        // การ์ดยอดรวม
+        let html = `<div class="hero">
+            <div class="hero-top">
+              <span class="hero-k">Total votes</span>
+              ${open ? '<span class="live-tag"><span class="dot"></span>LIVE</span>' : '<span class="live-tag ended"><span class="dot"></span>CLOSED</span>'}
+            </div>
+            <div class="hero-v">${tokenIcon()}<span>${fmt(s.total)}</span></div>
+            <div class="hero-unit">${tokenName()}</div>
+            ${s.lastVoteAt ? `<div class="hero-foot"><i class="fa-regular fa-clock"></i>Last vote ${escapeHtml(fmtTime(s.lastVoteAt))}</div>` : ''}
         </div>`;
-        if (statsView === 'hourly') {
-            html += `<div class="sec-hint" style="margin-top:8px;">24 ชั่วโมง${open ? 'ล่าสุด' : 'ก่อนปิดโหวต'}</div>`;
-            html += renderChart((s.hourly || []).map(r => {
+
+        if (open) {
+            html += `<div class="inc-grid">
+                ${inc('fa-solid fa-bolt', 'Last 5 min', s.inc5m)}
+                ${inc('fa-solid fa-stopwatch', 'Last 15 min', s.inc15m)}
+                ${inc('fa-regular fa-hourglass-half', 'Last 1 hour', s.inc1h)}
+                ${inc('fa-regular fa-calendar', 'Today', s.incToday)}
+            </div>`;
+        }
+
+        const hourly = statsView === 'hourly';
+        const rows = hourly
+            ? (s.hourly || []).map(r => {
                 const end = new Date(new Date(r.t).getTime() + 3600000);
                 return {
                     label: fmtTime(r.t, { day: 'numeric', month: 'short' }) + ' ' + hm(r.t) + '-' + hm(end),
+                    tLabel: fmtTime(r.t, { day: 'numeric', month: 'short' }) + ' ' + hm(r.t),
                     xLabel: hm(r.t), inc: r.inc, cum: r.cum
                 };
-            }));
-            html += `
-              <table class="tbl"><thead><tr><th>ชั่วโมง</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
-              ${(s.hourly || []).map(r => `<tr><td>${escapeHtml(fmtTime(r.t, { day: 'numeric', month: 'short' }))} ${escapeHtml(hm(r.t))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
-              </tbody></table>`;
-        } else {
-            html += `<div class="sec-hint" style="margin-top:8px;">ตั้งแต่เปิดโหวต (เวลาไทย)</div>`;
-            html += renderChart((s.daily || []).map(r => {
+            })
+            : (s.daily || []).map(r => {
                 const d = new Date(r.d + 'T00:00:00+07:00');
                 return {
-                    label: d.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' }),
-                    xLabel: d.toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'numeric' }),
+                    label: d.toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short' }),
+                    tLabel: d.toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: '2-digit' }),
+                    xLabel: d.toLocaleDateString('en-GB', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'numeric' }),
                     inc: r.inc, cum: r.cum
                 };
-            }));
-            html += `
-              <table class="tbl"><thead><tr><th>วันที่</th><th class="r">เพิ่มขึ้น</th><th class="r">ยอดสะสม</th></tr></thead><tbody>
-              ${(s.daily || []).map(r => `<tr><td>${escapeHtml(new Date(r.d + 'T00:00:00+07:00').toLocaleDateString('th-TH', { timeZone: 'Asia/Bangkok', day: 'numeric', month: 'short', year: '2-digit' }))}</td>${cell(r.inc)}<td class="r">${fmt(r.cum)}</td></tr>`).join('') || '<tr><td colspan="3" class="zero">ยังไม่มีข้อมูล</td></tr>'}
-              </tbody></table>`;
-        }
+            });
+
+        // การ์ดกราฟ: เลือกรายชั่วโมง/รายวัน + เพิ่มขึ้น/สะสม
+        html += `<div class="card">
+            <div class="card-head">
+              <div class="card-title"><i class="fa-solid fa-chart-column"></i>Votes in</div>
+              <div class="seg">
+                <button type="button" class="${hourly ? 'active' : ''}" onclick="setStatsView('hourly')">Hourly</button>
+                <button type="button" class="${!hourly ? 'active' : ''}" onclick="setStatsView('daily')">Daily</button>
+              </div>
+            </div>
+            <div class="card-sub">
+              <span class="card-hint">${hourly ? (open ? 'Last 24 hours' : 'Last 24 hours before close') : 'Since voting opened (Thai time)'}</span>
+              <div class="seg sm">
+                <button type="button" class="${chartMode !== 'cum' ? 'active' : ''}" onclick="setChartMode('inc')">Added</button>
+                <button type="button" class="${chartMode === 'cum' ? 'active' : ''}" onclick="setChartMode('cum')">Total</button>
+              </div>
+            </div>
+            ${renderChart(rows)}
+        </div>`;
+
+        html += renderTable(hourly ? 'Hour' : 'Date', rows.map(r => ({ label: r.tLabel, inc: r.inc, cum: r.cum })));
         return html;
     }
 
@@ -430,10 +496,10 @@
         document.getElementById('ev-title').textContent = data.title || 'Major Vote';
         document.body.classList.toggle('song-vote', isSong());
         const st = data.timeStatus;
-        const chip = st === 'open' ? '<span class="chip open"><span class="dot"></span>กำลังโหวต</span>'
-                   : st === 'upcoming' ? '<span class="chip upcoming"><i class="fa-regular fa-clock"></i>ยังไม่เปิดโหวต</span>'
-                   : '<span class="chip closed"><i class="fa-solid fa-flag-checkered"></i>ปิดโหวตแล้ว</span>';
-        const endTxt = data.endTime ? (st === 'closed' ? 'ปิดโหวต ' : 'ปิดโหวต ') + escapeHtml(fmtTime(data.endTime)) : '';
+        const chip = st === 'open' ? '<span class="chip open"><span class="dot"></span>Voting open</span>'
+                   : st === 'upcoming' ? '<span class="chip upcoming"><i class="fa-regular fa-clock"></i>Not open yet</span>'
+                   : '<span class="chip closed"><i class="fa-solid fa-flag-checkered"></i>Voting closed</span>';
+        const endTxt = data.endTime ? (st === 'closed' ? 'Closed ' : 'Closes ') + escapeHtml(fmtTime(data.endTime)) : '';
         document.getElementById('ev-meta').innerHTML = chip + (endTxt ? `<span>${endTxt}</span>` : '');
         // แถบ Results/Stats โชว์เฉพาะเมื่อมีผลประกาศแล้ว (ก่อนนั้นมีแต่ Stats)
         document.getElementById('main-tabs').style.display = (st === 'upcoming' || !hasResults()) ? 'none' : 'flex';
@@ -445,7 +511,7 @@
         try {
             const res = await blm48GetVoteResults(campaignId);
             if (!res || res.status !== 'success') {
-                document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-circle-exclamation"></i><div>${escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ')}</div></div>`;
+                document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-circle-exclamation"></i><div>${escapeHtml((res && res.message) || 'Could not load data')}</div></div>`;
                 return;
             }
             const firstLoad = !data;
@@ -457,9 +523,9 @@
             }
             renderHead();
             render();
-            document.getElementById('updated-at').textContent = 'อัปเดต ' + fmtTime(res.serverTime, { dateStyle: 'medium', timeStyle: 'medium' });
+            document.getElementById('updated-at').textContent = 'Updated ' + fmtTime(res.serverTime, { dateStyle: 'medium', timeStyle: 'medium' });
         } catch (e) {
-            if (!data) document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-wifi"></i><div>เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้งนะคะ</div></div>`;
+            if (!data) document.getElementById('view').innerHTML = `<div class="notice"><i class="fa-solid fa-wifi"></i><div>Could not reach the server. Please try again.</div></div>`;
         }
         scheduleRefresh();
     }

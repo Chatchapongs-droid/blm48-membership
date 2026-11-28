@@ -22,7 +22,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -53,9 +53,9 @@
           --caramel: #6e4326;
           --caramel-soft: #8b5a3c;
 
-          --font-display: 'Quicksand', 'Kanit', sans-serif;
-          --font-heading: 'Quicksand', 'Kanit', sans-serif;
-          --font-body: 'Quicksand', 'Kanit', sans-serif;
+          --font-display: 'Quicksand', 'Google Sans', sans-serif;
+          --font-heading: 'Quicksand', 'Google Sans', sans-serif;
+          --font-body: 'Quicksand', 'Google Sans', sans-serif;
 
           /* 🥤 Cream Soda poster palette: soft sky wash + bubble-cluster blue/berry over a cream ground.
              อ้างอิงจากภาพโปสเตอร์ครีมโซดา - ใช้เป็นภาษาดีไซน์ร่วมของหน้า Shop ทั้งหน้า ไม่ใช่การก็อปสีตรงๆ */
@@ -69,7 +69,7 @@
 
         html { scroll-behavior: smooth; }
         body {
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             margin: 0; padding: 0; min-height: 100vh;
             background-image: radial-gradient(var(--cafe-green) 1px, transparent 1.3px);
             background-size: 24px 24px;
@@ -181,9 +181,9 @@
             .nav-btn { width: 44px; height: 44px; font-size: 1.3rem; }
         }
       
-        /* บังคับหน้าต่างทั้งหมดและ SweetAlert ให้ใช้ฟอนต์ Nunito และ Kanit เท่านั้น */
+        /* บังคับหน้าต่างทั้งหมดและ SweetAlert ให้ใช้ฟอนต์ Quicksand และ Google Sans เท่านั้น */
         .confirm-box, .blm-overlay, .swal2-popup, .swal2-title, .swal2-html-container, .swal2-confirm, .swal2-cancel {
-            font-family: 'Quicksand', 'Kanit', sans-serif !important;
+            font-family: 'Quicksand', 'Google Sans', sans-serif !important;
         }
 
         /* ✨ SweetAlert2 ใช้ดีไซน์กระจกฝ้ากลางร่วมกับทุกหน้า (assets/css/glassmorphism.css)
@@ -753,7 +753,7 @@
         }
 
         /* ชื่อสินค้า (มือถือ/ค่าเริ่มต้น) - ใช้ min-height คำนวณจาก line-height แทน height ตายตัว
-           เดิม height:36px !important ไม่ตรงกับความสูงจริงของ 2 บรรทัด (font ไทย/Kanit สูงกว่าที่คิด) ทำให้บรรทัดที่ 2 โดนตัดครึ่ง
+           เดิม height:36px !important ไม่ตรงกับความสูงจริงของ 2 บรรทัด (font ไทย/Google Sans สูงกว่าที่คิด) ทำให้บรรทัดที่ 2 โดนตัดครึ่ง
            -webkit-line-clamp เป็นตัวตัดคำจริง ส่วน min-height แค่กันการ์ดเตี้ย/สูงไม่เท่ากันเวลาชื่อสั้น-ยาวต่างกัน ไม่มีทางบังตัวอักษรเอง */
         .merch-title, .card-title {
             font-size: 0.85rem !important;
@@ -947,7 +947,7 @@
             display: block;
         }
         .shop-empty-state span {
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             color: #bbb;
             font-size: 13px;
         }
@@ -1127,7 +1127,7 @@
             justify-content: center;
             align-items: center;
             z-index: 9999;
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
         }
 
         .shop-loading-content {
@@ -1225,7 +1225,7 @@
             text-decoration: none;
             padding: 12px 28px;
             border-radius: 25px;
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             font-size: 0.95rem;
             font-weight: 500;
             display: flex;
@@ -1358,7 +1358,7 @@
         .cart-badge {
             position: absolute; top: 4px; right: 2px; min-width: 18px; height: 18px; padding: 0 5px;
             border-radius: 9px; background: #e1546f; color: #fff; font-size: 11px; font-weight: 700;
-            line-height: 18px; text-align: center; font-family: 'Quicksand', 'Kanit', sans-serif;
+            line-height: 18px; text-align: center; font-family: 'Quicksand', 'Google Sans', sans-serif;
         }
         /* แจ้งเตือนสั้นๆ ตอนหยิบใส่ตะกร้า (ไม่ใช่ป๊อปอัป ไม่ต้องกดปิด) */
         .cart-toast {
@@ -1367,7 +1367,7 @@
             background: #222; color: #fff; border-radius: 999px; padding: 10px 14px 10px 18px;
             display: flex; align-items: center; gap: 12px; font-size: 14px; white-space: nowrap;
             box-shadow: 0 6px 18px rgba(0,0,0,0.18); transition: opacity .2s, transform .2s;
-            font-family: 'Quicksand', 'Kanit', sans-serif; max-width: calc(100vw - 24px);
+            font-family: 'Quicksand', 'Google Sans', sans-serif; max-width: calc(100vw - 24px);
         }
         .cart-toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
         .cart-toast i { color: #7cd992; }
@@ -1390,7 +1390,7 @@
         .shop-tabs::-webkit-scrollbar { display: none; }
         .shop-tab {
             flex-shrink: 0; background: none; border: none; cursor: pointer;
-            font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 600;
+            font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 16px; font-weight: 600;
             color: #aaa; padding: 14px 0 12px; position: relative;
         }
         a.shop-tab { text-decoration: none; display: inline-block; }

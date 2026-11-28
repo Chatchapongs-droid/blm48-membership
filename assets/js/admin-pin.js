@@ -35,7 +35,7 @@
     st.id = 'blm48-pin-style';
     st.textContent = `
       .pin-screen { position: fixed; inset: 0; z-index: 5000; background: #fff; display: flex; flex-direction: column; align-items: center;
-        font-family: 'Quicksand', 'Kanit', sans-serif; color: #222; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
+        font-family: 'Quicksand', 'Google Sans', sans-serif; color: #222; padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
       .pin-cancel { position: absolute; top: calc(14px + env(safe-area-inset-top)); right: 16px; background: none; border: none;
         color: #999; font-family: inherit; font-size: 17px; cursor: pointer; padding: 8px; }
       .pin-body { margin: auto 0; display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 320px; }

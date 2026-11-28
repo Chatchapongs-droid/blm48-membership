@@ -46,7 +46,7 @@
     st.id = 'blm48-ads-css';
     st.textContent = `
       .ad-art { position: relative; width: 100%; aspect-ratio: 3 / 1; overflow: hidden; container-type: inline-size;
-        font-family: 'Quicksand','Kanit',sans-serif; --ad-bg1:#ffd43b; --ad-bg2:#fff3bf; --ad-ink:#222; --ad-sub:#5c4a00; --ad-cta-bg:#222; --ad-cta-ink:#fff; --ad-blob:rgba(255,255,255,.45); --ad-kick-bg:rgba(255,255,255,.75); --ad-kick-ink:#7a5c00;
+        font-family: 'Quicksand','Google Sans',sans-serif; --ad-bg1:#ffd43b; --ad-bg2:#fff3bf; --ad-ink:#222; --ad-sub:#5c4a00; --ad-cta-bg:#222; --ad-cta-ink:#fff; --ad-blob:rgba(255,255,255,.45); --ad-kick-bg:rgba(255,255,255,.75); --ad-kick-ink:#7a5c00;
         background: linear-gradient(115deg, var(--ad-bg1) 0%, var(--ad-bg2) 100%); color: var(--ad-ink); user-select: none; }
       .ad-art.t-pink { --ad-bg1:#ff8fab; --ad-bg2:#ffe3ec; --ad-ink:#3a1424; --ad-sub:#6e2a44; --ad-cta-bg:#fff; --ad-cta-ink:#d6336c; --ad-kick-ink:#b02a5b; }
       .ad-art.t-blue { --ad-bg1:#74b4ff; --ad-bg2:#e3f0ff; --ad-ink:#0f2a4d; --ad-sub:#284b78; --ad-cta-bg:#0f2a4d; --ad-cta-ink:#fff; --ad-kick-ink:#1d5fb8; }

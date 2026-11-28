@@ -49,7 +49,7 @@
     '.cs-root .c-fall.f4{animation-duration:10s;animation-delay:-1.5s}' +
     '.cs-root .c-fall.f5{animation-duration:8.5s;animation-delay:-7s}' +
     '.cs-root .c-fall.f6{animation-duration:9s;animation-delay:-4.2s}' +
-    ".cs-root .cs-name{position:absolute;left:0;right:0;text-align:center;font-family:'Quicksand','Kanit',sans-serif;font-weight:700;color:#2F74DB;white-space:nowrap;letter-spacing:.02em}" +
+    ".cs-root .cs-name{position:absolute;left:0;right:0;text-align:center;font-family:'Quicksand','Google Sans',sans-serif;font-weight:700;color:#2F74DB;white-space:nowrap;letter-spacing:.02em}" +
     '@keyframes cVeil{0%{opacity:1}8%{opacity:0}92%{opacity:0}100%{opacity:1}}' +
     '@keyframes cBg{0%{transform:scale(1.08)}22%,100%{transform:scale(1)}}' +
     '@keyframes cPhoto{0%,6%{opacity:0;transform:translateY(48px) scale(.92);animation-timing-function:cubic-bezier(.16,1,.3,1)}22%{opacity:1;transform:translateY(0) scale(1);animation-timing-function:ease-in-out}62%{opacity:1;transform:translateY(0) scale(1.012);animation-timing-function:ease-in-out}100%{opacity:1;transform:translateY(0) scale(1)}}' +

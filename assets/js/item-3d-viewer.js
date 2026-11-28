@@ -61,7 +61,7 @@
     st.id = 'blm48-3d-style';
     st.textContent = `
       .v3d-overlay { position: fixed; inset: 0; z-index: 21000; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        background: radial-gradient(circle at 50% 40%, #f0454b 0%, #c8151d 55%, #8f0c12 100%); font-family: 'Quicksand', 'Kanit', sans-serif; color: #fff;
+        background: radial-gradient(circle at 50% 40%, #f0454b 0%, #c8151d 55%, #8f0c12 100%); font-family: 'Quicksand', 'Google Sans', sans-serif; color: #fff;
         touch-action: none; user-select: none; -webkit-user-select: none; opacity: 0; transition: opacity 0.25s; }
       .v3d-overlay.show { opacity: 1; }
       /* 🥤 เครื่องดื่ม BLM48 Cafe: ฉากหลังเป็นร้านคาเฟ่ (เบลอนิด + ไล่มืดบน/ล่างให้ตัวหนังสืออ่านง่าย) */

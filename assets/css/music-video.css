@@ -14,7 +14,7 @@
   cursor: pointer;
   scroll-snap-align: start;
   transition: transform 0.2s ease;
-  font-family: 'Quicksand', 'Kanit', sans-serif;
+  font-family: 'Quicksand', 'Google Sans', sans-serif;
 }
 .mv-card:active { transform: scale(0.98); }
 

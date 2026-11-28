@@ -8,7 +8,7 @@
  */
 (function () {
   const STYLE = `
-  .ls-overlay { position: fixed; inset: 0; z-index: 21000; overflow-y: auto; font-family: 'Quicksand', 'Kanit', sans-serif; color: #2b2b2b;
+  .ls-overlay { position: fixed; inset: 0; z-index: 21000; overflow-y: auto; font-family: 'Quicksand', 'Google Sans', sans-serif; color: #2b2b2b;
     background: radial-gradient(120% 70% at 50% 0%, #fff6db 0%, #ffffff 55%); opacity: 0; transition: opacity .25s; }
   .ls-overlay.show { opacity: 1; }
   .ls-wrap { max-width: 620px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top)) 12px calc(28px + env(safe-area-inset-bottom)); min-height: 100%;

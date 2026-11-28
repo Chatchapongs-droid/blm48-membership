@@ -19,11 +19,11 @@
 .gift-modal-close { position: absolute; top: 12px; right: 14px; background: #f3f3f3; border: none; width: 30px; height: 30px; border-radius: 50%; color: #888; cursor: pointer; font-size: 14px; z-index: 2; }
 .gift-modal-recipient { display: flex; flex-direction: column; align-items: center; margin-top: -56px; padding-bottom: 12px; flex-shrink: 0; }
 .gift-modal-avatar { width: 112px; height: 112px; border-radius: 50%; object-fit: cover; background: #f5f5f5; border: none; box-shadow: 0 0 0 3px var(--frame, #ffde5b), 0 4px 14px rgba(0,0,0,0.12); }
-.gift-modal-target { font-family: 'Quicksand', 'Kanit', sans-serif; font-weight: 700; font-size: 21px; color: #111; text-transform: uppercase; margin-top: 10px; max-width: 80%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gift-modal-target { font-family: 'Quicksand', 'Google Sans', sans-serif; font-weight: 700; font-size: 21px; color: #111; text-transform: uppercase; margin-top: 10px; max-width: 80%; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* แท็บหมวดของขวัญ + Backpack (ของที่ซื้อเก็บไว้) อยู่แถวเดียวกัน */
 .gift-tabs { display: flex; border-top: 1px solid #eeeeee; border-bottom: 1px solid #eeeeee; flex-shrink: 0; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .gift-tabs::-webkit-scrollbar { display: none; }
-.gift-tab { flex: 1 0 auto; min-width: 25%; background: none; border: none; padding: 14px 10px 12px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 600; color: #b8b8b8; cursor: pointer; position: relative; white-space: nowrap; }
+.gift-tab { flex: 1 0 auto; min-width: 25%; background: none; border: none; padding: 14px 10px 12px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 16px; font-weight: 600; color: #b8b8b8; cursor: pointer; position: relative; white-space: nowrap; }
 .gift-tab.active { color: #111; }
 .gift-tab.active::after { content: ''; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); width: 60%; height: 4px; border-radius: 2px; background: #ffd75e; }
 /* หน้าละ 8 ชิ้น (4x2) ปัดซ้ายขวาได้ มีจุดบอกหน้าด้านล่าง */
@@ -51,16 +51,16 @@
 @media (hover: hover) and (pointer: fine) { .gift-page-arrow:not([hidden]) { display: flex; } }
 .gift-dot.active { background: #9a9a9a; }
 .gift-qty-row { display: flex; align-items: center; gap: 8px; padding: 12px 14px; border-top: 1px solid #eeeeee; flex-shrink: 0; }
-.gift-qty-btn { flex: 1; min-width: 0; background: #ffffff; color: #222; border: 1.5px solid #ececec; padding: 10px 0; border-radius: 999px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; white-space: nowrap; }
+.gift-qty-btn { flex: 1; min-width: 0; background: #ffffff; color: #222; border: 1.5px solid #ececec; padding: 10px 0; border-radius: 999px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 16px; font-weight: 500; cursor: pointer; white-space: nowrap; }
 .gift-qty-btn.custom { flex: 2; }
 .gift-qty-btn.active { border-color: #ffd75e; background: #fffdf4; }
 .gift-qty-btn:disabled { color: #cfcfcf; cursor: not-allowed; }
 .gift-send-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #f2f2f2; padding: 14px 16px calc(14px + env(safe-area-inset-bottom)); flex-shrink: 0; }
 .gift-balance-chip { display: flex; align-items: center; gap: 10px; background: #ffffff; border-radius: 999px; padding: 6px 6px 6px 14px; min-width: 0; }
 .gift-balance-chip > i { color: #e2a63b; font-size: 20px; }
-.gift-balance-chip span { font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 17px; font-weight: 600; color: #222; min-width: 40px; text-align: center; overflow: hidden; text-overflow: ellipsis; }
+.gift-balance-chip span { font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 17px; font-weight: 600; color: #222; min-width: 40px; text-align: center; overflow: hidden; text-overflow: ellipsis; }
 .gift-topup-btn { width: 34px; height: 34px; border-radius: 50%; background: #ffd36b; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 16px; text-decoration: none; flex-shrink: 0; }
-.gift-send-btn { background: #ffd75e; color: #222; border: none; border-radius: 999px; padding: 14px 44px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
+.gift-send-btn { background: #ffd75e; color: #222; border: none; border-radius: 999px; padding: 14px 44px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; transition: opacity 0.15s, transform 0.1s; }
 .gift-send-btn:active { transform: scale(0.97); }
 .gift-send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 /* ป๊อปอัปยืนยันก่อนส่ง: ของขวัญ x จำนวน = Cookie ที่ต้องจ่าย */
@@ -76,16 +76,16 @@
 .gift-confirm-qty { font-size: 24px; font-weight: 700; color: #111; white-space: nowrap; }
 .gift-confirm-divider { display: flex; align-items: center; gap: 14px; width: 100%; margin: 20px 0 8px; font-size: 17px; font-weight: 700; color: #222; }
 .gift-confirm-divider::before, .gift-confirm-divider::after { content: ''; flex: 1; height: 1px; background: #e6e6e6; }
-.gift-confirm-total { display: flex; align-items: center; gap: 12px; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 34px; font-weight: 700; color: #111; }
+.gift-confirm-total { display: flex; align-items: center; gap: 12px; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 34px; font-weight: 700; color: #111; }
 .gift-confirm-total i { color: #e2a63b; font-size: 30px; }
 .gift-confirm-note { font-size: 12.5px; color: #999; margin-top: 4px; text-align: center; }
 .gift-confirm-actions { display: flex; gap: 12px; padding: 16px 20px 18px; border-top: 1px solid #eeeeee; }
-.gift-confirm-cancel, .gift-confirm-ok { flex: 1; border-radius: 999px; padding: 13px 0; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 17px; cursor: pointer; }
+.gift-confirm-cancel, .gift-confirm-ok { flex: 1; border-radius: 999px; padding: 13px 0; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 17px; cursor: pointer; }
 .gift-confirm-cancel { background: #ffffff; color: #222; border: 1.5px solid #222; font-weight: 500; }
 .gift-confirm-ok { flex: 1.5; background: #ffd75e; color: #222; border: none; font-weight: 700; }
 .gift-confirm-actions.has-choice { gap: 8px; padding: 16px 14px 18px; }
 .gift-confirm-actions.has-choice .gift-confirm-cancel, .gift-confirm-actions.has-choice .gift-confirm-ok { flex: 1; font-size: 15px; padding: 12px 0; }
-.gift-confirm-bag { flex: 1; border-radius: 999px; padding: 12px 0; font-family: 'Quicksand', 'Kanit', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; background: #fffdf4; color: #222; border: 1.5px solid #ffd75e; }
+.gift-confirm-bag { flex: 1; border-radius: 999px; padding: 12px 0; font-family: 'Quicksand', 'Google Sans', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; background: #fffdf4; color: #222; border: 1.5px solid #ffd75e; }
 /* ป๊อปอัป SweetAlert (เช่น Customize ระบุจำนวน) ต้องอยู่เหนือแผงของขวัญ + หน้ายืนยัน ไม่งั้นโดนบังจนพิมพ์/กดไม่ได้ */
 .swal2-container { z-index: 2300 !important; }
 @media (max-width: 360px) {

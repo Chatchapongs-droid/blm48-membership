@@ -14,7 +14,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/glassmorphism.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -24,7 +24,7 @@
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            font-family: 'Quicksand', 'Kanit', sans-serif;
+            font-family: 'Quicksand', 'Google Sans', sans-serif;
             color: #222; margin: 0; padding: 0; padding-top: 60px;
         }
         body.glass-mesh-bg { background-color: #ffffff; background-image: none; }
@@ -163,13 +163,13 @@
         // ชื่อ
         ctx.textAlign = 'left';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold ' + Math.floor(canvas.height * 0.055) + 'px "Quicksand", "Kanit", sans-serif';
+        ctx.font = 'bold ' + Math.floor(canvas.height * 0.055) + 'px "Quicksand", "Google Sans", sans-serif';
         ctx.fillText(name, textX, line1_Y);
 
         // Role (โชว์ชื่อ Tier แทน Role ถ้าเป็น user ที่มี Tier แล้ว)
         const nameWidth = ctx.measureText(name).width;
         const roleText = (cardTier || user.role || 'MEMBER').toUpperCase();
-        ctx.font = '600 ' + Math.floor(canvas.height * 0.035) + 'px "Quicksand", "Kanit", sans-serif';
+        ctx.font = '600 ' + Math.floor(canvas.height * 0.035) + 'px "Quicksand", "Google Sans", sans-serif';
         const roleWidth = ctx.measureText(roleText).width;
         const badgeX = textX + nameWidth + (canvas.width * 0.02);
         const badgePadX = canvas.width * 0.015;
@@ -183,7 +183,7 @@
 
         // Username Masking
         ctx.textAlign = 'left';
-        ctx.font = '500 ' + Math.floor(canvas.height * 0.045) + 'px "Quicksand", "Kanit", sans-serif';
+        ctx.font = '500 ' + Math.floor(canvas.height * 0.045) + 'px "Quicksand", "Google Sans", sans-serif';
         const rawUsername = user.username || 'blm48_member';
         let maskedUsername = rawUsername;
         if (rawUsername.length > 4) {
@@ -197,7 +197,7 @@
         ctx.textAlign = 'right';
         const statusX = canvas.width - (canvas.width * 0.08);
         const statusText = 'Status: Active';
-        ctx.font = '600 ' + Math.floor(canvas.height * 0.04) + 'px "Quicksand", "Kanit", sans-serif';
+        ctx.font = '600 ' + Math.floor(canvas.height * 0.04) + 'px "Quicksand", "Google Sans", sans-serif';
         const statusWidth = ctx.measureText(statusText).width;
         ctx.fillStyle = '#ffffff';
         ctx.fillText(statusText, statusX, line2_Y);

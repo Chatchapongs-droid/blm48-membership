@@ -18,7 +18,7 @@
     const st = document.createElement('style');
     st.id = 'blm48-pack-style';
     st.textContent = `
-      .po-overlay { position: fixed; inset: 0; z-index: 20500; overflow: hidden; font-family: 'Quicksand', 'Kanit', sans-serif; color: #1d1d1f;
+      .po-overlay { position: fixed; inset: 0; z-index: 20500; overflow: hidden; font-family: 'Quicksand', 'Google Sans', sans-serif; color: #1d1d1f;
         background: radial-gradient(120% 80% at 50% 32%, #ffffff 0%, #f7f7f9 55%, #ececf0 100%);
         touch-action: none; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
         display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.35s; }
