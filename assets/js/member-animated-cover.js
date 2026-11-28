@@ -1,12 +1,7 @@
 // 🎞️ ปกแบบเคลื่อนไหวรายเมมเบอร์ (key = ชื่อเมมเบอร์ตัวเล็ก) ใช้ทั้งหน้า member.html และ profile.html
 // เล่น MP4 ถ้าเล่นไม่ได้ (เช่น iPhone โหมดประหยัดพลังงาน) จะสลับเป็น GIF แทน
-const ANIMATED_COVERS = {
-  emmy: {
-    mp4: 'assets/img/member-cover/emmy-clover-rain.mp4',
-    gif: 'assets/img/member-cover/emmy-clover-rain.gif',
-    poster: 'assets/img/member-cover/emmy-clover-rain.jpg'
-  }
-};
+// (เอาปกวิดีโอของ Emmy ออกแล้ว 2026-11-28 — กลับไปใช้รูป cover ปกติ)
+const ANIMATED_COVERS = {};
 
 // คืนค่า true ถ้าเมมเบอร์คนนี้มีปกเคลื่อนไหว (จะได้ไม่ทับด้วยรูป cover ปกติ)
 function applyAnimatedCover(name, imgEl, videoEl) {
