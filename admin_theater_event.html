@@ -550,6 +550,44 @@
       ? `<div class="hint" style="margin-top:10px"><i class="fa-solid fa-circle-info"></i> ${msg}</div>`
       : `<button type="button" class="btn-primary" id="btn-draw" style="margin-top:12px;width:100%" onclick="drawLucky()"><i class="fa-solid fa-clover"></i> สุ่มผู้โชคดี</button>
          <div class="hint">กดแล้วจะเปิดหน้าจอสุ่มเต็มจอ (แชร์หน้าจอตอนไลฟ์ได้) ผลสุ่มออกตอนกด "เริ่มสุ่ม" ในหน้าจอนั้น · ถ้าแก้รางวัล ให้กดบันทึกก่อนสุ่ม</div><div class="hint" id="draw-msg" style="color:#d64545"></div>`;
+    box.insertAdjacentHTML('beforeend', LUCKY_TEST_BTN);
+  }
+
+  // ทดลองสุ่ม: เปิดหน้าจอสุ่มแบบเดียวกับของจริง แต่สุ่มในเครื่อง ไม่เรียกเซิร์ฟเวอร์ ไม่บันทึกผล กดกี่ครั้งก็ได้
+  // ใช้รางวัล/จำนวนผู้โชคดี/โซนจากฟอร์มตอนนี้ (ยังไม่ต้องบันทึก) · ถ้ายังไม่มีผู้ถือบัตรที่ได้เลขที่นั่ง จะใส่ผู้ถือบัตรจำลองให้ทุกที่นั่ง
+  const LUCKY_TEST_BTN = `<button type="button" class="btn-add" style="margin-top:10px" onclick="testLucky()"><i class="fa-solid fa-flask"></i> ทดลองสุ่ม (ไม่บันทึกผล)</button>`;
+  function testLucky() {
+    const ev = collect();
+    const zones = ev.zones.filter(z => Number(z.capacity) > 0);
+    if (!zones.length) { showMsg('ใส่โซนและจำนวนที่นั่งก่อน จึงจะทดลองสุ่มได้'); return; }
+    let bookings = ((currentEvent && currentEvent.bookings) || []).filter(b => b.status === 'paid' && (b.seats || []).some(Boolean));
+    if (!bookings.length) {
+      bookings = zones.map(z => ({
+        status: 'paid', name: 'ผู้ถือบัตรทดลอง',
+        seats: Array.from({ length: Number(z.capacity) }, (_, i) => (z.seatPrefix || '') + (i + 1))
+      }));
+    }
+    const owners = {};
+    bookings.forEach(b => (b.seats || []).forEach((s, i) => {
+      if (!s) return;
+      const g = (b.gifts || []).find(x => Number(x.idx) === i + 1);
+      owners[s] = (g && g.name) || b.name || b.username || '';
+    }));
+    const seats = Object.keys(owners);
+    const count = Math.max(1, Math.min(Number(ev.luckyWinnerCount) || 1, seats.length));
+    const testEvent = { title: ev.title || 'ทดลองสุ่ม', zones, bookings, luckyPrize: ev.luckyPrize, luckyWinnerCount: count, luckyWinners: [] };
+    blm48OpenLuckyStage(testEvent, {
+      test: true,
+      draw: async () => {
+        const pool = seats.slice();
+        const out = [];
+        for (let i = 0; i < count; i++) {
+          const seat = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+          out.push({ seat, name: owners[seat] });
+        }
+        return out;
+      }
+    });
   }
 
   async function drawLucky() {
@@ -643,6 +681,7 @@
     } else {
       addRound({ kind: 'normal' });
       addZone({ name: 'Normal Zone', seatPrefix: 'A' });
+      document.getElementById('lucky-draw').innerHTML = LUCKY_TEST_BTN;
     }
   });
 </script>

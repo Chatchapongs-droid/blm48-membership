@@ -105,7 +105,7 @@
     o.innerHTML = `
       <div class="ls-wrap">
         <div class="ls-top">
-          <div class="ls-head"><div class="ls-kicker"><i class="fa-solid fa-clover"></i> Lucky Draw</div><div class="ls-title">${esc(e.title)}</div></div>
+          <div class="ls-head"><div class="ls-kicker"><i class="fa-solid fa-clover"></i> Lucky Draw${opts.test ? ' · ทดลองสุ่ม' : ''}</div><div class="ls-title">${esc(e.title)}</div></div>
           <button type="button" class="ls-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
         </div>
         ${prize ? `<div class="ls-prize">${prize.imageUrl ? `<img src="${esc(prize.imageUrl)}" alt="">` : ''}
@@ -115,7 +115,7 @@
           <div class="ls-grid">${z.seats.map(s => `<div class="ls-chip${s.owner ? '' : ' is-empty'}" data-seat="${esc(s.label)}">${esc(s.num)}</div>`).join('')}</div></div>`).join('')}</div>
         <div class="ls-winners"></div>
         <div class="ls-actions"><button type="button" class="ls-btn" id="ls-go"></button><div class="ls-msg"></div>
-          <div class="ls-note">${opts.draw ? 'ระบบสุ่มจากเซิร์ฟเวอร์ ที่นั่งละ 1 สิทธิ์เท่ากัน สุ่มได้ครั้งเดียว' : 'ย้อนดูผลการสุ่ม'}</div></div>
+          <div class="ls-note">${opts.test ? 'โหมดทดลอง · ไม่บันทึกผล ไม่มีใครได้รางวัลจริง กดทดลองใหม่ได้เรื่อย ๆ' : opts.draw ? 'ระบบสุ่มจากเซิร์ฟเวอร์ ที่นั่งละ 1 สิทธิ์เท่ากัน สุ่มได้ครั้งเดียว' : 'ย้อนดูผลการสุ่ม'}</div></div>
       </div>`;
     document.body.appendChild(o);
     document.documentElement.style.overflow = 'hidden';
